@@ -1,0 +1,6 @@
+auto-lint: false
+auto-test: false
+commit-prompt: |
+  Write a short commit message in English following the Conventional Commits standard. 
+  Do not explain the "why", just explain "what" was done in a single, concise sentence.
+  Format: <type>[optional scope]: <description>
