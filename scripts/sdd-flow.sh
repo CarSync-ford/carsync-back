@@ -33,13 +33,31 @@ $(cat $SPEC_FILE)"
 # 5. Quando ele terminar e você estiver satisfeito, você digita /exit no Aider.
 # ---------------------------
 
-echo "🚀 3. Aider finalizado. Criando o Pull Request automaticamente..."
-# Usa o GitHub CLI para abrir o PR sem te perguntar nada
+echo "🚀 3. Implementação concluída. Gerando a descrição do PR com IA..."
+
+# Extrai a verdade absoluta do Git de forma limpa (comparando com a develop)
+GIT_LOG=$(git log develop..HEAD --pretty=format:"%h - %s" --reverse)
+GIT_DIFF=$(git diff --name-status develop..HEAD)
+
+# Faz uma segunda chamada do Aider 100% silenciosa (--yes) apenas para gerar o arquivo
+aider --yes --message "Use as instruções do arquivo .github/PullRequestSummarizer.md para criar um arquivo chamado 'pr_description.md'. 
+NÃO invente dados. Use ESTRITAMENTE o histórico abaixo:
+
+[GIT LOG]
+$GIT_LOG
+
+[GIT DIFF STATUS]
+$GIT_DIFF"
+
+echo "📦 4. Abrindo o Pull Request no GitHub..."
+# O GitHub CLI consome o arquivo gerado magicamente pelo Aider
 gh pr create \
   --title "feat: $BRANCH_NAME" \
-  --body "Implementação automatizada baseada na Spec: $SPEC_FILE" \
+  --body-file pr_description.md \
   --head "$BRANCH_NAME" \
-  --base main
+  --base develop
 
-echo "✅ Sucesso! O Pull Request foi aberto."
-echo "👀 Revise o PR aqui: $(gh pr view --json url -q .url)"
+# Limpa o arquivo temporário para manter o repositório limpo
+rm pr_description.md
+
+echo "✅ Sucesso! O Pull Request foi aberto com a sua descrição automatizada."
