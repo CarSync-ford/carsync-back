@@ -3,7 +3,6 @@ spring:
     name: arquitetura-orientada-servicos-sprint1
   datasource:
     url: ${DB_URL:jdbc:h2:mem:fordchallenge;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
-    driver-class-name: ${DB_DRIVER:org.h2.Driver}
     username: ${DB_USERNAME:sa}
     password: ${DB_PASSWORD:}
   jpa:
