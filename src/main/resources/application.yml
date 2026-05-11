@@ -23,6 +23,9 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  bcrypt:
+    salt: ${BCRYPT_SALT:10}
+
 server:
   port: 8080
 springdoc:
