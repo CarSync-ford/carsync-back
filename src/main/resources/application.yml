@@ -31,3 +31,8 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+jwt:
+  secret: ${JWT_SECRET:dGVzdC1zZWNyZXQta2V5LWZvci1qd3QtdG9rZW4tZ2VuZXJhdGlvbi0zMmJ5dGVzLW9yLW1vcmU=}
+  pre-auth-expiration-minutes: ${JWT_PRE_AUTH_EXPIRATION_MINUTES:30}
+  issuer: ${JWT_ISSUER:carsync-auth}
+
