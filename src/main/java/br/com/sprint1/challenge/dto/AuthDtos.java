@@ -8,7 +8,7 @@ public final class AuthDtos {
     private AuthDtos() {}
 
     public record AuthRequest(
-        @NotBlank @Email @Size(min = 5, max = 254) String email,
+        @NotBlank @Email String email,
         @NotBlank @Size(min = 6, max = 20) String password
     ) {}
 
