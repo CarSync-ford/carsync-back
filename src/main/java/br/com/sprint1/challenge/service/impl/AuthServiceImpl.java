@@ -12,6 +12,8 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 public class AuthServiceImpl implements AuthService {
 
@@ -50,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
             throw new InvalidCredentialsException();
         }
 
-        // Do NOT update last_login - per spec
+        userRepository.updateLastLoginById(user.getId());
         String token = jwtService.generatePreAuthToken(user.getId(), user.getEmail());
         return new AuthResponse(token);
     }
