@@ -8,7 +8,7 @@ on:
 env:
   ACR_LOGIN_SERVER: acrcarsyncdev.azurecr.io
   IMAGE_NAME: carsync-api
-  APP_NAME: carsync-api
+  APP_NAME: carsync-api-dev
   RESOURCE_GROUP: carsync-dev
 
 jobs:
