@@ -8,3 +8,6 @@ spring:
 server:
   ssl:
     enabled: false
+
+rate-limit:
+  enabled: false
