@@ -6,10 +6,10 @@ on:
       - main
 
 env:
-  ACR_LOGIN_SERVER: carsyncacr.azurecr.io
+  ACR_LOGIN_SERVER: acrcarsyncdev.azurecr.io
   IMAGE_NAME: carsync-api
   APP_NAME: carsync-api
-  RESOURCE_GROUP: carsync-rg
+  RESOURCE_GROUP: carsync-dev
 
 jobs:
   build-and-deploy:
