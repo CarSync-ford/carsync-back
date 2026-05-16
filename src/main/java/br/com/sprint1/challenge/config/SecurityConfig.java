@@ -13,15 +13,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Força HTTPS em todas as requisições
-            .requiresChannel(channel -> 
-                channel.anyRequest().requiresSecure()
-            )
-            // Suas outras configurações de CORS, CSRF, JWT, etc.
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/v3/api-docs/**",
+                    "/actuator/health",
+                    "/api/v1/**"
+                ).permitAll()
                 .anyRequest().authenticated()
             );
-            
+
         return http.build();
     }
 }
