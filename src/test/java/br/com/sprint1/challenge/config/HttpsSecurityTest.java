@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * A configuração {@code requiresChannel().anyRequest().requiresSecure()} no
  * {@link SecurityConfig} deve redirecionar qualquer requisição HTTP para HTTPS.
  */
-@SpringBootTest
+@SpringBootTest(properties = "server.ssl.enabled=true")
 @AutoConfigureMockMvc
 class HttpsSecurityTest {
 
