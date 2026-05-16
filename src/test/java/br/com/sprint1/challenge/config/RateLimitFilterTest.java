@@ -9,7 +9,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(properties = "rate-limit.enabled=true")
 @AutoConfigureMockMvc
 class RateLimitFilterTest {
 
@@ -19,7 +19,8 @@ class RateLimitFilterTest {
     @Test
     void shouldAllowRequestsWithinLimit() throws Exception {
         for (int i = 0; i < 10; i++) {
-            mockMvc.perform(get("/api/v1/health").secure(true))
+            mockMvc.perform(get("/api/v1/health").secure(true)
+                    .header("X-Forwarded-For", "10.0.0.1"))
                 .andExpect(status().isOk());
         }
     }
@@ -27,10 +28,12 @@ class RateLimitFilterTest {
     @Test
     void shouldReturn429WhenLimitExceeded() throws Exception {
         for (int i = 0; i < 10; i++) {
-            mockMvc.perform(get("/api/v1/health").secure(true));
+            mockMvc.perform(get("/api/v1/health").secure(true)
+                .header("X-Forwarded-For", "10.0.0.2"));
         }
 
-        mockMvc.perform(get("/api/v1/health").secure(true))
+        mockMvc.perform(get("/api/v1/health").secure(true)
+                .header("X-Forwarded-For", "10.0.0.2"))
             .andExpect(status().isTooManyRequests());
     }
 
