@@ -7,7 +7,7 @@ RUN addgroup -S spring && adduser -S spring -G spring
 WORKDIR /app
 
 # Application Insights Java agent (auto-instrumentation)
-ADD https://github.com/microsoft/ApplicationInsights-Java/releases/download/3.5.4/applicationinsights-agent-3.5.4.jar /opt/agent.jar
+RUN wget -q -O /opt/agent.jar https://github.com/microsoft/ApplicationInsights-Java/releases/download/3.5.4/applicationinsights-agent-3.5.4.jar
 
 # Copia o JAR compilado pelo CI
 COPY target/*.jar app.jar
