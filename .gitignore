@@ -7,3 +7,4 @@ target/
 .aider*
 !.aider.conf.yml
 .env
+features/PullRequestSummarizer.md
