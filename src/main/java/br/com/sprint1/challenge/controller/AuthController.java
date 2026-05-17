@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
         MediaType.APPLICATION_JSON_VALUE,
         MediaType.APPLICATION_XML_VALUE
 })
-@Tag(name = "Authentication", description = "Authentication endpoints for login with pre-auth JWT")
+@Tag(name = "Authentication", description = "Authentication endpoints")
 public class AuthController {
 
     private final AuthService authService;
@@ -27,7 +27,7 @@ public class AuthController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Login with JSON payload", description = "Authenticates credentials and returns a pre-auth JWT token (30min). Next step: MFA verification (future feature).")
+    @Operation(summary = "Login with JSON payload", description = "Authenticates credentials and returns a JWT token.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Authentication successful - returns JWT token"),
             @ApiResponse(responseCode = "400", description = "Invalid request payload"),
@@ -41,7 +41,7 @@ public class AuthController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    @Operation(summary = "Login with form-urlencoded payload", description = "Authenticates credentials (form) and returns a pre-auth JWT token (30min). Next step: MFA verification (future feature).")
+    @Operation(summary = "Login with form-urlencoded payload", description = "Authenticates credentials (form) and returns a JWT token.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Authentication successful - returns JWT token"),
             @ApiResponse(responseCode = "400", description = "Invalid request payload"),

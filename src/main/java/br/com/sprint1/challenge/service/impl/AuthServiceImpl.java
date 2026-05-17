@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -37,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public AuthResponse authenticate(AuthRequest request) {
         var userOpt = userRepository.findByEmail(request.email());
 
@@ -53,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         userRepository.updateLastLoginById(user.getId());
-        String token = jwtService.generatePreAuthToken(user.getId(), user.getEmail());
+        String token = jwtService.generateToken(user.getId(), user.getEmail());
         return new AuthResponse(token);
     }
 }

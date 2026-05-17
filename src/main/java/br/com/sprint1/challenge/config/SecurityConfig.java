@@ -17,7 +17,7 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Value("${server.ssl.enabled:true}")
+    @Value("${server.ssl.enabled:false}")
     private boolean sslEnabled;
 
     @Value("${app.cors.allowed-origins:*}")

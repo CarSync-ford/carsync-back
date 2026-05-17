@@ -21,16 +21,15 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public String generatePreAuthToken(String userId, String email) {
+    public String generateToken(String userId, String email) {
         SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
         
         Date now = new Date();
-        Date exp = new Date(now.getTime() + (jwtProperties.getPreAuthExpirationMinutes() * 60 * 1000));
+        Date exp = new Date(now.getTime() + (jwtProperties.getExpirationMinutes() * 60 * 1000));
         
         return Jwts.builder()
                 .subject(userId)
                 .claim("email", email)
-                .claim("scope", "pre-auth")
                 .issuer(jwtProperties.getIssuer())
                 .issuedAt(now)
                 .expiration(exp)
