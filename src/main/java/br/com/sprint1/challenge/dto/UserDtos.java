@@ -18,4 +18,8 @@ public final class UserDtos {
     public record UserCreatedResponse(
         String id
     ) {}
+
+    public record GetUserResponse(
+        String username
+    ) {}
 }
