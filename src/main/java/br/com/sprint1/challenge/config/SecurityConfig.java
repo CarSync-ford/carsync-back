@@ -24,9 +24,11 @@ public class SecurityConfig {
     private String allowedOrigins;
 
     private final RateLimitFilter rateLimitFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(RateLimitFilter rateLimitFilter) {
+    public SecurityConfig(RateLimitFilter rateLimitFilter, JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.rateLimitFilter = rateLimitFilter;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
@@ -39,8 +41,15 @@ public class SecurityConfig {
         }
 
         http.addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        http.exceptionHandling(ex -> ex
+            .authenticationEntryPoint((request, response, authException) ->
+                response.sendError(401))
+        );
 
         http.authorizeHttpRequests(auth -> auth
+            .requestMatchers("/api/v1/user/me").authenticated()
             .requestMatchers(
                 "/swagger-ui/**",
                 "/swagger-ui.html",
