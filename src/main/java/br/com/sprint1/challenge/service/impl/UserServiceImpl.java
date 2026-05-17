@@ -1,10 +1,12 @@
 package br.com.sprint1.challenge.service.impl;
 
 import br.com.sprint1.challenge.dto.UserDtos.CreateUserRequest;
+import br.com.sprint1.challenge.dto.UserDtos.GetUserResponse;
 import br.com.sprint1.challenge.dto.UserDtos.UserCreatedResponse;
 import br.com.sprint1.challenge.entity.User;
 import br.com.sprint1.challenge.entity.UserType;
 import br.com.sprint1.challenge.exception.DuplicateCpfException;
+import br.com.sprint1.challenge.exception.ResourceNotFoundException;
 import br.com.sprint1.challenge.repository.UserRepository;
 import br.com.sprint1.challenge.repository.UserTypeRepository;
 import br.com.sprint1.challenge.service.UserService;
@@ -51,5 +53,12 @@ public class UserServiceImpl implements UserService {
 
         User saved = userRepository.save(user);
         return new UserCreatedResponse(saved.getId());
+    }
+
+    @Override
+    public GetUserResponse getById(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return new GetUserResponse(user.getUsername());
     }
 }
