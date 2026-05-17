@@ -3,6 +3,7 @@ package br.com.sprint1.challenge.controller;
 import br.com.sprint1.challenge.entity.UserType;
 import br.com.sprint1.challenge.repository.UserRepository;
 import br.com.sprint1.challenge.repository.UserTypeRepository;
+import br.com.sprint1.challenge.service.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -35,6 +37,9 @@ class UserControllerTest {
 
     @Autowired
     private UserTypeRepository userTypeRepository;
+
+    @Autowired
+    private JwtService jwtService;
 
     @BeforeEach
     void setUp() {
@@ -202,5 +207,50 @@ class UserControllerTest {
         var savedUser = userRepository.findAll().get(0);
         assertNotEquals("Password@1", savedUser.getHashedPassword());
         assertTrue(savedUser.getHashedPassword().startsWith("$2a$"));
+    }
+
+    @Test
+    void getMe_tokenValido_usuarioExiste_retorna200ComUsername() throws Exception {
+        // Create user first
+        Map<String, String> payload = Map.of(
+                "username", "johndoe",
+                "email", "john@example.com",
+                "password", "Password@1",
+                "cpf", "52998224725"
+        );
+        mockMvc.perform(post("/api/v1/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isCreated());
+
+        String userId = userRepository.findAll().get(0).getId();
+        String token = jwtService.generateToken(userId, "john@example.com");
+
+        mockMvc.perform(get("/api/v1/user/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("johndoe"));
+    }
+
+    @Test
+    void getMe_tokenValido_usuarioNaoExiste_retorna401() throws Exception {
+        String token = jwtService.generateToken("nonexistent-id", "ghost@example.com");
+
+        mockMvc.perform(get("/api/v1/user/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getMe_tokenInvalido_retorna401() throws Exception {
+        mockMvc.perform(get("/api/v1/user/me")
+                        .header("Authorization", "Bearer invalid-token"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getMe_semHeader_retorna401() throws Exception {
+        mockMvc.perform(get("/api/v1/user/me"))
+                .andExpect(status().isUnauthorized());
     }
 }

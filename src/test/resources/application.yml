@@ -15,3 +15,8 @@ server:
 
 rate-limit:
   enabled: false
+
+jwt:
+  secret: dGVzdC1zZWNyZXQta2V5LWZvci1qd3QtdG9rZW4tZ2VuZXJhdGlvbi0zMmJ5dGVzLW9yLW1vcmU=
+  expiration-minutes: 30
+  issuer: carsync-auth

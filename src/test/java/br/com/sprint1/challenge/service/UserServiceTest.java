@@ -1,10 +1,12 @@
 package br.com.sprint1.challenge.service;
 
 import br.com.sprint1.challenge.dto.UserDtos.CreateUserRequest;
+import br.com.sprint1.challenge.dto.UserDtos.GetUserResponse;
 import br.com.sprint1.challenge.dto.UserDtos.UserCreatedResponse;
 import br.com.sprint1.challenge.entity.User;
 import br.com.sprint1.challenge.entity.UserType;
 import br.com.sprint1.challenge.exception.DuplicateCpfException;
+import br.com.sprint1.challenge.exception.ResourceNotFoundException;
 import br.com.sprint1.challenge.repository.UserRepository;
 import br.com.sprint1.challenge.repository.UserTypeRepository;
 import br.com.sprint1.challenge.service.impl.UserServiceImpl;
@@ -81,5 +83,25 @@ class UserServiceTest {
         // When/Then
         assertThrows(DuplicateCpfException.class, () -> userService.create(request));
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void getById_usuarioExistente_retornaUsername() {
+        User user = new User();
+        user.setId("user-123");
+        user.setUsername("johndoe");
+
+        when(userRepository.findById("user-123")).thenReturn(Optional.of(user));
+
+        GetUserResponse response = userService.getById("user-123");
+
+        assertEquals("johndoe", response.username());
+    }
+
+    @Test
+    void getById_usuarioInexistente_lancaResourceNotFoundException() {
+        when(userRepository.findById("nonexistent")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> userService.getById("nonexistent"));
     }
 }
