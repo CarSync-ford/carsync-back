@@ -1,6 +1,6 @@
-Atue como um Engenheiro de Software Sênior. Analise as diferenças (diff) e o histórico de commits da minha branch atual em comparação com a branch de destino (develop).
+Atue como um Engenheiro de Software Sênior. Analise as diferenças (diff) e o histórico de commits da minha branch atual em comparação com a branch de destino (main).
 
-Com base nessa análise, gere uma descrição de Pull Request preenchendo estritamente o modelo abaixo.
+Com base nessa análise, gere um Pull Request preenchendo a descrição estritamente o modelo abaixo.
 
 **Regras de Preenchimento:**
 1. <Description>: Escreva um resumo conciso e técnico do que foi feito e o objetivo das mudanças.
@@ -10,7 +10,8 @@ Com base nessa análise, gere uma descrição de Pull Request preenchendo estrit
 5. As escritas devem ser em Inglês, sempre.
 6. Sempre formate para um MD
 7. A resposta deve estar num arquivo.md formatado
-
+8. O PR deve ter como asignee o usuário enzoreal100
+9. O PR deve ter como reviewer o usuário hellen-silvaa
 **Modelo:**
 <Description>
 
@@ -20,5 +21,3 @@ Deleted Files: <Lista de arquivos deletados separados por vírgula, ou "None" se
 
 Commits:
 <Commit Hash> - <Commit Message>
-
-Story Link: <Proofhub story link>
