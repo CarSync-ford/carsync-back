@@ -86,6 +86,33 @@ class UserControllerTest {
     }
 
     @Test
+    void postEmailDuplicado_retorna400() throws Exception {
+        Map<String, String> payload1 = Map.of(
+                "username", "user1",
+                "email", "duplicate@example.com",
+                "password", "Password@1",
+                "cpf", "52998224725"
+        );
+
+        Map<String, String> payload2 = Map.of(
+                "username", "user2",
+                "email", "duplicate@example.com",
+                "password", "Password@2",
+                "cpf", "42385312068"
+        );
+
+        mockMvc.perform(post("/api/v1/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload1)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/v1/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload2)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void postCpfInvalido_retorna400() throws Exception {
         Map<String, String> payload = Map.of(
                 "username", "johndoe",
