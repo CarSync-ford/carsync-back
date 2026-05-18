@@ -16,6 +16,11 @@ spring:
   mvc:
     contentnegotiation:
       default-content-type: application/json
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 1MB
+      max-request-size: 1MB
   flyway:
     enabled: true
   bcrypt:
