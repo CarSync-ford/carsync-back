@@ -1,5 +1,10 @@
 package br.com.sprint1.challenge.service.impl;
 
+import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import br.com.sprint1.challenge.dto.AuthDtos.AuthRequest;
 import br.com.sprint1.challenge.dto.AuthDtos.AuthResponse;
 import br.com.sprint1.challenge.entity.User;
@@ -8,12 +13,6 @@ import br.com.sprint1.challenge.repository.UserRepository;
 import br.com.sprint1.challenge.service.AuthService;
 import br.com.sprint1.challenge.service.JwtService;
 import jakarta.annotation.PostConstruct;
-import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -55,7 +54,10 @@ public class AuthServiceImpl implements AuthService {
         }
 
         userRepository.updateLastLoginById(user.getId());
-        String token = jwtService.generateToken(user.getId(), user.getEmail());
+        String role = user.getUserType() != null && user.getUserType().getType() != null
+                ? user.getUserType().getType()
+                : "USER";
+        String token = jwtService.generateToken(user.getId(), user.getEmail(), role);
         return new AuthResponse(token);
     }
 }

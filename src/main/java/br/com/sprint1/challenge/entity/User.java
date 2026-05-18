@@ -3,9 +3,11 @@ package br.com.sprint1.challenge.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.UniqueElements;
 
 @Entity
+@Audited
 @Table(name = "users")
 public class User {
 

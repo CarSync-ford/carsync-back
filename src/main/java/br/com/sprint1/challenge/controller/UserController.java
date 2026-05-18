@@ -1,16 +1,23 @@
 package br.com.sprint1.challenge.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 import br.com.sprint1.challenge.dto.UserDtos.CreateUserRequest;
 import br.com.sprint1.challenge.dto.UserDtos.GetUserResponse;
 import br.com.sprint1.challenge.dto.UserDtos.UserCreatedResponse;
 import br.com.sprint1.challenge.exception.ResourceNotFoundException;
 import br.com.sprint1.challenge.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/api/v1/user", produces = {
@@ -35,6 +42,7 @@ public class UserController {
     }
 
     @GetMapping("/me")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<GetUserResponse> me(Authentication authentication) {
         try {
             GetUserResponse response = userService.getById(authentication.getName());
