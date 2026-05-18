@@ -3,6 +3,8 @@ package br.com.sprint1.challenge.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+import org.hibernate.validator.constraints.UniqueElements;
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -14,7 +16,7 @@ public class User {
     @Column(name = "username", nullable = false)
     private String username;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "hashed_password", nullable = false)
