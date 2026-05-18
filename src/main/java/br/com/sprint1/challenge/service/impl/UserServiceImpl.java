@@ -6,6 +6,7 @@ import br.com.sprint1.challenge.dto.UserDtos.UserCreatedResponse;
 import br.com.sprint1.challenge.entity.User;
 import br.com.sprint1.challenge.entity.UserType;
 import br.com.sprint1.challenge.exception.DuplicateCpfException;
+import br.com.sprint1.challenge.exception.DuplicateEmailException;
 import br.com.sprint1.challenge.exception.ResourceNotFoundException;
 import br.com.sprint1.challenge.repository.UserRepository;
 import br.com.sprint1.challenge.repository.UserTypeRepository;
@@ -35,7 +36,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserCreatedResponse create(CreateUserRequest request) {
         if (userRepository.existsByCpf(request.cpf())) {
-            throw new DuplicateCpfException(request.cpf());
+            throw new DuplicateCpfException();
+        }
+
+        if (userRepository.existsByEmail(request.email())) {
+            throw new DuplicateEmailException();
         }
 
         User user = new User();
