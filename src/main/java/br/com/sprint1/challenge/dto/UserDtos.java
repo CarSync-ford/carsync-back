@@ -1,5 +1,6 @@
 package br.com.sprint1.challenge.dto;
 
+import br.com.sprint1.challenge.validation.LowercaseEmail;
 import br.com.sprint1.challenge.validation.StrongPassword;
 import br.com.sprint1.challenge.validation.ValidCpf;
 import jakarta.validation.constraints.Email;
@@ -10,7 +11,7 @@ public final class UserDtos {
 
     public record CreateUserRequest(
         @NotBlank String username,
-        @NotBlank @Email String email,
+        @NotBlank @Email @LowercaseEmail String email,
         @NotBlank @StrongPassword String password,
         @NotBlank @ValidCpf String cpf
     ) {}
