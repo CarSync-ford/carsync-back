@@ -1,8 +1,10 @@
 package br.com.sprint1.challenge.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "user_type")
 public class UserType {
 
