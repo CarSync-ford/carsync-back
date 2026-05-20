@@ -8,7 +8,7 @@ CREATE TABLE revinfo (
 CREATE TABLE customers_aud (
     id BIGINT NOT NULL,
     rev INTEGER NOT NULL,
-    revtype SMALLINT,
+    revtype TINYINT,
     full_name VARCHAR(255),
     email VARCHAR(255),
     phone VARCHAR(50),
@@ -22,7 +22,7 @@ CREATE TABLE customers_aud (
 CREATE TABLE leads_aud (
     id BIGINT NOT NULL,
     rev INTEGER NOT NULL,
-    revtype SMALLINT,
+    revtype TINYINT,
     customer_id BIGINT,
     vehicle_id BIGINT,
     dealership_id BIGINT,
@@ -40,7 +40,7 @@ CREATE TABLE leads_aud (
 CREATE TABLE user_type_aud (
     id VARCHAR(255) NOT NULL,
     rev INTEGER NOT NULL,
-    revtype SMALLINT,
+    revtype TINYINT,
     type VARCHAR(255),
     PRIMARY KEY (id, rev),
     CONSTRAINT fk_user_type_aud_rev FOREIGN KEY (rev) REFERENCES revinfo(rev)
@@ -49,7 +49,7 @@ CREATE TABLE user_type_aud (
 CREATE TABLE users_aud (
     id VARCHAR(255) NOT NULL,
     rev INTEGER NOT NULL,
-    revtype SMALLINT,
+    revtype TINYINT,
     username VARCHAR(255),
     email VARCHAR(255),
     hashed_password VARCHAR(255),
