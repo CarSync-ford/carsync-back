@@ -1,15 +1,20 @@
 package br.com.sprint1.challenge.config;
 
 import br.com.sprint1.challenge.service.JwtService;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.impl.DefaultClaims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,11 +35,20 @@ class JwtAuthenticationFilterTest {
     private FilterChain filterChain;
 
     private JwtAuthenticationFilter filter;
+    private ListAppender<ILoggingEvent> logAppender;
 
     @BeforeEach
     void setUp() {
         SecurityContextHolder.clearContext();
         filter = new JwtAuthenticationFilter(jwtService);
+        logAppender = new ListAppender<>();
+        logAppender.start();
+        ((Logger) LoggerFactory.getLogger(JwtAuthenticationFilter.class)).addAppender(logAppender);
+    }
+
+    @AfterEach
+    void tearDown() {
+        ((Logger) LoggerFactory.getLogger(JwtAuthenticationFilter.class)).detachAppender(logAppender);
     }
 
     @Test
@@ -66,6 +80,9 @@ class JwtAuthenticationFilterTest {
 
         assertNull(SecurityContextHolder.getContext().getAuthentication());
         verify(filterChain).doFilter(request, response);
+        assertTrue(logAppender.list.stream()
+                .anyMatch(e -> e.getLevel().toString().equals("WARN")
+                        && e.getFormattedMessage().contains("JWT_INVALID")));
     }
 
     @Test

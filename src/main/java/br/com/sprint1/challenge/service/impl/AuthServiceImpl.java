@@ -1,6 +1,8 @@
 package br.com.sprint1.challenge.service.impl;
 
 import org.mindrot.jbcrypt.BCrypt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,8 @@ import jakarta.annotation.PostConstruct;
 
 @Service
 public class AuthServiceImpl implements AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -44,12 +48,14 @@ public class AuthServiceImpl implements AuthService {
         if (userOpt.isEmpty()) {
             // Anti-timing: perform dummy hash check
             BCrypt.checkpw(request.password(), dummyHash);
+            log.warn("AUTH_FAILURE email={}", request.email());
             throw new InvalidCredentialsException();
         }
 
         User user = userOpt.get();
         
         if (!BCrypt.checkpw(request.password(), user.getHashedPassword())) {
+            log.warn("AUTH_FAILURE email={}", request.email());
             throw new InvalidCredentialsException();
         }
 

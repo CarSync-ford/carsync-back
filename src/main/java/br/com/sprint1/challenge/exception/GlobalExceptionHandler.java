@@ -29,11 +29,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DuplicateCpfException.class)
     public ResponseEntity<ApiErrorResponse> handleDuplicateCpf(DuplicateCpfException ex, HttpServletRequest request) {
+        log.warn("DUPLICATE_REGISTRATION type=cpf uri={}", request.getRequestURI());
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI(), List.of());
     }
 
     @ExceptionHandler(DuplicateEmailException.class)
     public ResponseEntity<ApiErrorResponse> handleDuplicateEmail(DuplicateEmailException ex, HttpServletRequest request) {
+        log.warn("DUPLICATE_REGISTRATION type=email uri={}", request.getRequestURI());
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI(), List.of());
     }
 
@@ -70,7 +72,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
-        log.error("Erro interno inesperado em {}", request.getRequestURI(), ex);
+        log.error("INTERNAL_ERROR uri={}", request.getRequestURI(), ex);
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno inesperado.", request.getRequestURI(), List.of());
     }
 

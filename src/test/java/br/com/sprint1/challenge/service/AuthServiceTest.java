@@ -6,12 +6,17 @@ import br.com.sprint1.challenge.entity.User;
 import br.com.sprint1.challenge.exception.InvalidCredentialsException;
 import br.com.sprint1.challenge.repository.UserRepository;
 import br.com.sprint1.challenge.service.impl.AuthServiceImpl;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mindrot.jbcrypt.BCrypt;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
@@ -29,6 +34,7 @@ class AuthServiceTest {
     private JwtService jwtService;
 
     private AuthService authService;
+    private ListAppender<ILoggingEvent> logAppender;
 
     private static final String TEST_EMAIL = "test@example.com";
     private static final String TEST_PASSWORD = "password123";
@@ -37,10 +43,18 @@ class AuthServiceTest {
     @BeforeEach
     void setUp() throws Exception {
         authService = new AuthServiceImpl(userRepository, jwtService, 10);
-        // Manually invoke @PostConstruct init()
         var initMethod = AuthServiceImpl.class.getDeclaredMethod("init");
         initMethod.setAccessible(true);
         initMethod.invoke(authService);
+
+        logAppender = new ListAppender<>();
+        logAppender.start();
+        ((Logger) LoggerFactory.getLogger(AuthServiceImpl.class)).addAppender(logAppender);
+    }
+
+    @AfterEach
+    void tearDown() {
+        ((Logger) LoggerFactory.getLogger(AuthServiceImpl.class)).detachAppender(logAppender);
     }
 
     @Test
@@ -52,6 +66,9 @@ class AuthServiceTest {
         // When/Then
         assertThrows(InvalidCredentialsException.class, () -> authService.authenticate(request));
         verify(userRepository, never()).updateLastLoginById(any());
+        assertTrue(logAppender.list.stream()
+                .anyMatch(e -> e.getLevel().toString().equals("WARN")
+                        && e.getFormattedMessage().contains("AUTH_FAILURE")));
     }
 
     @Test
@@ -70,6 +87,9 @@ class AuthServiceTest {
         // When/Then
         assertThrows(InvalidCredentialsException.class, () -> authService.authenticate(request));
         verify(userRepository, never()).updateLastLoginById(any());
+        assertTrue(logAppender.list.stream()
+                .anyMatch(e -> e.getLevel().toString().equals("WARN")
+                        && e.getFormattedMessage().contains("AUTH_FAILURE")));
     }
 
     @Test
