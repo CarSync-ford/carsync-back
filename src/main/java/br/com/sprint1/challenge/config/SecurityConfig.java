@@ -27,10 +27,13 @@ public class SecurityConfig {
 
     private final RateLimitFilter rateLimitFilter;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final HmacSignatureFilter hmacSignatureFilter;
 
-    public SecurityConfig(RateLimitFilter rateLimitFilter, JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(RateLimitFilter rateLimitFilter, JwtAuthenticationFilter jwtAuthenticationFilter,
+                          HmacSignatureFilter hmacSignatureFilter) {
         this.rateLimitFilter = rateLimitFilter;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.hmacSignatureFilter = hmacSignatureFilter;
     }
 
     @Bean
@@ -42,6 +45,7 @@ public class SecurityConfig {
             http.requiresChannel(channel -> channel.anyRequest().requiresSecure());
         }
 
+        http.addFilterBefore(hmacSignatureFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
