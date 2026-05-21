@@ -24,7 +24,7 @@ spring:
   flyway:
     enabled: true
   bcrypt:
-    salt: ${BCRYPT_SALT:10}
+    salt: ${BCRYPT_SALT}
 
 server:
   port: ${SERVER_PORT:8080}
@@ -32,13 +32,17 @@ server:
 
 app:
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
 jwt:
-  secret: ${JWT_SECRET:dGVzdC1zZWNyZXQta2V5LWZvci1qd3QtdG9rZW4tZ2VuZXJhdGlvbi0zMmJ5dGVzLW9yLW1vcmU=}
-  expiration-minutes: ${JWT_EXPIRATION_MINUTES:30}
-  issuer: ${JWT_ISSUER:carsync-auth}
+  secret: ${JWT_SECRET}
+  expiration-minutes: ${JWT_EXPIRATION_MINUTES}
+  issuer: ${JWT_ISSUER}
+
+hmac:
+  secret: ${HMAC_SECRET:}
+  enabled: ${HMAC_ENABLED:false}
 
