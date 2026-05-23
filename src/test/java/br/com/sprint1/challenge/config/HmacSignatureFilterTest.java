@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import javax.crypto.Mac;
@@ -43,6 +44,7 @@ class HmacSignatureFilterTest {
     }
 
     @Test
+    @WithMockUser
     void shouldAcceptGetRequestWithValidSignature() throws Exception {
         String payload = "/api/v1/leads";
         String signature = computeHmac(payload, SECRET);
@@ -53,6 +55,7 @@ class HmacSignatureFilterTest {
     }
 
     @Test
+    @WithMockUser
     void shouldAcceptGetRequestWithQueryStringAndValidSignature() throws Exception {
         String payload = "/api/v1/leads?page=1";
         String signature = computeHmac(payload, SECRET);
@@ -63,6 +66,7 @@ class HmacSignatureFilterTest {
     }
 
     @Test
+    @WithMockUser
     void shouldAcceptPostRequestWithBodyAndValidSignature() throws Exception {
         String body = "{\"name\":\"Test Lead\",\"email\":\"test@example.com\",\"phone\":\"11999999999\",\"vehicleInterest\":\"SUV\"}";
         String signature = computeHmac(body, SECRET);

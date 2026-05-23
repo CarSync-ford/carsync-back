@@ -8,13 +8,13 @@ import br.com.sprint1.challenge.repository.CustomerRepository;
 import br.com.sprint1.challenge.repository.DealershipRepository;
 import br.com.sprint1.challenge.repository.ServiceRecordRepository;
 import br.com.sprint1.challenge.repository.VehicleRepository;
+import br.com.sprint1.challenge.service.JwtService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -37,6 +37,9 @@ class ArquiteturaOrientadaaServicosSprint1ApplicationTests {
     @Autowired
     private ServiceRecordRepository serviceRecordRepository;
 
+    @Autowired
+    private JwtService jwtService;
+
     @Test
     void contextLoads() {
     }
@@ -54,8 +57,14 @@ class ArquiteturaOrientadaaServicosSprint1ApplicationTests {
     void shouldReturnRestCustomerRiskPrediction() {
         Long customerId = createCustomerForChurnScenario();
 
-        ResponseEntity<String> response = restTemplate.getForEntity(
+        String token = jwtService.generateToken("test-user", "test@example.com");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+
+        ResponseEntity<String> response = restTemplate.exchange(
                 "/api/v1/churn/customers/" + customerId,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
                 String.class
         );
 

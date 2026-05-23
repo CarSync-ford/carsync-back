@@ -1,5 +1,6 @@
 package br.com.sprint1.challenge.exception;
 
+import br.com.sprint1.challenge.service.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +24,9 @@ class PayloadLimitTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
+
+    @Autowired
+    private JwtService jwtService;
 
     @TestConfiguration
     @RestController
@@ -49,6 +53,7 @@ class PayloadLimitTest {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        headers.setBearerAuth(jwtService.generateToken("test-user", "test@example.com"));
 
         ResponseEntity<String> response = restTemplate.exchange(
                 "/api/v1/test-upload",

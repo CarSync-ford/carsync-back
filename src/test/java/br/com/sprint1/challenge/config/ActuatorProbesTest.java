@@ -31,8 +31,8 @@ class ActuatorProbesTest {
     }
 
     @Test
-    void actuatorEnv_returns404() throws Exception {
+    void actuatorEnv_notAccessible() throws Exception {
         mockMvc.perform(get("/actuator/env"))
-            .andExpect(status().isNotFound());
+            .andExpect(status().isUnauthorized());
     }
 }
