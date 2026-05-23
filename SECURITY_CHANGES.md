@@ -44,12 +44,19 @@ e mantendo `allowCredentials=true`.
 O `Dockerfile` baixa e injeta o agente Java do **Azure Application
 Insights 3.5.4** via `-javaagent:/opt/agent.jar`, com a connection string
 fornecida pela pipeline de deploy (`.github/workflows/deploy.yml` injeta
-`APPLICATIONINSIGHTS_CONNECTION_STRING` como variável de ambiente). Há ainda
-um `HealthController` em `/api/v1/health` retornando `status: healthy`, e o
-`SecurityConfig` libera `/actuator/health` na allowlist para futura ativação
-do Spring Boot Actuator (a dependência `spring-boot-starter-actuator` ainda
-não está adicionada ao `pom.xml` — pendente caso se queira expor
-liveness/readiness padrão).
+`APPLICATIONINSIGHTS_CONNECTION_STRING` como variável de ambiente). O
+Spring Boot Actuator (`spring-boot-starter-actuator`) expõe os endpoints
+de probes `/actuator/health/liveness` e `/actuator/health/readiness` na
+porta `8080`, habilitados via `management.endpoint.health.probes.enabled=true`.
+O readiness depende automaticamente do `DataSourceHealthIndicator` (via
+`spring-boot-starter-data-jpa`), ou seja, falha de banco derruba o
+readiness sem matar o container. Apenas o endpoint `health` é exposto via
+HTTP (`management.endpoints.web.exposure.include=health`); demais endpoints
+do Actuator ficam inacessíveis. O `SecurityConfig` libera explicitamente
+`/actuator/health/liveness` e `/actuator/health/readiness` na allowlist
+pública. Configuração das probes no ACA:
+`livenessProbe.httpGet.path=/actuator/health/liveness`,
+`readinessProbe.httpGet.path=/actuator/health/readiness`, porta `8080`.
 
 ## Limitação de Payload
 
