@@ -46,3 +46,19 @@ hmac:
   secret: ${HMAC_SECRET:}
   enabled: ${HMAC_ENABLED:false}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
