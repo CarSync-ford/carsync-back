@@ -13,18 +13,36 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.util.Base64;
+import java.util.Set;
 
 @Component
 public class HmacSignatureFilter extends OncePerRequestFilter {
 
     private static final String HEADER = "X-HMAC-Signature";
     private static final String ALGORITHM = "HmacSHA256";
+    private static final Set<String> PUBLIC_PREFIX_PATHS = Set.of(
+        "/actuator/health/",
+        "/api/v1/health",
+        "/api/v1/auth",
+        "/swagger-ui",
+        "/v3/api-docs"
+    );
 
     @Value("${hmac.secret:}")
     private String secret;
 
     @Value("${hmac.enabled:true}")
     private boolean enabled;
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        if (PUBLIC_PREFIX_PATHS.stream().anyMatch(path::startsWith)) {
+            return true;
+        }
+        // POST /api/v1/user (signup) is public, but GET /api/v1/user/me is not
+        return "POST".equals(request.getMethod()) && "/api/v1/user".equals(path);
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,

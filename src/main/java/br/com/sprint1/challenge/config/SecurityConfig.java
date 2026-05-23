@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -55,14 +56,11 @@ public class SecurityConfig {
         );
 
         http.authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/v1/user/me").authenticated()
-            .requestMatchers(
-                "/swagger-ui/**",
-                "/swagger-ui.html",
-                "/v3/api-docs/**",
-                "/actuator/health",
-                "/api/v1/**"
-            ).permitAll()
+            .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+            .requestMatchers("/actuator/health/liveness", "/actuator/health/readiness").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/v1/health").permitAll()
+            .requestMatchers("/api/v1/auth/**").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/v1/user").permitAll()
             .anyRequest().authenticated()
         );
 
