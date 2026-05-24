@@ -113,8 +113,8 @@ curl -s http://localhost:8080/api/v1/churn/risk-list
 - Banco: configuracao de conexao no `application.yml` e migracao versionada com Flyway
 
 ## Alunos 3ESR
-558385 - Alexia Ramalho
-557943 - Enzo Real
-555454 - Gustavo Pasquini
-559008 - Hellen Silva
-557397 - Lorenzo Acquesta
+- 558385 - Alexia Ramalho
+- 557943 - Enzo Real
+- 555454 - Gustavo Pasquini
+- 559008 - Hellen Silva
+- 557397 - Lorenzo Acquesta
