@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "FordRetain",
+    "slug": "fordretain-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "fordretain",
+    "splash": {
+      "backgroundColor": "#1F3A6E"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "br.com.ford.fordretain"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#1F3A6E"
+      },
+      "package": "br.com.ford.fordretain"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

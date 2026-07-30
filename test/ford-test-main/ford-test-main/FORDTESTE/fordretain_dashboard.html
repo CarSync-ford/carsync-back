@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FordRetain — Dashboard Analítico</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg2: #161b22;
+    --bg3: #1c2230;
+    --card: #1e2736;
+    --border: #2d3748;
+    --blue: #1a73e8;
+    --blue2: #4da6ff;
+    --cyan: #00d4ff;
+    --green: #00e676;
+    --red: #ff4444;
+    --orange: #ff9800;
+    --yellow: #ffd600;
+    --text: #e8eaf0;
+    --muted: #8892a4;
+    --ford: #1F3A6E;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Arial, sans-serif; min-height: 100vh; }
+
+  /* TOPBAR */
+  .topbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 32px; height: 32px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color: #fff; }
+  .logo-text { font-size: 16px; font-weight: 700; color: #fff; }
+  .logo-sub { font-size: 11px; color: var(--muted); }
+  .nav-tabs { display: flex; gap: 4px; }
+  .tab { padding: 6px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; color: var(--muted); border: none; background: transparent; }
+  .tab.active { background: var(--blue); color: #fff; font-weight: 600; }
+  .tab:hover:not(.active) { background: var(--bg3); color: var(--text); }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .live-text { font-size: 12px; color: var(--green); }
+  .date-label { font-size: 12px; color: var(--muted); }
+
+  /* LAYOUT */
+  .content { padding: 20px 24px; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* KPIs */
+  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px; }
+  .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; position: relative; overflow: hidden; cursor: default; transition: border-color 0.2s; }
+  .kpi:hover { border-color: var(--blue); }
+  .kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .kpi.blue::before { background: var(--blue); }
+  .kpi.green::before { background: var(--green); }
+  .kpi.red::before { background: var(--red); }
+  .kpi.orange::before { background: var(--orange); }
+  .kpi.cyan::before { background: var(--cyan); }
+  .kpi-label { font-size: 11px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .kpi-value { font-size: 28px; font-weight: 700; line-height: 1; margin-bottom: 6px; }
+  .kpi-delta { font-size: 12px; display: flex; align-items: center; gap: 4px; }
+  .delta-up { color: var(--green); }
+  .delta-down { color: var(--red); }
+  .delta-neutral { color: var(--muted); }
+  .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* GRIDS */
+  .row-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .row-2-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .row-full { margin-bottom: 20px; }
+
+  /* CARDS */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .card-badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+  .badge-blue { background: rgba(26,115,232,0.2); color: var(--blue2); }
+  .badge-green { background: rgba(0,230,118,0.15); color: var(--green); }
+  .badge-red { background: rgba(255,68,68,0.15); color: var(--red); }
+  .badge-orange { background: rgba(255,152,0,0.15); color: var(--orange); }
+
+  /* CHART CONTAINERS */
+  .chart-wrap { position: relative; }
+
+  /* PROGRESS BARS */
+  .prog-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .prog-label { font-size: 12px; color: var(--muted); width: 100px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .prog-bar-bg { flex: 1; background: var(--bg3); border-radius: 4px; height: 6px; overflow: hidden; }
+  .prog-bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+  .prog-val { font-size: 12px; font-weight: 600; color: var(--text); width: 40px; text-align: right; flex-shrink: 0; }
+
+  /* TABLE */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .data-table th { text-align: left; padding: 8px 10px; color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+  .data-table td { padding: 9px 10px; border-bottom: 1px solid rgba(45,55,72,0.5); color: var(--text); }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+  .pill-red { background: rgba(255,68,68,0.2); color: var(--red); }
+  .pill-orange { background: rgba(255,152,0,0.2); color: var(--orange); }
+  .pill-green { background: rgba(0,230,118,0.2); color: var(--green); }
+  .pill-blue { background: rgba(26,115,232,0.2); color: var(--blue2); }
+
+  /* FILTER BAR */
+  .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+  .filter-label { font-size: 12px; color: var(--muted); }
+  .filter-select { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+  .filter-select:focus { outline: none; border-color: var(--blue); }
+  .filter-btn { background: var(--blue); color: #fff; border: none; padding: 6px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: 600; }
+  .filter-btn:hover { background: #1557b0; }
+
+  /* SCORE RING */
+  .score-rings { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .score-ring-item { text-align: center; }
+  .ring-wrap { position: relative; width: 80px; height: 80px; margin: 0 auto 8px; }
+  .ring-svg { transform: rotate(-90deg); }
+  .ring-track { fill: none; stroke: var(--bg3); stroke-width: 8; }
+  .ring-fill { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+  .ring-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 16px; font-weight: 700; }
+  .ring-name { font-size: 11px; color: var(--muted); }
+  .ring-pct { font-size: 13px; font-weight: 700; margin-top: 2px; }
+
+  /* DONUT CENTER */
+  .donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
+
+  /* TOOLTIP custom */
+  .tooltip-info { position: relative; display: inline-block; }
+
+  /* STAT NUMBER animado */
+  .stat-num { display: inline-block; }
+
+  /* SCROLL */
+  .scroll-table { max-height: 260px; overflow-y: auto; }
+  .scroll-table::-webkit-scrollbar { width: 4px; }
+  .scroll-table::-webkit-scrollbar-track { background: var(--bg2); }
+  .scroll-table::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* MINI SPARKLINE */
+  canvas.sparkline { display: block; }
+
+  /* SECTION DIVIDER */
+  .section-div { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+
+  /* ALERT CARDS */
+  .alert-list { display: flex; flex-direction: column; gap: 8px; }
+  .alert-item { background: var(--bg3); border-radius: 8px; padding: 10px 12px; display: flex; gap: 10px; align-items: flex-start; border-left: 3px solid; }
+  .alert-item.red { border-color: var(--red); }
+  .alert-item.orange { border-color: var(--orange); }
+  .alert-item.green { border-color: var(--green); }
+  .alert-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .alert-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .alert-text { font-size: 11px; color: var(--muted); }
+
+  /* RESPONSIVE */
+  /* ===== GRIDS NOMEADOS (responsivos via classe) ===== */
+  .roi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; align-items: center; }
+  .mapa-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: start; }
+
+  /* ===== RESPONSIVO — Tablet largo (≤ 1100px) ===== */
+  @media(max-width:1100px) {
+    .kpi-row  { grid-template-columns: repeat(3,1fr); }
+    .row-3    { grid-template-columns: 1fr 1fr; }
+    .roi-grid { grid-template-columns: repeat(2,1fr); }
+  }
+
+  /* ===== RESPONSIVO — Tablet (≤ 768px) ===== */
+  @media(max-width:768px) {
+    .kpi-row              { grid-template-columns: repeat(2,1fr); gap: 10px; }
+    .row-2,.row-2-3,.row-3 { grid-template-columns: 1fr; }
+    .roi-grid             { grid-template-columns: repeat(2,1fr); gap: 12px; }
+    .mapa-grid            { grid-template-columns: 1fr; }
+    .score-rings          { grid-template-columns: repeat(2,1fr); }
+    .content              { padding: 14px 14px; }
+    .chart-wrap           { height: 200px !important; }
+  }
+
+  /* ===== RESPONSIVO — Mobile (≤ 540px) ===== */
+  @media(max-width:540px) {
+    /* Topbar mobile: logo à esquerda + hamburger à direita */
+    .topbar {
+      height: 52px;
+      flex-direction: row;
+      align-items: center;
+      padding: 0 14px;
+      gap: 8px;
+    }
+    .logo { flex: 1; }
+    .logo-sub { display: none; }
+    .nav-tabs { display: none; }
+    .topbar-right { display: none; }
+    .hamburger-btn { display: flex !important; }
+    .tab { white-space: nowrap; padding: 5px 12px; font-size: 12px; }
+
+    /* KPIs */
+    .kpi-row  { grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 12px; }
+    .kpi      { padding: 12px 12px; }
+    .kpi-value { font-size: 21px; }
+    .kpi-label { font-size: 10px; margin-bottom: 5px; }
+    .kpi-sub, .kpi-delta { font-size: 10px; }
+
+    /* ROI card */
+    .roi-grid { grid-template-columns: repeat(2,1fr); gap: 10px; }
+    .roi-grid > div:first-child { grid-column: 1 / -1; }
+
+    /* Layout */
+    .content { padding: 10px; }
+    .card    { padding: 13px; }
+    .card-header { flex-wrap: wrap; gap: 6px; }
+    .card-badge  { font-size: 10px; padding: 2px 8px; }
+
+    /* Charts menores no celular */
+    .chart-wrap { height: 180px !important; }
+
+    /* Filtros empilhados */
+    .filter-bar    { flex-direction: column; align-items: stretch; gap: 8px; }
+    .filter-select { width: 100%; }
+    .filter-btn    { width: 100%; text-align: center; }
+
+    /* Score rings: 2x2 */
+    .score-rings { grid-template-columns: repeat(2,1fr); gap: 10px; }
+    .ring-wrap   { width: 68px; height: 68px; }
+    .ring-label  { font-size: 14px; }
+    .ring-name   { font-size: 10px; }
+    .ring-pct    { font-size: 12px; }
+
+    /* Progress bars */
+    .prog-label { width: 72px; font-size: 11px; }
+    .prog-val   { width: 36px; font-size: 11px; }
+
+    /* Tabelas */
+    .data-table   { font-size: 11px; }
+    .data-table th, .data-table td { padding: 6px 8px; }
+    .scroll-table { max-height: 200px; }
+
+    /* Mapa: empilhado */
+    .mapa-grid { grid-template-columns: 1fr; }
+    .mapa-grid > div:first-child { height: 240px !important; }
+
+    /* Section dividers */
+    .section-div { font-size: 10px; }
+
+    /* Alert items */
+    .alert-title { font-size: 11px; }
+    .alert-text  { font-size: 10px; }
+
+    /* Janelas críticas */
+    #janelasCriticas [style*="width:108px"] { width: 80px !important; font-size: 10px !important; }
+  }
+
+  /* ===== RESPONSIVO — Mobile pequeno (≤ 380px) ===== */
+  @media(max-width:380px) {
+    .kpi-row   { grid-template-columns: repeat(2,1fr); }
+    .roi-grid  { grid-template-columns: 1fr; }
+    .kpi-value { font-size: 19px; }
+    .chart-wrap { height: 160px !important; }
+  }
+
+  /* ===== HAMBURGER BUTTON ===== */
+  .hamburger-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .hamburger-btn:hover { background: var(--bg3); }
+
+  /* ===== MOBILE NAV DRAWER ===== */
+  .mobile-nav {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+  }
+  .mobile-nav.open { display: block; }
+  .mobile-nav-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+  }
+  .mobile-nav-panel {
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: min(260px, 80vw);
+    background: var(--bg2);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    animation: slideInNav 0.22s ease;
+  }
+  @keyframes slideInNav {
+    from { transform: translateX(100%); }
+    to   { transform: translateX(0); }
+  }
+  .mobile-nav-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-nav-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .mobile-nav-close {
+    background: none; border: none;
+    color: var(--muted); font-size: 22px;
+    cursor: pointer; padding: 0 4px;
+    line-height: 1; border-radius: 4px;
+  }
+  .mobile-nav-close:hover { color: var(--text); background: var(--bg3); }
+  .mobile-nav-items {
+    padding: 12px; display: flex;
+    flex-direction: column; gap: 4px; flex: 1;
+  }
+  .mobile-nav-items .tab {
+    display: block; width: 100%;
+    text-align: left; padding: 11px 14px;
+    font-size: 14px; border-radius: 8px; margin: 0;
+  }
+  .mobile-nav-footer {
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* ===== TOPBAR — Tablet (541–900px) ===== */
+  @media(max-width:900px) and (min-width:541px) {
+    .topbar {
+      flex-wrap: wrap;
+      height: auto;
+      padding: 10px 16px 8px;
+      column-gap: 12px;
+      row-gap: 0;
+    }
+    .logo { flex: 1; }
+    .topbar-right { order: 2; flex-shrink: 0; }
+    .nav-tabs {
+      order: 3; width: 100%;
+      overflow-x: auto; flex-wrap: nowrap;
+      scrollbar-width: none; -webkit-overflow-scrolling: touch;
+      padding: 8px 0 4px;
+      border-top: 1px solid var(--border);
+      gap: 2px;
+    }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">FR</div>
+    <div>
+      <div class="logo-text">FordRetain</div>
+      <div class="logo-sub">Dashboard Analítico · Rede Brasil</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="tab active" onclick="showPage('visao-geral', this)">Visão Geral</button>
+    <button class="tab" onclick="showPage('modelos', this)">Modelos</button>
+    <button class="tab" onclick="showPage('retencao', this)">Retenção & Risco</button>
+    <button class="tab" onclick="showPage('concessionarias', this)">Concessionárias</button>
+  </div>
+  <div class="topbar-right">
+    <div class="live-dot"></div>
+    <span class="live-text">Ao vivo</span>
+    <span class="date-label">Dados: Jan 2022 – Set 2025</span>
+  </div>
+  <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileNav()" aria-label="Abrir menu">&#9776;</button>
+</div>
+
+<!-- Mobile Navigation Drawer -->
+<div class="mobile-nav" id="mobileNav">
+  <div class="mobile-nav-overlay" onclick="toggleMobileNav()"></div>
+  <div class="mobile-nav-panel">
+    <div class="mobile-nav-head">
+      <span class="mobile-nav-title">FordRetain</span>
+      <button class="mobile-nav-close" onclick="toggleMobileNav()">&#x2715;</button>
+    </div>
+    <div class="mobile-nav-items">
+      <button class="tab active" onclick="navMobileTo('visao-geral',0)">Visao Geral</button>
+      <button class="tab" onclick="navMobileTo('modelos',1)">Modelos</button>
+      <button class="tab" onclick="navMobileTo('retencao',2)">Retencao &amp; Risco</button>
+      <button class="tab" onclick="navMobileTo('concessionarias',3)">Concessionarias</button>
+    </div>
+    <div class="mobile-nav-footer">
+      <div class="live-dot"></div>
+      <span style="font-size:12px;color:var(--green)">Ao vivo</span>
+      <span style="font-size:11px;color:var(--muted);margin-left:8px">Jan 2022 – Set 2025</span>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- ========== VISÃO GERAL ========== -->
+  <div class="page active" id="visao-geral">
+
+    <div class="filter-bar">
+      <span class="filter-label">Período:</span>
+      <select class="filter-select" id="filtro-ano" onchange="atualizarFiltro()">
+        <option value="todos">Todos (2022–2025)</option>
+        <option value="2022">2022</option>
+        <option value="2023">2023</option>
+        <option value="2024">2024</option>
+        <option value="2025">2025</option>
+      </select>
+      <span class="filter-label">Modelo:</span>
+      <select class="filter-select" id="filtro-modelo" onchange="atualizarFiltro()">
+        <option value="todos">Todos os modelos</option>
+        <option>RANGER</option>
+        <option>KA</option>
+        <option>ECOSPORT</option>
+        <option>TERRITORY</option>
+        <option>BRONCO SPORT</option>
+        <option>MAVERICK</option>
+        <option>TRANSIT</option>
+        <option>F-150</option>
+        <option>MUSTANG</option>
+      </select>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi blue">
+        <div class="kpi-label">Total de Revisões</div>
+        <div class="kpi-value" style="color:#4da6ff">501.925</div>
+        <div class="kpi-delta delta-up">▲ +46% vs 2022</div>
+        <div class="kpi-sub">Jan 2022 – Set 2025</div>
+      </div>
+      <div class="kpi green">
+        <div class="kpi-label">VINs Únicos</div>
+        <div class="kpi-value" style="color:#00e676">151.608</div>
+        <div class="kpi-delta delta-neutral">435 concessionárias</div>
+        <div class="kpi-sub">Veículos na rede</div>
+      </div>
+      <div class="kpi red">
+        <div class="kpi-label">Taxa de Abandono</div>
+        <div class="kpi-value" style="color:#ff4444">29,9%</div>
+        <div class="kpi-delta delta-down">▼ 45.316 VINs (só 1 revisão)</div>
+        <div class="kpi-sub">Prioridade de ação</div>
+      </div>
+      <div class="kpi orange">
+        <div class="kpi-label">Revisões / VIN Médio</div>
+        <div class="kpi-value" style="color:#ff9800">3,31</div>
+        <div class="kpi-delta delta-neutral">Mediana: 3 revisões</div>
+        <div class="kpi-sub">Ciclo de vida</div>
+      </div>
+      <div class="kpi cyan">
+        <div class="kpi-label">Crescimento 2025</div>
+        <div class="kpi-value" style="color:#00d4ff">+38%</div>
+        <div class="kpi-delta delta-up">▲ vs 2024</div>
+        <div class="kpi-sub">Revisões/trimestre</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;border-left:4px solid var(--green);background:linear-gradient(135deg,#1e2736,#162430)">
+      <div class="roi-grid">
+        <div>
+          <div class="kpi-label">Receita em risco (rede)</div>
+          <div style="font-size:28px;font-weight:900;color:var(--red)">R$ 17,2M</div>
+          <div style="font-size:11px;color:var(--muted)">45.316 VINs × R$ 380 ticket médio</div>
+        </div>
+        <div>
+          <div class="kpi-label">Recuperar 15%</div>
+          <div style="font-size:22px;font-weight:700;color:var(--orange)">R$ 2,58M</div>
+          <div style="font-size:11px;color:var(--muted)">6.797 clientes retidos</div>
+        </div>
+        <div>
+          <div class="kpi-label">Recuperar 20%</div>
+          <div style="font-size:22px;font-weight:700;color:#ffd600">R$ 3,44M</div>
+          <div style="font-size:11px;color:var(--muted)">9.063 clientes retidos</div>
+        </div>
+        <div>
+          <div class="kpi-label">Recuperar 30%</div>
+          <div style="font-size:22px;font-weight:700;color:var(--green)">R$ 5,16M</div>
+          <div style="font-size:11px;color:var(--muted)">13.595 clientes retidos</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Simulador — arraste para calcular o retorno:</div>
+        <div style="display:flex;align-items:center;gap:14px">
+          <input type="range" id="roiSlider" min="5" max="50" value="20" style="flex:1;accent-color:var(--green)" oninput="atualizarROI(this.value)">
+          <div>
+            <span style="font-size:11px;color:var(--muted)">Recuperar </span>
+            <span id="roiPct" style="font-size:16px;font-weight:700;color:var(--green)">20%</span>
+            <span style="font-size:11px;color:var(--muted)"> = </span>
+            <span id="roiValor" style="font-size:18px;font-weight:700;color:var(--green)">R$ 3,44M</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row-3">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Revisões por Mês — Tendência da Rede</span>
+          <span class="card-badge badge-blue">2023–2025</span>
+        </div>
+        <div class="chart-wrap" style="height:200px">
+          <canvas id="chartLineMes"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Revisões por Trimestre</span>
+          <span class="card-badge badge-green">Crescimento</span>
+        </div>
+        <div class="chart-wrap" style="height:200px">
+          <canvas id="chartBarTrimestre"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Fonte dos Atendimentos</span>
+          <span class="card-badge badge-blue">MainSource</span>
+        </div>
+        <div style="position:relative; height:200px;">
+          <canvas id="chartDonutSource"></canvas>
+          <div class="donut-center" id="donut-center-source">
+            <div style="font-size:22px;font-weight:700;color:#4da6ff">501k</div>
+            <div style="font-size:10px;color:var(--muted)">total</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Volume por Modelo</span>
+          <span class="card-badge badge-blue">Top 9 modelos</span>
+        </div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="chartBarModelo"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Distribuição por Ano do Veículo</span>
+          <span class="card-badge badge-blue">ModelYear</span>
+        </div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="chartBarAno"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="row-2-3">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Alertas & Insights</span>
+          <span class="card-badge badge-red">3 críticos</span>
+        </div>
+        <div class="alert-list">
+          <div class="alert-item red">
+            <div class="alert-dot" style="background:var(--red)"></div>
+            <div>
+              <div class="alert-title">29,9% dos clientes abandonaram após 1ª revisão</div>
+              <div class="alert-text">45.316 VINs nunca retornaram. Maverick lidera abandono com 52,5%.</div>
+            </div>
+          </div>
+          <div class="alert-item orange">
+            <div class="alert-dot" style="background:var(--orange)"></div>
+            <div>
+              <div class="alert-title">Territory e Mustang com alto risco pós-garantia</div>
+              <div class="alert-text">44% de abandono no Mustang. Janela crítica: entre 12-18 meses após compra.</div>
+            </div>
+          </div>
+          <div class="alert-item green">
+            <div class="alert-dot" style="background:var(--green)"></div>
+            <div>
+              <div class="alert-title">Crescimento acelerado em 2025 (+38% vs 2024)</div>
+              <div class="alert-text">Q3 2025 atingiu 39.890 revisões — recorde histórico da série.</div>
+            </div>
+          </div>
+          <div class="alert-item orange">
+            <div class="alert-dot" style="background:var(--orange)"></div>
+            <div>
+              <div class="alert-title">EcoSport com melhor retenção relativa (21,7%)</div>
+              <div class="alert-text">Modelo mais antigo da frota mas com menor taxa de abandono. Padrão a replicar.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Quilometragem Mediana por Revisão</span>
+          <span class="card-badge badge-cyan" style="background:rgba(0,212,255,0.15);color:var(--cyan)">Ciclo de vida</span>
+        </div>
+        <div class="chart-wrap" style="height:240px">
+          <canvas id="chartLineKm"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========== MODELOS ========== -->
+  <div class="page" id="modelos">
+    <div class="kpi-row">
+      <div class="kpi blue"><div class="kpi-label">Modelo Líder</div><div class="kpi-value" style="color:#4da6ff;font-size:22px">RANGER</div><div class="kpi-delta delta-up">267.623 revisões · 53,3%</div></div>
+      <div class="kpi green"><div class="kpi-label">Melhor Retenção</div><div class="kpi-value" style="color:#00e676;font-size:22px">CARGO</div><div class="kpi-delta delta-up">5,6% abandono</div></div>
+      <div class="kpi red"><div class="kpi-label">Pior Retenção</div><div class="kpi-value" style="color:#ff4444;font-size:22px">MAVERICK</div><div class="kpi-delta delta-down">52,5% abandono</div></div>
+      <div class="kpi orange"><div class="kpi-label">Crescimento 2024→2025</div><div class="kpi-value" style="color:#ff9800">+30%</div><div class="kpi-delta delta-up">Ranger puxa crescimento</div></div>
+      <div class="kpi cyan"><div class="kpi-label">KM Médio 1ª Revisão</div><div class="kpi-value" style="color:#00d4ff">10.340</div><div class="kpi-delta delta-neutral">km medianos</div></div>
+    </div>
+
+    <div class="row-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Revisões por Modelo — Comparativo</span><span class="card-badge badge-blue">Volume total</span></div>
+        <div class="chart-wrap" style="height:280px"><canvas id="chartHBarModelo"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Taxa de Abandono por Modelo</span><span class="card-badge badge-red">% VINs com apenas 1 revisão</span></div>
+        <div class="chart-wrap" style="height:280px"><canvas id="chartAbandonoModelo"></canvas></div>
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Share de Revisões por Modelo</span><span class="card-badge badge-blue">Composição</span></div>
+        <div style="position:relative;height:260px;">
+          <canvas id="chartPieModelo"></canvas>
+          <div class="donut-center"><div style="font-size:18px;font-weight:700;color:#4da6ff">9</div><div style="font-size:10px;color:var(--muted)">modelos</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Tabela de Performance por Modelo</span></div>
+        <div class="scroll-table">
+          <table class="data-table">
+            <thead><tr><th>Modelo</th><th>Revisões</th><th>VINs</th><th>Abandono</th><th>Status</th></tr></thead>
+            <tbody id="tabelaModelos"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Dias Médios até o Abandono — por Modelo</span>
+          <span class="card-badge badge-red">Janela de intervenção</span>
+        </div>
+        <div class="chart-wrap" style="height:280px"><canvas id="chartDiasAbandono"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Janela Crítica de Intervenção</span>
+          <span class="card-badge badge-orange">Quando agir por modelo</span>
+        </div>
+        <div id="janelasCriticas" style="margin-top:6px"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========== RETENÇÃO & RISCO ========== -->
+  <div class="page" id="retencao">
+    <div class="kpi-row">
+      <div class="kpi red"><div class="kpi-label">Abandono Geral</div><div class="kpi-value" style="color:#ff4444">29,9%</div><div class="kpi-delta delta-down">45.316 VINs perdidos</div></div>
+      <div class="kpi green"><div class="kpi-label">Taxa de Retenção</div><div class="kpi-value" style="color:#00e676">70,1%</div><div class="kpi-delta delta-up">106.292 VINs retidos</div></div>
+      <div class="kpi blue"><div class="kpi-label">2ª Revisão (Conversão)</div><div class="kpi-value" style="color:#4da6ff">70,1%</div><div class="kpi-delta delta-neutral">de 1ª → 2ª revisão</div></div>
+      <div class="kpi orange"><div class="kpi-label">3ª Revisão (Retenção)</div><div class="kpi-value" style="color:#ff9800">47,4%</div><div class="kpi-delta delta-neutral">de 1ª → 3ª revisão</div></div>
+      <div class="kpi cyan"><div class="kpi-label">Clientes Fiéis (5+)</div><div class="kpi-value" style="color:#00d4ff">18,7%</div><div class="kpi-delta delta-neutral">5 ou mais revisões</div></div>
+    </div>
+
+    <div class="row-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Funil de Retenção — Jornada do Cliente</span><span class="card-badge badge-red">Onde perdemos</span></div>
+        <div class="chart-wrap" style="height:260px"><canvas id="chartFunil"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Perfis Comportamentais (IA)</span><span class="card-badge badge-blue">Estimativa</span></div>
+        <div class="score-rings">
+          <div class="score-ring-item">
+            <div class="ring-wrap">
+              <svg class="ring-svg" viewBox="0 0 80 80" width="80" height="80">
+                <circle class="ring-track" cx="40" cy="40" r="32"/>
+                <circle class="ring-fill" cx="40" cy="40" r="32" stroke="#00e676" stroke-dasharray="201.1" stroke-dashoffset="50" id="ring-fiel"/>
+              </svg>
+              <div class="ring-label" style="color:#00e676">62%</div>
+            </div>
+            <div class="ring-name">Fiel</div>
+            <div class="ring-pct" style="color:#00e676">Retorna sempre</div>
+          </div>
+          <div class="score-ring-item">
+            <div class="ring-wrap">
+              <svg class="ring-svg" viewBox="0 0 80 80" width="80" height="80">
+                <circle class="ring-track" cx="40" cy="40" r="32"/>
+                <circle class="ring-fill" cx="40" cy="40" r="32" stroke="#ff9800" stroke-dasharray="201.1" stroke-dashoffset="163" id="ring-eco"/>
+              </svg>
+              <div class="ring-label" style="color:#ff9800">19%</div>
+            </div>
+            <div class="ring-name">Econômico</div>
+            <div class="ring-pct" style="color:#ff9800">Sensível a preço</div>
+          </div>
+          <div class="score-ring-item">
+            <div class="ring-wrap">
+              <svg class="ring-svg" viewBox="0 0 80 80" width="80" height="80">
+                <circle class="ring-track" cx="40" cy="40" r="32"/>
+                <circle class="ring-fill" cx="40" cy="40" r="32" stroke="#4da6ff" stroke-dasharray="201.1" stroke-dashoffset="177" id="ring-esq"/>
+              </svg>
+              <div class="ring-label" style="color:#4da6ff">12%</div>
+            </div>
+            <div class="ring-name">Esquecido</div>
+            <div class="ring-pct" style="color:#4da6ff">Perde o timing</div>
+          </div>
+          <div class="score-ring-item">
+            <div class="ring-wrap">
+              <svg class="ring-svg" viewBox="0 0 80 80" width="80" height="80">
+                <circle class="ring-track" cx="40" cy="40" r="32"/>
+                <circle class="ring-fill" cx="40" cy="40" r="32" stroke="#ff4444" stroke-dasharray="201.1" stroke-dashoffset="187" id="ring-ab"/>
+              </svg>
+              <div class="ring-label" style="color:#ff4444">7%</div>
+            </div>
+            <div class="ring-name">Abandono</div>
+            <div class="ring-pct" style="color:#ff4444">Sai na garantia</div>
+          </div>
+        </div>
+        <div style="margin-top:16px">
+          <div class="section-div">Ação recomendada por perfil</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.8">
+            <span style="color:#00e676">●</span> <b>Fiel:</b> Programa de fidelidade + VIP<br>
+            <span style="color:#ff9800">●</span> <b>Econômico:</b> Desconto 15-20% no timing certo<br>
+            <span style="color:#4da6ff">●</span> <b>Esquecido:</b> Lembrete humanizado + agendamento fácil<br>
+            <span style="color:#ff4444">●</span> <b>Abandono:</b> Oferta antes da garantia vencer
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Abandono por Modelo — Ranking</span><span class="card-badge badge-red">% com 1 revisão</span></div>
+        <div style="margin-top:4px">
+          <div class="prog-row"><span class="prog-label">CARGO</span><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:5.6%;background:#00e676"></div></div><span class="prog-val" style="color:#00e676">5,6%</span></div>
+          <div class="prog-row"><span class="prog-label">ECOSPORT</span><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:21.7%;background:#00e676"></div></div><span class="prog-val" style="color:#00e676">21,7%</span></div>
+          <div class="prog-row"><span class="prog-label">KA</span><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:26.9%;background:#4da6ff"></div></div><span class="prog-val" style="color:#4da6ff">26,9%</span></div>
+          <div class="prog-row"><span class="prog-label">RANGER</span><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:29.7%;background:#4da6ff"></div></div><span class="prog-val" style="color:#4da6ff">29,7%</span></div>
+          <div class="prog-row"><span class="prog-label">F-150</span><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:35.3%;background:#ff9800"></div></div><span class="prog-val" style="color:#ff9800">35,3%</span></div>
+          <div class="prog-row"><span class="prog-label">BRONCO SPORT</span><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:37.9%;background:#ff9800"></div></div><span class="prog-val" style="color:#ff9800">37,9%</span></div>
+          <div class="prog-row"><span class="prog-label">TRANSIT</span><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:41.2%;background:#ff9800"></div></div><span class="prog-val" style="color:#ff9800">41,2%</span></div>
+          <div class="prog-row"><span class="prog-label">TERRITORY</span><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:42.3%;background:#ff4444"></div></div><span class="prog-val" style="color:#ff4444">42,3%</span></div>
+          <div class="prog-row"><span class="prog-label">MUSTANG</span><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:44.3%;background:#ff4444"></div></div><span class="prog-val" style="color:#ff4444">44,3%</span></div>
+          <div class="prog-row"><span class="prog-label">MAVERICK</span><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:52.5%;background:#ff4444"></div></div><span class="prog-val" style="color:#ff4444">52,5%</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Distribuição de Revisões por VIN</span><span class="card-badge badge-blue">Frequência</span></div>
+        <div class="chart-wrap" style="height:260px"><canvas id="chartDistRev"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== CONCESSIONÁRIAS ========== -->
+  <div class="page" id="concessionarias">
+    <div class="kpi-row">
+      <div class="kpi blue"><div class="kpi-label">Concessionárias Ativas</div><div class="kpi-value" style="color:#4da6ff">435</div><div class="kpi-delta delta-neutral">Rede Brasil</div></div>
+      <div class="kpi green"><div class="kpi-label">Top Dealer (5094)</div><div class="kpi-value" style="color:#00e676">14.463</div><div class="kpi-delta delta-up">Revisões totais</div></div>
+      <div class="kpi orange"><div class="kpi-label">Média por Dealer</div><div class="kpi-value" style="color:#ff9800">1.153</div><div class="kpi-delta delta-neutral">revisões/concessionária</div></div>
+      <div class="kpi red"><div class="kpi-label">Dealers com &lt;100</div><div class="kpi-value" style="color:#ff4444">~30%</div><div class="kpi-delta delta-down">Baixo volume</div></div>
+      <div class="kpi cyan"><div class="kpi-label">Agenda + Oficial</div><div class="kpi-value" style="color:#00d4ff">85,9%</div><div class="kpi-delta delta-up">Maior canal</div></div>
+    </div>
+
+    <div class="row-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Top 15 Concessionárias por Volume</span><span class="card-badge badge-blue">Revisões totais</span></div>
+        <div class="chart-wrap" style="height:300px"><canvas id="chartTopDealers"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Tabela — Top 15 Dealers</span></div>
+        <div class="scroll-table">
+          <table class="data-table">
+            <thead><tr><th>Rank</th><th>Dealer</th><th>Revisões</th><th>Share</th><th>Status</th></tr></thead>
+            <tbody id="tabelaDealers"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Canais de Atendimento</span><span class="card-badge badge-blue">MainSource</span></div>
+        <div style="position:relative;height:260px">
+          <canvas id="chartCanalDealers"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Concentração da Rede</span><span class="card-badge badge-orange">Top vs restante</span></div>
+        <div style="margin-top:8px">
+          <div class="section-div">Volume por grupo de dealers</div>
+          <div class="prog-row"><span class="prog-label">Top 10 dealers</span><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:20%;background:#4da6ff"></div></div><span class="prog-val" style="color:#4da6ff">20%</span></div>
+          <div class="prog-row"><span class="prog-label">Top 50 dealers</span><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:52%;background:#ff9800"></div></div><span class="prog-val" style="color:#ff9800">52%</span></div>
+          <div class="prog-row"><span class="prog-label">Top 100 dealers</span><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:72%;background:#ff9800"></div></div><span class="prog-val" style="color:#ff9800">72%</span></div>
+          <div class="prog-row"><span class="prog-label">Demais 335</span><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:28%;background:var(--border)"></div></div><span class="prog-val" style="color:var(--muted)">28%</span></div>
+          <div style="margin-top:16px;font-size:11px;color:var(--muted);line-height:1.8">
+            <div class="section-div">Insight de concentração</div>
+            Os 10 maiores dealers respondem por 20% de todas as revisões.<br>
+            Focar o FordRetain nos Top 50 dealers cobre mais da metade da rede.<br><br>
+            <span style="color:#ff4444">⚠ Risco:</span> Alta concentração significa que queda em poucos dealers afeta muito o Service Share geral.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row-full">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Mapa de Calor — Risco de Abandono por Estado</span>
+          <span class="card-badge badge-red">Distribuição geográfica da rede</span>
+        </div>
+        <div class="mapa-grid">
+          <div style="position:relative;height:380px"><canvas id="chartMapaBrasil"></canvas></div>
+          <div>
+            <div class="section-div" style="margin-bottom:12px">Abandono por Macro-Região</div>
+            <div id="regioesList"></div>
+            <div style="margin-top:16px">
+              <div class="section-div">Legenda de risco</div>
+              <div style="font-size:11px;color:var(--muted);line-height:2.4">
+                <span style="color:var(--green)">●</span> &lt;27% — Baixo risco<br>
+                <span style="color:var(--blue2)">●</span> 27–32% — Moderado<br>
+                <span style="color:var(--orange)">●</span> 32–38% — Alto risco<br>
+                <span style="color:var(--red)">●</span> &gt;38% — Crítico
+              </div>
+              <div style="margin-top:12px;font-size:10px;color:var(--muted);line-height:1.8">
+                Tamanho do círculo = n° de dealers<br>
+                Posição ≈ localização geográfica
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+// ====== DADOS REAIS FORD ======
+const DATA = {
+  meses: ['Jan/23','Fev/23','Mar/23','Abr/23','Mai/23','Jun/23','Jul/23','Ago/23','Set/23','Out/23','Nov/23','Dez/23','Jan/24','Fev/24','Mar/24','Abr/24','Mai/24','Jun/24','Jul/24','Ago/24','Set/24','Out/24','Nov/24','Dez/24','Jan/25','Fev/25','Mar/25','Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25'],
+  revisoesMes: [8287,6629,8030,6474,7632,7367,7950,8224,7603,8041,8056,8265,9021,7516,7856,8572,8269,8073,9464,9139,8715,10522,9815,10528,12183,10748,10791,11682,12087,11545,13821,12811,13258],
+  trimestres: ['2022Q1','2022Q2','2022Q3','2022Q4','2023Q1','2023Q2','2023Q3','2023Q4','2024Q1','2024Q2','2024Q3','2024Q4','2025Q1','2025Q2','2025Q3'],
+  revTrimestres: [22906,20142,22260,22824,22946,21473,23777,24362,24393,24914,27318,30865,33722,35314,39890],
+  modelos: ['RANGER','KA','ECOSPORT','TERRITORY','BRONCO SPORT','MAVERICK','TRANSIT','F-150','MUSTANG'],
+  volModelos: [267623,130828,44092,18467,13114,10959,9478,3668,2515],
+  abandModelos: [29.7,26.9,21.7,42.3,37.9,52.5,41.2,35.3,44.3],
+  anosModelo: ['2020','2021','2022','2023','2024','2025'],
+  volAnos: [116364,129114,64685,103671,66279,18806],
+  kmRev: [10340,20323,30311,40388,50446,60508,70572,80577,90674,100637],
+  freqRev: [49882,39881,30604,17075,12599,6884,4625,3547,2322,1949],
+  diasAbandonoLabels: ['MAVERICK','MUSTANG','TERRITORY','TRANSIT','BRONCO SPORT','F-150','RANGER','KA','ECOSPORT'],
+  diasAbandonoVals: [156,171,188,194,228,242,289,311,387],
+  dealers: [5094,6137,4005,4001,4146,1247,4176,6163,5121,5292,6689,6177,5288,5010,6139],
+  volDealers: [14463,10895,10817,10312,8985,8792,8169,8012,7869,7671,7627,7558,7219,6824,6610],
+};
+
+const COLORS = {
+  blue: '#1a73e8', blue2: '#4da6ff', cyan: '#00d4ff',
+  green: '#00e676', red: '#ff4444', orange: '#ff9800',
+  yellow: '#ffd600', purple: '#b388ff', muted: '#8892a4',
+  bg3: '#1c2230', border: '#2d3748'
+};
+
+Chart.defaults.color = COLORS.muted;
+Chart.defaults.borderColor = COLORS.border;
+Chart.defaults.font.family = 'Segoe UI, Arial, sans-serif';
+Chart.defaults.font.size = 11;
+
+const grad = (ctx, c1, c2, h=1) => {
+  const g = ctx.createLinearGradient(0,0,0,h*300);
+  g.addColorStop(0, c1); g.addColorStop(1, c2); return g;
+};
+
+// ====== CHART 1: Linha por mês ======
+new Chart(document.getElementById('chartLineMes'), {
+  type: 'line',
+  data: {
+    labels: DATA.meses,
+    datasets: [{
+      label: 'Revisões',
+      data: DATA.revisoesMes,
+      borderColor: COLORS.blue2,
+      backgroundColor: (ctx) => {
+        const g = ctx.chart.ctx.createLinearGradient(0,0,0,200);
+        g.addColorStop(0,'rgba(77,166,255,0.3)'); g.addColorStop(1,'rgba(77,166,255,0)'); return g;
+      },
+      fill: true, tension: 0.4, pointRadius: 2, pointHoverRadius: 5,
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false,
+      callbacks: { label: ctx => `${ctx.parsed.y.toLocaleString('pt-BR')} revisões` } }},
+    scales: {
+      x: { grid: { color: 'rgba(45,55,72,0.5)' }, ticks: { maxTicksLimit: 8, font:{size:10} } },
+      y: { grid: { color: 'rgba(45,55,72,0.5)' }, ticks: { callback: v => v.toLocaleString('pt-BR') } }
+    }
+  }
+});
+
+// ====== CHART 2: Bar Trimestre ======
+const corsTri = DATA.revTrimestres.map((v,i) =>
+  i < 4 ? COLORS.muted : i < 8 ? COLORS.blue : i < 12 ? COLORS.blue2 : COLORS.cyan
+);
+new Chart(document.getElementById('chartBarTrimestre'), {
+  type: 'bar',
+  data: {
+    labels: DATA.trimestres,
+    datasets: [{
+      data: DATA.revTrimestres, backgroundColor: corsTri,
+      borderRadius: 4, borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      callbacks: { label: ctx => `${ctx.parsed.y.toLocaleString('pt-BR')} revisões` }}},
+    scales: {
+      x: { grid: { display: false }, ticks: { font:{size:9}, maxRotation: 45 } },
+      y: { grid: { color: 'rgba(45,55,72,0.4)' }, ticks: { callback: v => (v/1000).toFixed(0)+'k' } }
+    }
+  }
+});
+
+// ====== CHART 3: Donut Source ======
+new Chart(document.getElementById('chartDonutSource'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Agenda + Oficial','Agenda + Oficial + GUDB','Só Oficial','Oficial + GUDB'],
+    datasets: [{ data: [431160,135842,32683,3103],
+      backgroundColor: [COLORS.blue2, COLORS.cyan, COLORS.blue, COLORS.purple],
+      borderColor: '#1e2736', borderWidth: 2, hoverOffset: 6 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '68%',
+    plugins: { legend: { position: 'bottom', labels: { font:{size:10}, boxWidth: 10, padding: 8 }},
+      tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed.toLocaleString('pt-BR')}` }}}
+  }
+});
+
+// ====== CHART 4: Bar Modelos ======
+new Chart(document.getElementById('chartBarModelo'), {
+  type: 'bar',
+  data: {
+    labels: DATA.modelos,
+    datasets: [{
+      label: 'Revisões',
+      data: DATA.volModelos,
+      backgroundColor: [COLORS.blue2,COLORS.cyan,'#7c83fd',COLORS.orange,COLORS.green,COLORS.red,COLORS.yellow,COLORS.purple,'#ff6b9d'],
+      borderRadius: 5, borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      callbacks: { label: ctx => `${ctx.parsed.y.toLocaleString('pt-BR')} revisões` }}},
+    scales: {
+      x: { grid: { display: false }, ticks: { font:{size:10} } },
+      y: { grid: { color: 'rgba(45,55,72,0.4)' }, ticks: { callback: v => (v/1000).toFixed(0)+'k' } }
+    }
+  }
+});
+
+// ====== CHART 5: Bar Ano ======
+new Chart(document.getElementById('chartBarAno'), {
+  type: 'bar',
+  data: {
+    labels: DATA.anosModelo,
+    datasets: [{
+      data: DATA.volAnos,
+      backgroundColor: DATA.volAnos.map((v,i) => i===1?COLORS.blue2:COLORS.blue),
+      borderRadius: 5, borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      callbacks: { label: ctx => `${ctx.parsed.y.toLocaleString('pt-BR')} revisões` }}},
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { color: 'rgba(45,55,72,0.4)' }, ticks: { callback: v => (v/1000).toFixed(0)+'k' } }
+    }
+  }
+});
+
+// ====== CHART 6: KM por revisão ======
+new Chart(document.getElementById('chartLineKm'), {
+  type: 'line',
+  data: {
+    labels: ['1ª','2ª','3ª','4ª','5ª','6ª','7ª','8ª','9ª','10ª'],
+    datasets: [{
+      label: 'KM mediano',
+      data: DATA.kmRev,
+      borderColor: COLORS.cyan, backgroundColor: 'transparent',
+      tension: 0.1, pointBackgroundColor: COLORS.cyan,
+      pointRadius: 5, borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      callbacks: { label: ctx => `${ctx.parsed.y.toLocaleString('pt-BR')} km` }}},
+    scales: {
+      x: { grid: { color: 'rgba(45,55,72,0.4)' } },
+      y: { grid: { color: 'rgba(45,55,72,0.4)' }, ticks: { callback: v => v.toLocaleString('pt-BR')+'km' } }
+    }
+  }
+});
+
+// ====== MODELOS PAGE ======
+// HBar Modelos
+new Chart(document.getElementById('chartHBarModelo'), {
+  type: 'bar',
+  data: {
+    labels: [...DATA.modelos].reverse(),
+    datasets: [{
+      data: [...DATA.volModelos].reverse(),
+      backgroundColor: [...DATA.volModelos].reverse().map((v,i)=>i===8?COLORS.blue2:COLORS.blue+'99'),
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      callbacks: { label: ctx => `${ctx.parsed.x.toLocaleString('pt-BR')} revisões` }}},
+    scales: {
+      x: { grid: { color: 'rgba(45,55,72,0.4)' }, ticks: { callback: v => (v/1000).toFixed(0)+'k' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// Abandono por modelo
+new Chart(document.getElementById('chartAbandonoModelo'), {
+  type: 'bar',
+  data: {
+    labels: ['ECOSPORT','KA','RANGER','F-150','BRONCO SPORT','TRANSIT','TERRITORY','MUSTANG','MAVERICK'],
+    datasets: [{
+      data: [21.7,26.9,29.7,35.3,37.9,41.2,42.3,44.3,52.5],
+      backgroundColor: [COLORS.green,COLORS.green,COLORS.blue2,COLORS.orange,COLORS.orange,COLORS.red,COLORS.red,COLORS.red,COLORS.red],
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      callbacks: { label: ctx => `${ctx.parsed.x.toFixed(1)}% de abandono` }}},
+    scales: {
+      x: { grid: { color: 'rgba(45,55,72,0.4)' }, max: 60, ticks: { callback: v => v+'%' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// Pie modelos
+new Chart(document.getElementById('chartPieModelo'), {
+  type: 'doughnut',
+  data: {
+    labels: DATA.modelos,
+    datasets: [{
+      data: DATA.volModelos,
+      backgroundColor: [COLORS.blue2,COLORS.cyan,'#7c83fd',COLORS.orange,COLORS.green,COLORS.red,COLORS.yellow,COLORS.purple,'#ff6b9d'],
+      borderColor: '#1e2736', borderWidth: 2, hoverOffset: 6
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '60%',
+    plugins: { legend: { position: 'right', labels: { font:{size:10}, boxWidth: 10, padding: 6 }},
+      tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed.toLocaleString('pt-BR')} (${(ctx.parsed/501925*100).toFixed(1)}%)` }}}
+  }
+});
+
+// Tabela modelos
+const modeloData = [
+  {m:'RANGER',rev:267623,vins:62430,ab:29.7},
+  {m:'KA',rev:130828,vins:50022,ab:26.9},
+  {m:'ECOSPORT',rev:44092,vins:15937,ab:21.7},
+  {m:'TERRITORY',rev:18467,vins:7790,ab:42.3},
+  {m:'BRONCO SPORT',rev:13114,vins:4650,ab:37.9},
+  {m:'MAVERICK',rev:10959,vins:4516,ab:52.5},
+  {m:'TRANSIT',rev:9478,vins:3399,ab:41.2},
+  {m:'F-150',rev:3668,vins:1072,ab:35.3},
+  {m:'MUSTANG',rev:2515,vins:1320,ab:44.3},
+];
+const tbModelos = document.getElementById('tabelaModelos');
+modeloData.forEach(r => {
+  const cor = r.ab < 25 ? 'pill-green' : r.ab < 40 ? 'pill-orange' : 'pill-red';
+  const status = r.ab < 25 ? 'Baixo risco' : r.ab < 40 ? 'Médio risco' : 'Alto risco';
+  tbModelos.innerHTML += `<tr>
+    <td><b>${r.m}</b></td>
+    <td>${r.rev.toLocaleString('pt-BR')}</td>
+    <td>${r.vins.toLocaleString('pt-BR')}</td>
+    <td><b>${r.ab.toFixed(1)}%</b></td>
+    <td><span class="pill ${cor}">${status}</span></td>
+  </tr>`;
+});
+
+// ====== RETENÇÃO ======
+new Chart(document.getElementById('chartFunil'), {
+  type: 'bar',
+  data: {
+    labels: ['1ª Revisão\n(100%)','2ª Revisão\n(70,1%)','3ª Revisão\n(47,4%)','4ª Revisão\n(26,4%)','5ª Revisão\n(18,7%)','6ª+ Revisões\n(12,8%)'],
+    datasets: [{
+      data: [151608,106292,71900,40010,28350,19410],
+      backgroundColor: [COLORS.blue2,'#2196f3',COLORS.orange,COLORS.orange+'bb',COLORS.red+'bb',COLORS.red],
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      callbacks: { label: ctx => `${ctx.parsed.y.toLocaleString('pt-BR')} VINs` }}},
+    scales: {
+      x: { grid: { display: false }, ticks: { font:{size:10} } },
+      y: { grid: { color: 'rgba(45,55,72,0.4)' }, ticks: { callback: v => v.toLocaleString('pt-BR') } }
+    }
+  }
+});
+
+// Distribuição revisões por VIN
+new Chart(document.getElementById('chartDistRev'), {
+  type: 'bar',
+  data: {
+    labels: DATA.freqRev.map((_,i) => `${i+1}ª rev.`),
+    datasets: [{
+      data: DATA.freqRev,
+      backgroundColor: DATA.freqRev.map((v,i) => i===0?COLORS.red:i<3?COLORS.orange:COLORS.blue),
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      callbacks: { label: ctx => `${ctx.parsed.y.toLocaleString('pt-BR')} VINs pararam aqui` }}},
+    scales: {
+      x: { grid: { display: false }, ticks: { font:{size:10} } },
+      y: { grid: { color: 'rgba(45,55,72,0.4)' }, ticks: { callback: v => v.toLocaleString('pt-BR') } }
+    }
+  }
+});
+
+// ====== CONCESSIONÁRIAS ======
+new Chart(document.getElementById('chartTopDealers'), {
+  type: 'bar',
+  data: {
+    labels: DATA.dealers.map(d => `#${d}`),
+    datasets: [{
+      data: DATA.volDealers,
+      backgroundColor: DATA.volDealers.map((v,i) => i===0?COLORS.cyan:COLORS.blue+'99'),
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      callbacks: { label: ctx => `${ctx.parsed.x.toLocaleString('pt-BR')} revisões` }}},
+    scales: {
+      x: { grid: { color: 'rgba(45,55,72,0.4)' }, ticks: { callback: v => v.toLocaleString('pt-BR') } },
+      y: { grid: { display: false }, ticks: { font:{size:11} } }
+    }
+  }
+});
+
+new Chart(document.getElementById('chartCanalDealers'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Agenda + Oficial','Agenda + Oficial + GUDB','Só Oficial','Oficial + GUDB'],
+    datasets: [{
+      data: [85.9, 27.0, 6.5, 0.6],
+      backgroundColor: [COLORS.blue2, COLORS.cyan, COLORS.blue, COLORS.purple],
+      borderColor: '#1e2736', borderWidth: 2, hoverOffset: 6
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { font:{size:10}, boxWidth:10, padding:8 }},
+      tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed.toFixed(1)}%` }}}
+  }
+});
+
+// Tabela dealers
+const tbDealers = document.getElementById('tabelaDealers');
+DATA.dealers.forEach((d,i) => {
+  const share = (DATA.volDealers[i]/501925*100).toFixed(2);
+  const status = i===0?'pill-green':i<5?'pill-blue':'pill-orange';
+  const label = i===0?'Líder':i<5?'Top 5':'Top 15';
+  tbDealers.innerHTML += `<tr>
+    <td>${i+1}°</td>
+    <td><b>#${d}</b></td>
+    <td>${DATA.volDealers[i].toLocaleString('pt-BR')}</td>
+    <td>${share}%</td>
+    <td><span class="pill ${status}">${label}</span></td>
+  </tr>`;
+});
+
+// ====== DIAS ATÉ ABANDONO ======
+new Chart(document.getElementById('chartDiasAbandono'), {
+  type: 'bar',
+  data: {
+    labels: DATA.diasAbandonoLabels,
+    datasets: [{
+      label: 'Dias até abandono',
+      data: DATA.diasAbandonoVals,
+      backgroundColor: DATA.diasAbandonoVals.map(v =>
+        v < 180 ? COLORS.red : v < 250 ? COLORS.orange : v < 320 ? COLORS.blue2 : COLORS.green
+      ),
+      borderRadius: 5, borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => `Perde o cliente em média ${ctx.parsed.x} dias após a compra` }}
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(45,55,72,0.4)' },
+        ticks: { callback: v => v + 'd' }, min: 0, max: 430,
+      },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+const janelaData = [
+  {m:'MAVERICK',   dias:156, acao:'Abordar antes de 90 dias da compra',          cor:COLORS.red},
+  {m:'MUSTANG',    dias:171, acao:'Oferta especial no 5° mês pós-compra',         cor:COLORS.red},
+  {m:'TERRITORY',  dias:188, acao:'Contato preventivo antes do 6° mês',           cor:COLORS.red},
+  {m:'TRANSIT',    dias:194, acao:'Revisão preventiva + ligação ativa',            cor:COLORS.orange},
+  {m:'BRONCO SPORT',dias:228,acao:'Contato no 7° mês — antes da garantia vencer', cor:COLORS.orange},
+  {m:'F-150',      dias:242, acao:'Programa VIP no 8° mês pós-compra',            cor:COLORS.orange},
+  {m:'RANGER',     dias:289, acao:'Lembrete de revisão no 9°–10° mês',            cor:COLORS.blue2},
+  {m:'KA',         dias:311, acao:'Campanha pré-aniversário de 1 ano',            cor:COLORS.blue2},
+  {m:'ECOSPORT',   dias:387, acao:'Manter engajamento após os 12 meses',          cor:COLORS.green},
+];
+const janel = document.getElementById('janelasCriticas');
+janelaData.forEach(j => {
+  janel.innerHTML += `
+    <div style="margin-bottom:11px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;font-weight:700;color:${j.cor};width:108px;flex-shrink:0">${j.m}</span>
+        <div class="prog-bar-bg" style="flex:1"><div class="prog-bar-fill" style="width:${(j.dias/430*100).toFixed(0)}%;background:${j.cor}"></div></div>
+        <span style="font-size:12px;font-weight:700;color:${j.cor};width:40px;text-align:right">${j.dias}d</span>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px;padding-left:116px">${j.acao}</div>
+    </div>`;
+});
+
+// ====== MAPA DE CALOR BRASIL ======
+const mapaEstados = [
+  {e:'SP', x:68, y:36, d:95, ab:26.5}, {e:'RJ', x:77, y:33, d:40, ab:25.2},
+  {e:'MG', x:68, y:45, d:55, ab:28.8}, {e:'RS', x:57, y:11, d:38, ab:24.1},
+  {e:'PR', x:62, y:23, d:35, ab:26.9}, {e:'SC', x:64, y:19, d:25, ab:27.2},
+  {e:'BA', x:80, y:58, d:22, ab:34.2}, {e:'GO', x:60, y:53, d:18, ab:32.1},
+  {e:'PE', x:90, y:70, d:15, ab:36.8}, {e:'CE', x:85, y:84, d:12, ab:38.2},
+  {e:'MT', x:52, y:55, d:10, ab:33.4}, {e:'MS', x:55, y:38, d:10, ab:30.8},
+  {e:'DF', x:65, y:52, d:14, ab:29.6}, {e:'ES', x:78, y:42, d:11, ab:27.9},
+  {e:'PA', x:62, y:78, d:8,  ab:40.1}, {e:'MA', x:75, y:81, d:6,  ab:39.5},
+  {e:'AM', x:35, y:80, d:5,  ab:41.2}, {e:'PB', x:91, y:76, d:5,  ab:37.8},
+  {e:'RN', x:93, y:80, d:4,  ab:38.1}, {e:'AL', x:89, y:67, d:4,  ab:36.5},
+  {e:'SE', x:88, y:64, d:4,  ab:35.9}, {e:'PI', x:79, y:77, d:4,  ab:39.1},
+  {e:'TO', x:67, y:66, d:4,  ab:37.4}, {e:'RO', x:42, y:67, d:3,  ab:42.2},
+  {e:'AC', x:30, y:70, d:2,  ab:43.5}, {e:'RR', x:42, y:92, d:1,  ab:44.1},
+  {e:'AP', x:69, y:95, d:2,  ab:43.8},
+];
+function abCor(ab) {
+  if (ab < 27) return 'rgba(0,230,118,0.80)';
+  if (ab < 32) return 'rgba(77,166,255,0.80)';
+  if (ab < 38) return 'rgba(255,152,0,0.80)';
+  return 'rgba(255,68,68,0.80)';
+}
+new Chart(document.getElementById('chartMapaBrasil'), {
+  type: 'bubble',
+  data: {
+    datasets: mapaEstados.map(s => ({
+      label: s.e,
+      data: [{ x: s.x, y: s.y, r: Math.max(5, Math.sqrt(s.d) * 2.4) }],
+      backgroundColor: abCor(s.ab),
+      borderColor: 'rgba(255,255,255,0.20)',
+      borderWidth: 1,
+    })),
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: (items) => mapaEstados[items[0].datasetIndex].e,
+          label: (ctx) => {
+            const s = mapaEstados[ctx.datasetIndex];
+            return [`Abandono: ${s.ab.toFixed(1)}%`, `Dealers: ${s.d}`];
+          }
+        }
+      }
+    },
+    scales: {
+      x: { display: false, min: 18, max: 100 },
+      y: { display: false, min: 0, max: 100 },
+    },
+  }
+});
+
+const regioes = [
+  {r:'Sudeste', ab:26.8, dealers:201, cor:COLORS.green},
+  {r:'Sul',     ab:25.8, dealers:98,  cor:COLORS.green},
+  {r:'Centro-Oeste', ab:31.2, dealers:50, cor:COLORS.blue2},
+  {r:'Nordeste', ab:36.9, dealers:58, cor:COLORS.orange},
+  {r:'Norte',   ab:41.8, dealers:28,  cor:COLORS.red},
+];
+const relEl = document.getElementById('regioesList');
+regioes.forEach(r => {
+  relEl.innerHTML += `
+    <div class="prog-row" style="margin-bottom:6px">
+      <span class="prog-label" style="width:115px;color:var(--text);font-weight:600">${r.r}</span>
+      <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${(r.ab * 1.8).toFixed(0)}%;background:${r.cor}"></div></div>
+      <span class="prog-val" style="color:${r.cor}">${r.ab.toFixed(1)}%</span>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:10px;padding-left:125px">${r.dealers} dealers</div>`;
+});
+
+// ====== ROI SIMULADOR ======
+function atualizarROI(pct) {
+  const receita = 17220080; // 45.316 × R$380
+  const val = receita * (pct / 100);
+  document.getElementById('roiPct').textContent = pct + '%';
+  document.getElementById('roiValor').textContent = 'R$ ' + (val / 1000000).toFixed(2) + 'M';
+}
+
+// ====== NAVEGAÇÃO ======
+const PAGE_IDS = ['visao-geral','modelos','retencao','concessionarias'];
+
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tabs .tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  // Sincroniza o estado ativo no menu mobile
+  const idx = PAGE_IDS.indexOf(id);
+  document.querySelectorAll('.mobile-nav-items .tab').forEach((t, i) => {
+    t.classList.toggle('active', i === idx);
+  });
+}
+
+function toggleMobileNav() {
+  const nav = document.getElementById('mobileNav');
+  nav.classList.toggle('open');
+  document.body.style.overflow = nav.classList.contains('open') ? 'hidden' : '';
+}
+
+function navMobileTo(id, idx) {
+  const desktopTabs = document.querySelectorAll('.nav-tabs .tab');
+  if (desktopTabs[idx]) showPage(id, desktopTabs[idx]);
+  toggleMobileNav();
+}
+
+function atualizarFiltro() {
+  // Filtro visual (sem refazer charts — lógica de filtragem real ficaria no backend)
+  const ano = document.getElementById('filtro-ano').value;
+  const modelo = document.getElementById('filtro-modelo').value;
+  // Aqui em produção: refaz os charts com dados filtrados via API
+}
+</script>
+</body>
+</html>
