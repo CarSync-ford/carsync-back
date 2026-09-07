@@ -92,6 +92,16 @@ class HmacSignatureFilterTest {
             .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void shouldAllowActuatorHealthEndpointsWithoutSignature() throws Exception {
+        mockMvc.perform(get("/actuator/health"))
+            .andExpect(status().isOk());
+        mockMvc.perform(get("/actuator/health/liveness"))
+            .andExpect(status().isOk());
+        mockMvc.perform(get("/actuator/health/readiness"))
+            .andExpect(status().isOk());
+    }
+
     private static String computeHmac(String data, String secret) throws Exception {
         Mac mac = Mac.getInstance("HmacSHA256");
         mac.init(new SecretKeySpec(secret.getBytes(), "HmacSHA256"));

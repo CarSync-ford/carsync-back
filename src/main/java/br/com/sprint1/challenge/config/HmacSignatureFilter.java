@@ -21,7 +21,7 @@ public class HmacSignatureFilter extends OncePerRequestFilter {
     private static final String HEADER = "X-HMAC-Signature";
     private static final String ALGORITHM = "HmacSHA256";
     private static final Set<String> PUBLIC_PREFIX_PATHS = Set.of(
-        "/actuator/health/",
+        "/actuator/health",
         "/api/v1/health",
         "/api/v1/auth",
         "/swagger-ui",

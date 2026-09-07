@@ -44,7 +44,7 @@ jwt:
 
 hmac:
   secret: ${HMAC_SECRET:}
-  enabled: ${HMAC_ENABLED:false}
+  enabled: ${HMAC_ENABLED:true}
 
 management:
   endpoints:
