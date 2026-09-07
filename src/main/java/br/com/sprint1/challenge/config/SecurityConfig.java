@@ -9,6 +9,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -53,6 +56,13 @@ public class SecurityConfig {
         http.exceptionHandling(ex -> ex
             .authenticationEntryPoint((request, response, authException) ->
                 response.sendError(401))
+        );
+
+        http.headers(headers -> headers
+            .contentTypeOptions(Customizer.withDefaults())
+            .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
+            .referrerPolicy(rp -> rp.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+            .permissionsPolicy(policy -> policy.policy("geolocation=(), microphone=()"))
         );
 
         http.authorizeHttpRequests(auth -> auth
