@@ -2,6 +2,7 @@ package br.com.sprint1.challenge.config;
 
 import java.util.List;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,6 +39,15 @@ public class SecurityConfig {
         this.rateLimitFilter = rateLimitFilter;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.hmacSignatureFilter = hmacSignatureFilter;
+    }
+
+    @PostConstruct
+    public void validateCors() {
+        if (allowedOrigins == null || allowedOrigins.isBlank() || allowedOrigins.equals("*")) {
+            throw new IllegalStateException(
+                "CORS_ALLOWED_ORIGINS must be set to specific origins (comma-separated), not '*' or empty"
+            );
+        }
     }
 
     @Bean
