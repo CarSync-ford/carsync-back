@@ -43,6 +43,24 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), request.getRequestURI(), List.of());
     }
 
+    @ExceptionHandler(UserLockedException.class)
+    public ResponseEntity<ApiErrorResponse> handleUserLocked(UserLockedException ex, HttpServletRequest request) {
+        log.warn("SECURITY_VIOLATION Account Locked IP:{}", getClientIp(request));
+        return build(HttpStatus.UNAUTHORIZED, "Account locked. Try again after " + ex.getLockedUntil(), request.getRequestURI(), List.of());
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidToken(InvalidTokenException ex, HttpServletRequest request) {
+        log.warn("SECURITY_VIOLATION Invalid Token IP:{}", getClientIp(request));
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), request.getRequestURI(), List.of());
+    }
+
+    @ExceptionHandler(TokenExpiredException.class)
+    public ResponseEntity<ApiErrorResponse> handleTokenExpired(TokenExpiredException ex, HttpServletRequest request) {
+        log.warn("SECURITY_VIOLATION Token Expired IP:{}", getClientIp(request));
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), request.getRequestURI(), List.of());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
         List<String> details = ex.getBindingResult().getFieldErrors().stream()

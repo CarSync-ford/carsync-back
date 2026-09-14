@@ -41,6 +41,7 @@ jwt:
   secret: ${JWT_SECRET}
   expiration-minutes: ${JWT_EXPIRATION_MINUTES}
   issuer: ${JWT_ISSUER}
+  refresh-token-expiry-days: ${JWT_REFRESH_TOKEN_EXPIRY_DAYS:30}
 
 hmac:
   secret: ${HMAC_SECRET}
