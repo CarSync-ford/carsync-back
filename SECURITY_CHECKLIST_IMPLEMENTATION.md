@@ -294,7 +294,7 @@ FASE 6 (Escala) ← Quando APIM pronto
 
 ### Fase 1 - LGPD
 - [x] Migração V6 aplicada (ANALYST role)
-- [ ] `DataMasker` com 100% cobertura unitária
+- [x] `DataMasker` com 100% cobertura unitária
 - [ ] Analytics DTOs mascarados funcionando
 - [ ] Endpoints `/api/v1/analytics/**` retornam 403 para USER, 200 para ANALYST
 - [ ] Migração V7 aplicada (soft delete)
