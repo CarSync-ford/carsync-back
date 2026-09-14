@@ -4,11 +4,14 @@ import br.com.sprint1.challenge.entity.Customer;
 import br.com.sprint1.challenge.entity.Dealership;
 import br.com.sprint1.challenge.entity.Lead;
 import br.com.sprint1.challenge.entity.Vehicle;
+import br.com.sprint1.challenge.repository.AssistantInteractionRepository;
 import br.com.sprint1.challenge.repository.CustomerRepository;
 import br.com.sprint1.challenge.repository.DealershipRepository;
 import br.com.sprint1.challenge.repository.LeadRepository;
+import br.com.sprint1.challenge.repository.ServiceRecordRepository;
 import br.com.sprint1.challenge.repository.VehicleRepository;
 import br.com.sprint1.challenge.service.JwtService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,11 +53,19 @@ class AnalyticsSecurityIntegrationTest {
     @Autowired
     private DealershipRepository dealershipRepository;
 
+    @Autowired
+    private ServiceRecordRepository serviceRecordRepository;
+
+    @Autowired
+    private AssistantInteractionRepository assistantInteractionRepository;
+
     private String userToken;
     private String analystToken;
 
     @BeforeEach
     void setUp() {
+        cleanDatabase();
+
         userToken = jwtService.generateToken("user-123", "user@test.com", "USER");
         analystToken = jwtService.generateToken("analyst-456", "analyst@test.com", "ANALYST");
 
@@ -96,6 +107,20 @@ class AnalyticsSecurityIntegrationTest {
                 LocalDateTime.now(),
                 null
         ));
+    }
+
+    @AfterEach
+    void tearDown() {
+        cleanDatabase();
+    }
+
+    private void cleanDatabase() {
+        leadRepository.deleteAll();
+        serviceRecordRepository.deleteAll();
+        assistantInteractionRepository.deleteAll();
+        vehicleRepository.deleteAll();
+        customerRepository.deleteAll();
+        dealershipRepository.deleteAll();
     }
 
     @Test
