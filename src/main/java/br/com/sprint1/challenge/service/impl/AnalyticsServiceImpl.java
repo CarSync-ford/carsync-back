@@ -1,7 +1,10 @@
 package br.com.sprint1.challenge.service.impl;
 
 import br.com.sprint1.challenge.dto.AnalyticsDtos.AnalyticsOverviewResponse;
+import br.com.sprint1.challenge.dto.AnalyticsDtos.CustomerAnalyticsView;
+import br.com.sprint1.challenge.dto.AnalyticsDtos.LeadAnalyticsView;
 import br.com.sprint1.challenge.dto.AnalyticsDtos.ServiceShareItem;
+import br.com.sprint1.challenge.dto.AnalyticsDtos.VehicleAnalyticsView;
 import br.com.sprint1.challenge.entity.Dealership;
 import br.com.sprint1.challenge.entity.ServiceRecord;
 import br.com.sprint1.challenge.entity.Vehicle;
@@ -11,6 +14,7 @@ import br.com.sprint1.challenge.repository.LeadRepository;
 import br.com.sprint1.challenge.repository.ServiceRecordRepository;
 import br.com.sprint1.challenge.repository.VehicleRepository;
 import br.com.sprint1.challenge.service.AnalyticsService;
+import br.com.sprint1.challenge.util.DataMasker;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -111,6 +115,56 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                     return new ServiceShareItem(parts[0], parts[1], parts[2], entry.getValue(), share);
                 })
                 .sorted(Comparator.comparing(ServiceShareItem::sharePercentage).reversed())
+                .toList();
+    }
+
+    @Override
+    public List<CustomerAnalyticsView> getCustomersAnalytics() {
+        return customerRepository.findAll().stream()
+                .map(customer -> new CustomerAnalyticsView(
+                        customer.getId(),
+                        DataMasker.maskName(customer.getFullName()),
+                        DataMasker.maskEmail(customer.getEmail()),
+                        DataMasker.maskPhone(customer.getPhone()),
+                        customer.getCity(),
+                        customer.getState(),
+                        customer.getPreferredDealershipId()
+                ))
+                .toList();
+    }
+
+    @Override
+    public List<LeadAnalyticsView> getLeadsAnalytics() {
+        return leadRepository.findAll().stream()
+                .map(lead -> new LeadAnalyticsView(
+                        lead.getId(),
+                        lead.getCustomerId(),
+                        lead.getVehicleId(),
+                        lead.getDealershipId(),
+                        lead.getTitle(),
+                        lead.getDescription(),
+                        lead.getUrgency(),
+                        lead.getStatus(),
+                        lead.getSource(),
+                        lead.getCreatedAt(),
+                        lead.getConvertedAt()
+                ))
+                .toList();
+    }
+
+    @Override
+    public List<VehicleAnalyticsView> getVehiclesAnalytics() {
+        return vehicleRepository.findAll().stream()
+                .map(vehicle -> new VehicleAnalyticsView(
+                        vehicle.getId(),
+                        vehicle.getModel(),
+                        vehicle.getFamily(),
+                        vehicle.getModelYear(),
+                        vehicle.getMileage(),
+                        vehicle.getDealershipId(),
+                        vehicle.getWarrantyEndDate(),
+                        vehicle.getHealthStatus()
+                ))
                 .toList();
     }
 }

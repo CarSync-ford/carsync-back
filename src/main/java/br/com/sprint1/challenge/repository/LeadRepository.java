@@ -12,5 +12,7 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
     long countByStatus(String status);
 
     List<Lead> findByCustomerId(Long customerId);
+
+    List<Lead> findAllByDeletedAtBefore(java.time.LocalDateTime cutoff);
 }
 

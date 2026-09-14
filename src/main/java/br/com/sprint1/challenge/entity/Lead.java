@@ -49,6 +49,9 @@ public class Lead {
     @Column(name = "converted_at")
     private LocalDateTime convertedAt;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     public Lead() {
     }
 
@@ -152,6 +155,14 @@ public class Lead {
 
     public void setConvertedAt(LocalDateTime convertedAt) {
         this.convertedAt = convertedAt;
+    }
+
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
     }
 }
 

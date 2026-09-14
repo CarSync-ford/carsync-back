@@ -1,5 +1,7 @@
 package br.com.sprint1.challenge.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -34,6 +36,9 @@ public class Customer {
 
     @Column(name = "preferred_dealership_id")
     private Long preferredDealershipId;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     public Customer() {
     }
@@ -102,6 +107,14 @@ public class Customer {
 
     public void setPreferredDealershipId(Long preferredDealershipId) {
         this.preferredDealershipId = preferredDealershipId;
+    }
+
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
     }
 }
 
