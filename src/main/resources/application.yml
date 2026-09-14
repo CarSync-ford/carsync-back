@@ -46,6 +46,13 @@ hmac:
   secret: ${HMAC_SECRET}
   enabled: ${HMAC_ENABLED:true}
 
+data-retention:
+  hard-delete-retention-days: ${DATA_RETENTION_HARD_DELETE_DAYS:30}
+  inactive-user-retention-years: ${DATA_RETENTION_INACTIVE_YEARS:5}
+  hard-delete-cron: "${DATA_RETENTION_HARD_DELETE_CRON:0 0 2 * * *}"
+  anonymization-cron: "${DATA_RETENTION_ANONYMIZATION_CRON:0 0 3 * * 0}"
+  enabled: ${DATA_RETENTION_ENABLED:true}
+
 management:
   endpoints:
     web:

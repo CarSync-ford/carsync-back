@@ -30,6 +30,13 @@ hmac:
   secret: test-hmac-secret
   enabled: false
 
+data-retention:
+  hard-delete-retention-days: 30
+  inactive-user-retention-years: 5
+  hard-delete-cron: "-"
+  anonymization-cron: "-"
+  enabled: true
+
 management:
   endpoints:
     web:
