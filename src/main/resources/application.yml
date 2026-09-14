@@ -43,8 +43,8 @@ jwt:
   issuer: ${JWT_ISSUER}
 
 hmac:
-  secret: ${HMAC_SECRET:}
-  enabled: ${HMAC_ENABLED:false}
+  secret: ${HMAC_SECRET}
+  enabled: ${HMAC_ENABLED:true}
 
 management:
   endpoints:

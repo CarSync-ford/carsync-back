@@ -2,6 +2,7 @@ package br.com.sprint1.challenge.config;
 
 import java.util.List;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +10,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -37,6 +41,15 @@ public class SecurityConfig {
         this.hmacSignatureFilter = hmacSignatureFilter;
     }
 
+    @PostConstruct
+    public void validateCors() {
+        if (allowedOrigins == null || allowedOrigins.isBlank() || allowedOrigins.equals("*")) {
+            throw new IllegalStateException(
+                "CORS_ALLOWED_ORIGINS must be set to specific origins (comma-separated), not '*' or empty"
+            );
+        }
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
@@ -55,9 +68,16 @@ public class SecurityConfig {
                 response.sendError(401))
         );
 
+        http.headers(headers -> headers
+            .contentTypeOptions(Customizer.withDefaults())
+            .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
+            .referrerPolicy(rp -> rp.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+            .permissionsPolicy(policy -> policy.policy("geolocation=(), microphone=()"))
+        );
+
         http.authorizeHttpRequests(auth -> auth
             .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
-            .requestMatchers("/actuator/health/liveness", "/actuator/health/readiness").permitAll()
+            .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/v1/health").permitAll()
             .requestMatchers("/api/v1/auth/**").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/v1/user").permitAll()

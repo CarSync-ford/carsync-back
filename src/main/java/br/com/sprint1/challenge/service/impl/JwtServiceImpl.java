@@ -5,6 +5,7 @@ import java.util.Date;
 
 import javax.crypto.SecretKey;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
 import br.com.sprint1.challenge.config.JwtProperties;
@@ -20,6 +21,16 @@ public class JwtServiceImpl implements JwtService {
 
     public JwtServiceImpl(JwtProperties jwtProperties) {
         this.jwtProperties = jwtProperties;
+    }
+
+    @PostConstruct
+    public void validateSecret() {
+        String secret = jwtProperties.getSecret();
+        if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalStateException(
+                "JWT secret must be at least 256 bits (32 characters) for HS256 security"
+            );
+        }
     }
 
     @Override
