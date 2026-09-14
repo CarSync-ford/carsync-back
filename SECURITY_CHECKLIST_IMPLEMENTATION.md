@@ -297,7 +297,7 @@ FASE 6 (Escala) ← Quando APIM pronto
 - [x] `DataMasker` com 100% cobertura unitária
 - [x] Analytics DTOs mascarados funcionando
 - [x] Endpoints `/api/v1/analytics/**` retornam 403 para USER, 200 para ANALYST
-- [ ] Migração V7 aplicada (soft delete)
+- [x] Migração V7 aplicada (soft delete)
 - [ ] `DataRetentionService` com 2 jobs executando (testados com Clock)
 - [ ] Métricas `data_retention.removed` visíveis no App Insights
 
