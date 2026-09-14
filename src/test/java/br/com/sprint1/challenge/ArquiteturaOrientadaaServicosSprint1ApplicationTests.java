@@ -9,6 +9,7 @@ import br.com.sprint1.challenge.repository.DealershipRepository;
 import br.com.sprint1.challenge.repository.ServiceRecordRepository;
 import br.com.sprint1.challenge.repository.VehicleRepository;
 import br.com.sprint1.challenge.service.JwtService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,14 @@ class ArquiteturaOrientadaaServicosSprint1ApplicationTests {
 
     @Test
     void contextLoads() {
+    }
+
+    @AfterEach
+    void tearDown() {
+        serviceRecordRepository.deleteAll();
+        vehicleRepository.deleteAll();
+        customerRepository.deleteAll();
+        dealershipRepository.deleteAll();
     }
 
     @Test
