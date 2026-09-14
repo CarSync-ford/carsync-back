@@ -39,13 +39,13 @@
 - **SQL Injection prevention:** JPA parametrizado apenas
 - **HMAC Payload Signing:** Implementado (`HmacSignatureFilter`)
 - **Anomaly monitoring:** Logs `SECURITY_VIOLATION` estruturados
+- **Role ANALYST & Anonimização:** Migração V6 + endpoints `/api/v1/analytics/**` protegidos com `@PreAuthorize("hasRole('ANALYST')")`, mascaramento PII (`DataMasker`) e log estruturado de auditoria (`ANALYTICS_ACCESS`)
 
 ### Parcial ⚠️
 - **Rate Limiting:** Bucket4j in-memory (10 req/s/IP) — **não escala em cluster ACA** (cada réplica tem bucket próprio)
 - **CORS default:** Fail-fast implementado, mas precisa espelhar config do ACA Ingress
 
 ### Ausente ❌
-- **Role ANALYST** para anonimização (planejado, migração V6 não existe)
 - **Data Retention / Soft Delete** (planejado, migrações V7-V9 não existem)
 - **Account Lockout / Brute-force protection** (colunas `failed_login_attempts`, `locked_until` ausentes)
 - **Refresh Token Rotation + Expiry** (coluna `refresh_token_expires_at` ausente)
@@ -296,7 +296,7 @@ FASE 6 (Escala) ← Quando APIM pronto
 - [x] Migração V6 aplicada (ANALYST role)
 - [x] `DataMasker` com 100% cobertura unitária
 - [x] Analytics DTOs mascarados funcionando
-- [ ] Endpoints `/api/v1/analytics/**` retornam 403 para USER, 200 para ANALYST
+- [x] Endpoints `/api/v1/analytics/**` retornam 403 para USER, 200 para ANALYST
 - [ ] Migração V7 aplicada (soft delete)
 - [ ] `DataRetentionService` com 2 jobs executando (testados com Clock)
 - [ ] Métricas `data_retention.removed` visíveis no App Insights
