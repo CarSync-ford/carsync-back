@@ -40,13 +40,13 @@
 - **HMAC Payload Signing:** Implementado (`HmacSignatureFilter`)
 - **Anomaly monitoring:** Logs `SECURITY_VIOLATION` estruturados
 - **Role ANALYST & Anonimização:** Migração V6 + endpoints `/api/v1/analytics/**` protegidos com `@PreAuthorize("hasRole('ANALYST')")`, mascaramento PII (`DataMasker`) e log estruturado de auditoria (`ANALYTICS_ACCESS`)
+- **Data Retention / Secure Disposal:** Coluna `deleted_at`, soft delete, `DataRetentionService` com expurgo diário (>30 dias) e anonimização semanal (>5 anos sem login), instrumentado com contadores Micrometer `data_retention.removed`
 
 ### Parcial ⚠️
 - **Rate Limiting:** Bucket4j in-memory (10 req/s/IP) — **não escala em cluster ACA** (cada réplica tem bucket próprio)
 - **CORS default:** Fail-fast implementado, mas precisa espelhar config do ACA Ingress
 
 ### Ausente ❌
-- **Data Retention / Soft Delete** (planejado, migrações V7-V9 não existem)
 - **Account Lockout / Brute-force protection** (colunas `failed_login_attempts`, `locked_until` ausentes)
 - **Refresh Token Rotation + Expiry** (coluna `refresh_token_expires_at` ausente)
 - **Password Reset Flow** (inexistente)
@@ -77,10 +77,8 @@
 
 ### Implementado ✅
 - **LGPD Básico:** PII masking logs, audit trail, RBAC, JWT, secrets mgmt
-
-### Crítico - Ausente ❌
-- **Anonymization Pipeline** (SEC-001): DataMasker, ANALYST role, Analytics DTOs, endpoints `/api/v1/analytics/**`, testes 403/200
-- **Data Retention / Secure Disposal** (SEC-002): Soft delete, scheduler, hard delete job, anonymization job, métricas Micrometer
+- **Anonymization Pipeline (SEC-001):** Role `ANALYST`, utilitário `DataMasker`, DTOs analíticos mascarados (`CustomerAnalyticsView`, `LeadAnalyticsView`, `VehicleAnalyticsView`), endpoints `/api/v1/analytics/**` com `@PreAuthorize("hasRole('ANALYST')")`, auditoria estruturada
+- **Data Retention / Secure Disposal (SEC-002):** Soft delete com `deleted_at`, jobs `@Scheduled` diário (expurgo >30 dias) e semanal (anonimização >5 anos sem login), métricas Micrometer `data_retention.removed`
 
 ### Ausente ❌
 - **STRIDE + DevSecOps Risk Review**
@@ -298,8 +296,8 @@ FASE 6 (Escala) ← Quando APIM pronto
 - [x] Analytics DTOs mascarados funcionando
 - [x] Endpoints `/api/v1/analytics/**` retornam 403 para USER, 200 para ANALYST
 - [x] Migração V7 aplicada (soft delete)
-- [ ] `DataRetentionService` com 2 jobs executando (testados com Clock)
-- [ ] Métricas `data_retention.removed` visíveis no App Insights
+- [x] `DataRetentionService` com 2 jobs executando (testados com Clock)
+- [x] Métricas `data_retention.removed` visíveis no App Insights
 
 ### Fase 2 - Auth
 - [ ] Lockout após 5 falhas, unlock automático 15 min

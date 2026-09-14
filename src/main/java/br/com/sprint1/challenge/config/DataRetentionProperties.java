@@ -21,12 +21,20 @@ public class DataRetentionProperties {
         this.hardDeleteRetentionDays = hardDeleteRetentionDays;
     }
 
+    public void setHardDeleteDays(int hardDeleteDays) {
+        this.hardDeleteRetentionDays = hardDeleteDays;
+    }
+
     public int getInactiveUserRetentionYears() {
         return inactiveUserRetentionYears;
     }
 
     public void setInactiveUserRetentionYears(int inactiveUserRetentionYears) {
         this.inactiveUserRetentionYears = inactiveUserRetentionYears;
+    }
+
+    public void setAnonymizationInactiveYears(int anonymizationInactiveYears) {
+        this.inactiveUserRetentionYears = anonymizationInactiveYears;
     }
 
     public String getHardDeleteCron() {

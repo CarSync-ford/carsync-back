@@ -19,4 +19,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     boolean existsByEmail(String email);
 
+    java.util.List<User> findAllByDeletedAtBefore(java.time.LocalDateTime cutoff);
+
+    java.util.List<User> findAllByLastLoginBefore(java.time.LocalDateTime cutoff);
 }
