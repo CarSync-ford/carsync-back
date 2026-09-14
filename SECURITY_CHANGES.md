@@ -19,13 +19,29 @@ já chegue cifrado/derivado ao banco.
 
 ## Forçar HTTPS / TLS
 
-A terminação TLS é feita pelo Ingress da nuvem; o container expõe apenas a
-porta 8080 internamente (ver `Dockerfile` com `EXPOSE 8080`). Para suportar
-o repasse correto dos cabeçalhos `X-Forwarded-*`, foi habilitado
-`server.forward-headers-strategy: native` no `application.yml`, e o
-`SecurityConfig` aplica `requiresChannel().requiresSecure()` quando
-`server.ssl.enabled=true`, permitindo forçar HTTPS quando a aplicação estiver
-em ambientes que terminam TLS no próprio container.
+A borda externa do tráfego HTTPS é a **Cloudflare**, que termina TLS no
+edge com certificado próprio e republica o domínio para o cliente final.
+Em seguida, a Cloudflare abre uma segunda perna TLS até o Ingress do
+**Azure Container Apps** em modo **Full** (cert do Azure, criptografado
+mas sem validação estrita do certificado de origem); o ACA Ingress, por
+sua vez, faz proxy reverso para o container, que expõe apenas a porta
+`8080` em HTTP internamente (`Dockerfile` com `EXPOSE 8080`). O Ingress
+do ACA está configurado para aceitar conexões **somente dos ranges
+públicos da Cloudflare**, impedindo que o hostname
+`*.azurecontainerapps.io` seja acessado diretamente, contornando todas as
+camadas de borda. Do lado do Spring Boot, o que sustenta a cadeia é
+`server.forward-headers-strategy: native` no `application.yml`, que faz
+o Spring respeitar `X-Forwarded-Proto`/`X-Forwarded-For` injetados pelo
+Ingress — gerando URLs absolutas com `https` e fazendo o Spring Security
+considerar a requisição segura mesmo recebendo HTTP no socket. A cláusula
+`requiresChannel().requiresSecure()` no `SecurityConfig` só é ativada
+quando `server.ssl.enabled=true`, configuração reservada para ambientes
+que terminam TLS dentro do próprio container (dev local, on-prem); em
+produção ela permanece desligada porque seria redundante com Cloudflare
+e Ingress, e provocaria loop de redirect. *Próximo passo opcional:*
+migrar a Cloudflare de **Full** para **Full (Strict)** validando o cert
+da origem do ACA — sem mudança no backend, basta acionar a chave no
+painel da Cloudflare.
 
 ## Rate Limiting e CORS
 
@@ -39,13 +55,50 @@ origens permitidas da propriedade `app.cors.allowed-origins` (variável
 `CORS_ALLOWED_ORIGINS`), restringindo métodos a `GET/POST/PUT/DELETE/OPTIONS`
 e mantendo `allowCredentials=true`.
 
+A defesa contra abuso e injeção é aplicada em **cascata**, com camadas
+que se reforçam mutuamente:
+
+- **Cloudflare** — proteção DDoS L3/L4 do plano Free e o **Free Managed
+  Ruleset (OWASP)** ativo no Web Application Firewall, que filtra
+  padrões conhecidos de SQL Injection, XSS, RCE, path traversal e demais
+  itens do Top 10 antes de o tráfego atravessar o edge.
+- **ACA Ingress** — borda autoritativa para CORS (restrito ao domínio do
+  frontend) e *gatekeeper* da origem: como o Ingress só aceita conexões
+  dos ranges da Cloudflare, qualquer requisição que chegue ao backend
+  passou obrigatoriamente pelo WAF.
+- **APIM (futuro)** — borda autoritativa para rate limiting de API
+  quando entrar em operação.
+- **Backend** — `RateLimitFilter` (Bucket4j) por IP e
+  `CorsConfigurationSource` no Spring Security mantêm a defesa interna,
+  garantindo que o serviço continue protegido em cenários de acesso
+  interno, debug ou side-channel que escapem da borda.
+
+Como há mais de uma camada com regras de origem, a variável
+`CORS_ALLOWED_ORIGINS` precisa ser **espelhada** com a configuração do
+Ingress do ACA: divergência entre as duas faz com que o efeito útil seja
+sempre o da camada mais restritiva, podendo mascarar erros de
+configuração de origem.
+
 ## Monitoramento
 
 O `Dockerfile` baixa e injeta o agente Java do **Azure Application
 Insights 3.5.4** via `-javaagent:/opt/agent.jar`, com a connection string
 fornecida pela pipeline de deploy (`.github/workflows/deploy.yml` injeta
-`APPLICATIONINSIGHTS_CONNECTION_STRING` como variável de ambiente). O
-Spring Boot Actuator (`spring-boot-starter-actuator`) expõe os endpoints
+`APPLICATIONINSIGHTS_CONNECTION_STRING` como variável de ambiente). Os
+canais de telemetria são complementares e não duplicados:
+
+- O agente do App Insights faz auto-instrumentação e coleta **traces
+  distribuídos, dependências (HTTP/JDBC) e métricas de runtime**, enviando
+  para o recurso de Application Insights.
+- O `stdout` do container, em formato JSON do `logback-spring.xml`, é
+  capturado nativamente pelo ACA e enviado ao **Log Analytics Workspace**,
+  ficando na tabela `ContainerAppConsoleLogs_CL` para queries KQL.
+- Quando o Application Insights está em modo *workspace-based* (modo
+  utilizado neste projeto), as duas pontas pousam no **mesmo** Log
+  Analytics Workspace, permitindo correlacionar logs estruturados e traces
+  na mesma query KQL.
+
+O Spring Boot Actuator (`spring-boot-starter-actuator`) expõe os endpoints
 de probes `/actuator/health/liveness` e `/actuator/health/readiness` na
 porta `8080`, habilitados via `management.endpoint.health.probes.enabled=true`.
 O readiness depende automaticamente do `DataSourceHealthIndicator` (via
@@ -89,6 +142,23 @@ inclui um filtro `%replace` com regex que mascara automaticamente valores
 de campos sensíveis no `message` — `password`, `senha`, `secret`, `token`,
 `hashed_password`, `hashedPassword` e `cpf` — substituindo o valor por
 `***` antes da serialização, atendendo aos requisitos de LGPD nos logs.
+
+## Gerenciamento de Segredos
+
+Nenhum segredo é hardcoded no código ou commitado no repositório. Todo o
+`application.yml` consome variáveis de ambiente via placeholders `${VAR}`
+para os itens sensíveis: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`,
+`JWT_SECRET`, `JWT_ISSUER`, `JWT_EXPIRATION_MINUTES`, `BCRYPT_SALT`,
+`HMAC_SECRET`, `HMAC_ENABLED`, `CORS_ALLOWED_ORIGINS` e
+`APPLICATIONINSIGHTS_CONNECTION_STRING`. Em produção, esses valores são
+provisionados diretamente via **Azure Container Apps (ACA) Secrets** e
+GitHub Actions Secrets (`.github/workflows/deploy.yml`), sendo injetados
+como variáveis de ambiente no contêiner do ACA. Em desenvolvimento local,
+o backend lê os mesmos placeholders a partir do arquivo `.env` (ignorado
+pelo `.gitignore`); o `.env.example` versionado serve como template para
+novos desenvolvedores. Essa estrutura desacopla o backend do mecanismo de
+armazenamento dos segredos, mantendo o container agnóstico à origem das
+variáveis.
 
 ## Autenticação JWT
 
@@ -151,14 +221,70 @@ escape automático de caracteres especiais ao gerar JSON.
 
 ## Anonimização
 
-A anonimização sistemática nas respostas ainda **não está implementada**
-no nível dos DTOs/mappers — os DTOs atuais (`GetUserResponse`,
-`UserCreatedResponse`, etc.) já são minimalistas e não retornam CPF nem
-e-mail nas respostas autenticadas, o que reduz a superfície de exposição.
-A camada de logs já mascara CPF, senha e token via regex no
-`logback-spring.xml`. Próximo passo planejado: aplicar lógica explícita
-de mascaramento (ex.: `***.***.***-NN`) em mappers de saída para qualquer
-endpoint futuro que precise expor dados pessoais.
+**Estado atual:** os DTOs de saída são minimalistas (`GetUserResponse`,
+`UserCreatedResponse`, etc.) e não retornam CPF nem e-mail nas respostas
+autenticadas, e o `logback-spring.xml` mascara CPF, senha e token via regex
+antes do log ser emitido. Não há, hoje, um pipeline sistemático de
+mascaramento aplicado a entidades de negócio (`Customer`, `Lead`) — o que
+é tolerável enquanto não existem usuários de análise consumindo a API.
+
+**Plano de implementação (a executar quando o sistema de usuários de
+análise for desenvolvido):**
+
+1. **Nova role e migração de banco**
+   - Adicionar a role `ANALYST` ao `user_type` via nova migração Flyway
+     `V6__add_analyst_user_type.sql` (e equivalente em
+     `src/test/resources/db/migration/h2/`).
+   - Atualizar o `JwtServiceImpl`/`AuthServiceImpl` apenas para confirmar
+     que a role já é gravada no claim `role` (já é) e propagada como
+     `ROLE_ANALYST` pelo `JwtAuthenticationFilter`.
+
+2. **Utilitário de mascaramento**
+   - Criar `br.com.sprint1.challenge.util.DataMasker` com métodos puros e
+     testáveis:
+     - `maskCpf(String)` → `***.***.***-NN` (preserva os 2 últimos dígitos
+       de verificação).
+     - `maskEmail(String)` → `j***@d****.com` (preserva primeira letra do
+       local-part e do domínio).
+     - `maskPhone(String)` → `(**) ****-NNNN` (preserva os 4 últimos).
+     - `maskFullName(String)` → primeiro nome + iniciais dos demais.
+   - Cobertura unitária dedicada em `DataMaskerTest` com casos para nulos,
+     vazios, formatos inválidos e fronteiras.
+
+3. **DTOs/views dedicados para a role analítica**
+   - Para cada entidade que expõe PII, criar um par de DTOs:
+     `CustomerView` (para `ROLE_USER`/`ROLE_ADMIN`) e
+     `CustomerAnalyticsView` (para `ROLE_ANALYST`), com os campos sensíveis
+     já mascarados via `DataMasker` no mapper de saída.
+   - Mantém o princípio "least privilege at the data layer": o JSON que
+     trafega pela rede já chega anonimizado, não dependendo do cliente
+     respeitar contrato algum.
+
+4. **Endpoints isolados por role**
+   - Expor um pacote de endpoints `/api/v1/analytics/**` anotados com
+     `@PreAuthorize("hasRole('ANALYST')")`, que sempre retornam os DTOs
+     anonimizados. Endpoints existentes em `/api/v1/customer360/**`,
+     `/api/v1/leads/**` etc. continuam servindo `ROLE_USER`/`ROLE_ADMIN`
+     com os DTOs originais.
+   - Alternativa avaliada e descartada: `@JsonView` por role no mesmo
+     endpoint — mais frágil porque qualquer rota nova precisa lembrar de
+     anotar a view; endpoints separados deixam o contrato explícito.
+
+5. **Testes de regressão**
+   - Test de integração verificando que `GET /api/v1/analytics/customers`
+     com token `ROLE_USER` retorna `403`.
+   - Test de integração verificando que o mesmo endpoint com token
+     `ROLE_ANALYST` retorna `200` com CPF, e-mail e telefone mascarados
+     conforme as regras do `DataMasker`.
+   - Test garantindo que o endpoint legado de `Customer` para `ROLE_USER`
+     continua retornando os campos não mascarados.
+
+6. **Logs e auditoria**
+   - Acrescentar log `INFO ANALYTICS_ACCESS user:{} resource:{}` em cada
+     endpoint analítico para rastrear quem acessou que conjunto de dados,
+     reaproveitando o pipeline de logs JSON já existente. Combinado com
+     Envers, fecha o ciclo de evidência LGPD: temos quem alterou
+     (`revinfo`) e quem leu (logs).
 
 ## Assinatura de Payloads
 
@@ -175,20 +301,104 @@ ou com assinatura inválida recebem `401`.
 
 ## Descarte Seguro
 
-Pendente de implementação no backend. A rotina automatizada de hard
-delete/ofuscação por `@Scheduled` ainda não está presente no código (o
-projeto ainda não habilita `@EnableScheduling` nem possui jobs
-periódicos). A base já está pronta para receber essa rotina graças à
-auditoria via Envers (que preserva o histórico mesmo após a remoção
-lógica) e às tabelas com colunas de timestamp (`created_at`,
-`converted_at`, `last_login`), que servirão como critério de elegibilidade
-para o descarte conforme a política LGPD.
+**Estado atual:** não há rotina automatizada de hard delete nem de
+ofuscação periódica. As tabelas críticas já têm os timestamps que servirão
+de critério (`created_at`, `converted_at`, `last_login`), e a auditoria
+via Envers continua preservando o histórico mesmo após qualquer remoção
+lógica. O `@EnableScheduling` ainda não está habilitado.
+
+**Plano de implementação (a executar junto com a introdução do `soft_delete`
+nas entidades sensíveis):**
+
+1. **Coluna `deleted_at` (soft delete) via Flyway**
+   - Migração `V7__add_soft_delete_columns.sql` adicionando
+     `deleted_at TIMESTAMP NULL` em `users`, `customers` e `leads` (com
+     espelho em `src/test/resources/db/migration/h2/`).
+   - Adicionar o campo correspondente nas entidades JPA
+     (`@Column(name = "deleted_at") private LocalDateTime deletedAt;`) e
+     decidir entre duas estratégias:
+     - **Hibernate-driven:** anotar com `@SQLDelete` + `@SQLRestriction`
+       para que `repository.delete(...)` faça `UPDATE ... SET deleted_at`
+       e queries normais ignorem registros deletados. Menos código, mas
+       acopla ao Hibernate.
+     - **Service-driven (recomendado):** método explícito
+       `softDelete(id)` em cada service, mantendo o `delete` físico para
+       casos administrativos. Mais verboso, porém mais auditável.
+
+2. **Habilitar agendamento**
+   - Anotar `ArquiteturaOrientadaaServicosSprint1Application` com
+     `@EnableScheduling`.
+   - Criar `br.com.sprint1.challenge.service.DataRetentionService`
+     concentrando os jobs.
+
+3. **Job 1 — Hard delete de soft-deleted antigos**
+   - Cron padrão `0 0 2 * * *` (diariamente às 02:00, baixa carga).
+   - Pseudocódigo:
+     ```java
+     @Scheduled(cron = "${data-retention.cron-hard-delete}")
+     public void purgeSoftDeleted() {
+         var threshold = LocalDateTime.now()
+             .minusDays(retentionProps.getSoftDeleteDays());
+         int removed = userRepository.deleteByDeletedAtBefore(threshold)
+                     + customerRepository.deleteByDeletedAtBefore(threshold)
+                     + leadRepository.deleteByDeletedAtBefore(threshold);
+         log.info("DATA_RETENTION hard_delete removed:{}", removed);
+     }
+     ```
+   - Como cada entidade é `@Audited`, o Envers grava `revtype=2`
+     (DELETE) automaticamente, então o histórico permanece em
+     `users_aud`/`customers_aud`/`leads_aud` para fins de prova LGPD.
+
+4. **Job 2 — Anonimização de PII em registros inativos**
+   - Cron `0 0 3 * * SUN` (semanal, domingo de madrugada).
+   - Para `User` com `last_login` anterior a N anos (config
+     `data-retention.inactive-user-years`, default 5):
+     - Substituir `username`, `email`, `cpf` por valores tokenizados
+       (`anon_<uuid>@anon.local`, `00000000000`, etc.).
+     - Manter `id` para preservar integridade referencial em FKs e
+       tabelas de auditoria.
+   - Para `Customer`/`Lead` sem atividade no mesmo período: aplicar a
+     mesma rotina via `DataMasker` reutilizando o utilitário criado no
+     plano de Anonimização.
+   - Log: `INFO DATA_RETENTION anonymized entity:{} count:{}`.
+
+5. **Configuração externa**
+   - Bloco em `application.yml`:
+     ```yaml
+     data-retention:
+       enabled: true
+       soft-delete-days: 30
+       inactive-user-years: 5
+       cron-hard-delete: "0 0 2 * * *"
+       cron-anonymize: "0 0 3 * * SUN"
+     ```
+   - Em ambiente de teste (`src/test/resources/application.yml`) manter
+     `enabled: false` para não interferir nos testes existentes.
+   - `@ConfigurationProperties(prefix = "data-retention")` em
+     `DataRetentionProperties` para injeção tipada.
+
+6. **Testes**
+   - `DataRetentionServiceTest` com `Clock` injetado (substituir
+     `LocalDateTime.now()` por `LocalDateTime.now(clock)`) para avançar
+     o relógio nos testes e validar que o registro é removido/anonimizado
+     exatamente após o threshold.
+   - Test verificando que registros recentes (dentro do período de
+     retenção) **não** são afetados.
+   - Test confirmando que após o hard delete o `users_aud` ainda contém
+     o histórico com `revtype=2`.
+
+7. **Operacional**
+   - Adicionar métrica customizada via Micrometer (`Counter
+     "data_retention.removed"`) para visibilidade no Application Insights.
+   - Documentar a política (dias de retenção e critérios) no README, já
+     que é exigência de transparência da LGPD.
 
 ## Monitoramento de Anomalias
 
 Foram adicionados logs customizados em pontos sensíveis com prefixo
 padronizado `SECURITY_VIOLATION` para facilitar alertas e dashboards no
 Application Insights:
+
 - `RateLimitFilter` registra `WARN` `SECURITY_VIOLATION Rate Limit Exceeded
   IP:{}` quando o bucket é estourado.
 - `JwtAuthenticationFilter` registra `WARN` `SECURITY_VIOLATION JWT Invalid
@@ -196,6 +406,17 @@ Application Insights:
 - `GlobalExceptionHandler` registra `WARN` `SECURITY_VIOLATION Auth Failed
   IP:{}` em `InvalidCredentialsException` e `ERROR` na exceção genérica.
 
-Esses eventos são emitidos no formato JSON estruturado do `logback-spring.xml`,
-o que permite consultá-los diretamente no Log Analytics via filtros por
-`level` e por substring `SECURITY_VIOLATION`.
+Esses eventos são emitidos no formato JSON estruturado do
+`logback-spring.xml`, o que permite consultá-los diretamente no Log
+Analytics via filtros por `level` e por substring `SECURITY_VIOLATION`.
+Como o backend fica atrás de **três camadas de filtragem na borda** —
+DDoS L3/L4 da Cloudflare, IP allowlist do ACA Ingress restrito aos ranges
+da Cloudflare, e WAF Free Managed Ruleset (OWASP) da Cloudflare —, os
+eventos `SECURITY_VIOLATION` que chegam a esses logs já passaram por
+todos esses controles externos. Isso significa que o sinal é mais
+"sintético": a frequência é menor (ataques triviais de SQLi, XSS e
+floods volumétricos não chegam até aqui), porém cada evento registrado
+representa uma anomalia que **escapou** do edge — o que aumenta a
+relevância do alerta correspondente no Azure Monitor / Application
+Insights e justifica thresholds KQL mais agressivos para essa categoria
+de log.

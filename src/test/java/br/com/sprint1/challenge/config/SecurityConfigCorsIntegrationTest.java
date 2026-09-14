@@ -14,9 +14,8 @@ class SecurityConfigCorsIntegrationTest {
     @Test
     void contextLoads_withValidCorsConfig() {
         try (ConfigurableApplicationContext context = new SpringApplicationBuilder()
-                .properties("app.cors.allowed-origins=https://app.example.com,https://admin.example.com")
                 .sources(br.com.sprint1.challenge.ArquiteturaOrientadaaServicosSprint1Application.class)
-                .run()) {
+                .run("--app.cors.allowed-origins=https://app.example.com,https://admin.example.com")) {
             assertNotNull(context.getBean("securityConfig"));
         }
     }
@@ -24,9 +23,8 @@ class SecurityConfigCorsIntegrationTest {
     @Test
     void contextLoads_withSingleValidCorsConfig() {
         try (ConfigurableApplicationContext context = new SpringApplicationBuilder()
-                .properties("app.cors.allowed-origins=https://app.example.com")
                 .sources(br.com.sprint1.challenge.ArquiteturaOrientadaaServicosSprint1Application.class)
-                .run()) {
+                .run("--app.cors.allowed-origins=https://app.example.com")) {
             assertNotNull(context.getBean("securityConfig"));
         }
     }
@@ -35,9 +33,8 @@ class SecurityConfigCorsIntegrationTest {
     void contextFails_withBlankCorsConfig() {
         BeanCreationException ex = assertThrows(BeanCreationException.class, () -> {
             try (ConfigurableApplicationContext context = new SpringApplicationBuilder()
-                    .properties("app.cors.allowed-origins=")
                     .sources(br.com.sprint1.challenge.ArquiteturaOrientadaaServicosSprint1Application.class)
-                    .run()) {
+                    .run("--app.cors.allowed-origins=")) {
                 context.close();
             }
         });
@@ -49,9 +46,8 @@ class SecurityConfigCorsIntegrationTest {
     void contextFails_withWildcardCorsConfig() {
         BeanCreationException ex = assertThrows(BeanCreationException.class, () -> {
             try (ConfigurableApplicationContext context = new SpringApplicationBuilder()
-                    .properties("app.cors.allowed-origins=*")
                     .sources(br.com.sprint1.challenge.ArquiteturaOrientadaaServicosSprint1Application.class)
-                    .run()) {
+                    .run("--app.cors.allowed-origins=*")) {
                 context.close();
             }
         });
@@ -63,9 +59,8 @@ class SecurityConfigCorsIntegrationTest {
     void contextFails_withWhitespaceCorsConfig() {
         BeanCreationException ex = assertThrows(BeanCreationException.class, () -> {
             try (ConfigurableApplicationContext context = new SpringApplicationBuilder()
-                    .properties("app.cors.allowed-origins=   ")
                     .sources(br.com.sprint1.challenge.ArquiteturaOrientadaaServicosSprint1Application.class)
-                    .run()) {
+                    .run("--app.cors.allowed-origins=   ")) {
                 context.close();
             }
         });

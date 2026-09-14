@@ -1,8 +1,10 @@
 package br.com.sprint1.challenge.service.impl;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.NestedExceptionUtils;
 import org.springframework.beans.factory.BeanCreationException;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,12 +17,12 @@ class JwtServiceImplIntegrationTest {
     void contextLoads_withValidJwtSecret() {
         String validSecret = "exactly32characterslongsecretkey!";
         try (ConfigurableApplicationContext context = new SpringApplicationBuilder()
-                .properties("app.cors.allowed-origins=https://app.example.com")
-                .properties("jwt.secret=" + validSecret)
-                .properties("jwt.expiration-minutes=30")
-                .properties("jwt.issuer=carsync-auth")
+                .web(WebApplicationType.NONE)
                 .sources(br.com.sprint1.challenge.ArquiteturaOrientadaaServicosSprint1Application.class)
-                .run()) {
+                .run("--app.cors.allowed-origins=https://app.example.com",
+                     "--jwt.secret=" + validSecret,
+                     "--jwt.expiration-minutes=30",
+                     "--jwt.issuer=carsync-auth")) {
             assertNotNull(context.getBean("jwtServiceImpl"));
         }
     }
@@ -30,51 +32,54 @@ class JwtServiceImplIntegrationTest {
         String shortSecret = "short";
         BeanCreationException ex = assertThrows(BeanCreationException.class, () -> {
             try (ConfigurableApplicationContext context = new SpringApplicationBuilder()
-                    .properties("app.cors.allowed-origins=https://app.example.com")
-                    .properties("jwt.secret=" + shortSecret)
-                    .properties("jwt.expiration-minutes=30")
-                    .properties("jwt.issuer=carsync-auth")
+                    .web(WebApplicationType.NONE)
                     .sources(br.com.sprint1.challenge.ArquiteturaOrientadaaServicosSprint1Application.class)
-                    .run()) {
+                    .run("--app.cors.allowed-origins=https://app.example.com",
+                         "--jwt.secret=" + shortSecret,
+                         "--jwt.expiration-minutes=30",
+                         "--jwt.issuer=carsync-auth")) {
                 context.close();
             }
         });
-        assertTrue(ex.getCause() instanceof IllegalStateException);
-        assertTrue(ex.getCause().getMessage().contains("256 bits"));
+        Throwable rootCause = NestedExceptionUtils.getRootCause(ex);
+        assertTrue(rootCause instanceof IllegalStateException);
+        assertTrue(rootCause.getMessage().contains("256 bits"));
     }
 
     @Test
     void contextFails_withEmptyJwtSecret() {
         BeanCreationException ex = assertThrows(BeanCreationException.class, () -> {
             try (ConfigurableApplicationContext context = new SpringApplicationBuilder()
-                    .properties("app.cors.allowed-origins=https://app.example.com")
-                    .properties("jwt.secret=")
-                    .properties("jwt.expiration-minutes=30")
-                    .properties("jwt.issuer=carsync-auth")
+                    .web(WebApplicationType.NONE)
                     .sources(br.com.sprint1.challenge.ArquiteturaOrientadaaServicosSprint1Application.class)
-                    .run()) {
+                    .run("--app.cors.allowed-origins=https://app.example.com",
+                         "--jwt.secret=",
+                         "--jwt.expiration-minutes=30",
+                         "--jwt.issuer=carsync-auth")) {
                 context.close();
             }
         });
-        assertTrue(ex.getCause() instanceof IllegalStateException);
-        assertTrue(ex.getCause().getMessage().contains("256 bits"));
+        Throwable rootCause = NestedExceptionUtils.getRootCause(ex);
+        assertTrue(rootCause instanceof IllegalStateException);
+        assertTrue(rootCause.getMessage().contains("256 bits"));
     }
 
     @Test
     void contextFails_with31CharJwtSecret() {
-        String shortSecret = "only31characterslongsecret!"; // 31 chars
+        String shortSecret = "only31characterslongsecret!1234"; // 31 chars
         BeanCreationException ex = assertThrows(BeanCreationException.class, () -> {
             try (ConfigurableApplicationContext context = new SpringApplicationBuilder()
-                    .properties("app.cors.allowed-origins=https://app.example.com")
-                    .properties("jwt.secret=" + shortSecret)
-                    .properties("jwt.expiration-minutes=30")
-                    .properties("jwt.issuer=carsync-auth")
+                    .web(WebApplicationType.NONE)
                     .sources(br.com.sprint1.challenge.ArquiteturaOrientadaaServicosSprint1Application.class)
-                    .run()) {
+                    .run("--app.cors.allowed-origins=https://app.example.com",
+                         "--jwt.secret=" + shortSecret,
+                         "--jwt.expiration-minutes=30",
+                         "--jwt.issuer=carsync-auth")) {
                 context.close();
             }
         });
-        assertTrue(ex.getCause() instanceof IllegalStateException);
-        assertTrue(ex.getCause().getMessage().contains("256 bits"));
+        Throwable rootCause = NestedExceptionUtils.getRootCause(ex);
+        assertTrue(rootCause instanceof IllegalStateException);
+        assertTrue(rootCause.getMessage().contains("256 bits"));
     }
 }
