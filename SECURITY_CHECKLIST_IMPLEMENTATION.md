@@ -293,7 +293,7 @@ FASE 6 (Escala) ← Quando APIM pronto
 ## Critérios de Pronto (Definition of Done) por Fase
 
 ### Fase 1 - LGPD
-- [ ] Migração V6 aplicada (ANALYST role)
+- [x] Migração V6 aplicada (ANALYST role)
 - [ ] `DataMasker` com 100% cobertura unitária
 - [ ] Analytics DTOs mascarados funcionando
 - [ ] Endpoints `/api/v1/analytics/**` retornam 403 para USER, 200 para ANALYST
