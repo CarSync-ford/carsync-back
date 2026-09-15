@@ -338,7 +338,7 @@ class AuthServiceTest {
     @Test
     void resetPassword_tokenValido_atualizaSenhaERevogaRefreshToken() {
         // Given
-        ResetPasswordRequest request = new ResetPasswordRequest("reset-token", "newpassword123");
+        ResetPasswordRequest request = new ResetPasswordRequest("reset-token", "NewPassword1!");
         var claims = mock(io.jsonwebtoken.Claims.class);
         when(claims.getSubject()).thenReturn(TEST_USER_ID);
         when(jwtService.parsePasswordResetToken("reset-token")).thenReturn(claims);
@@ -354,13 +354,13 @@ class AuthServiceTest {
         // Then
         verify(userRepository).save(user);
         verify(userRepository).revokeRefreshToken(TEST_USER_ID);
-        assertTrue(BCrypt.checkpw("newpassword123", user.getHashedPassword()));
+        assertTrue(BCrypt.checkpw("NewPassword1!", user.getHashedPassword()));
     }
 
     @Test
     void resetPassword_usuarioNaoExiste_lancaExcecao() {
         // Given
-        ResetPasswordRequest request = new ResetPasswordRequest("reset-token", "newpassword123");
+        ResetPasswordRequest request = new ResetPasswordRequest("reset-token", "NewPassword1!");
         var claims = mock(io.jsonwebtoken.Claims.class);
         when(claims.getSubject()).thenReturn(TEST_USER_ID);
         when(jwtService.parsePasswordResetToken("reset-token")).thenReturn(claims);
@@ -383,7 +383,7 @@ class AuthServiceTest {
 
         when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
 
-        ChangePasswordRequest request = new ChangePasswordRequest(TEST_PASSWORD, "newpassword123");
+        ChangePasswordRequest request = new ChangePasswordRequest(TEST_PASSWORD, "NewPassword1!");
 
         // When
         assertDoesNotThrow(() -> authService.changePassword(TEST_USER_ID, request));
@@ -391,7 +391,7 @@ class AuthServiceTest {
         // Then
         verify(userRepository).save(user);
         verify(userRepository).revokeRefreshToken(TEST_USER_ID);
-        assertTrue(BCrypt.checkpw("newpassword123", user.getHashedPassword()));
+        assertTrue(BCrypt.checkpw("NewPassword1!", user.getHashedPassword()));
     }
 
     @Test
@@ -405,7 +405,7 @@ class AuthServiceTest {
 
         when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
 
-        ChangePasswordRequest request = new ChangePasswordRequest("wrongpassword", "newpassword123");
+        ChangePasswordRequest request = new ChangePasswordRequest("wrongpassword", "NewPassword1!");
 
         // When/Then
         assertThrows(InvalidCredentialsException.class, () -> authService.changePassword(TEST_USER_ID, request));

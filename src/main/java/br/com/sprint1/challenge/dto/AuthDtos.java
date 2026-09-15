@@ -1,6 +1,7 @@
 package br.com.sprint1.challenge.dto;
 
 import br.com.sprint1.challenge.validation.LowercaseEmail;
+import br.com.sprint1.challenge.validation.StrongPassword;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -33,12 +34,12 @@ public final class AuthDtos {
 
     public record ResetPasswordRequest(
         @NotBlank String token,
-        @NotBlank @Size(min = 6, max = 20) String newPassword
+        @NotBlank @Size(max = 20) @StrongPassword String newPassword
     ) {}
 
     public record ChangePasswordRequest(
         @NotBlank @Size(min = 6, max = 20) String currentPassword,
-        @NotBlank @Size(min = 6, max = 20) String newPassword
+        @NotBlank @Size(max = 20) @StrongPassword String newPassword
     ) {}
 
     public record MfaEnableResponse(
