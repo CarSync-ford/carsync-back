@@ -66,6 +66,10 @@ public class User {
     @Column(name = "password_reset_token_expires_at")
     private LocalDateTime passwordResetTokenExpiresAt;
 
+    @NotAudited
+    @Column(name = "mfa_last_used_step")
+    private Long mfaLastUsedStep;
+
     public User() {}
 
     @PrePersist
@@ -115,4 +119,7 @@ public class User {
 
     public LocalDateTime getPasswordResetTokenExpiresAt() { return passwordResetTokenExpiresAt; }
     public void setPasswordResetTokenExpiresAt(LocalDateTime passwordResetTokenExpiresAt) { this.passwordResetTokenExpiresAt = passwordResetTokenExpiresAt; }
+
+    public Long getMfaLastUsedStep() { return mfaLastUsedStep; }
+    public void setMfaLastUsedStep(Long mfaLastUsedStep) { this.mfaLastUsedStep = mfaLastUsedStep; }
 }

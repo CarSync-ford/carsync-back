@@ -4,6 +4,7 @@ import br.com.sprint1.challenge.validation.LowercaseEmail;
 import br.com.sprint1.challenge.validation.StrongPassword;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public final class AuthDtos {
@@ -11,8 +12,14 @@ public final class AuthDtos {
 
     public record AuthRequest(
         @NotBlank @Email @LowercaseEmail String email,
-        @NotBlank @Size(min = 6, max = 20) String password
-    ) {}
+        @NotBlank @Size(min = 6, max = 20) String password,
+        @Pattern(regexp = "^[0-9]{6}$", message = "MFA code must be 6 digits") String code
+    ) {
+        /** Backwards-compatible constructor for non-MFA logins and existing tests. */
+        public AuthRequest(String email, String password) {
+            this(email, password, null);
+        }
+    }
 
     public record AuthResponse(
         String token,
@@ -48,6 +55,11 @@ public final class AuthDtos {
     ) {}
 
     public record MfaVerifyRequest(
-        @NotBlank @Size(min = 6, max = 6) String code
+        @NotBlank @Pattern(regexp = "^[0-9]{6}$", message = "MFA code must be 6 digits") String code
+    ) {}
+
+    public record MfaDisableRequest(
+        @NotBlank @Size(min = 6, max = 20) String currentPassword,
+        @NotBlank @Pattern(regexp = "^[0-9]{6}$", message = "MFA code must be 6 digits") String code
     ) {}
 }

@@ -5,6 +5,7 @@ import br.com.sprint1.challenge.dto.AuthDtos.AuthRequest;
 import br.com.sprint1.challenge.dto.AuthDtos.AuthResponse;
 import br.com.sprint1.challenge.dto.AuthDtos.ChangePasswordRequest;
 import br.com.sprint1.challenge.dto.AuthDtos.ForgotPasswordRequest;
+import br.com.sprint1.challenge.dto.AuthDtos.MfaDisableRequest;
 import br.com.sprint1.challenge.dto.AuthDtos.MfaEnableResponse;
 import br.com.sprint1.challenge.dto.AuthDtos.MfaVerifyRequest;
 import br.com.sprint1.challenge.dto.AuthDtos.RefreshTokenRequest;
@@ -18,6 +19,7 @@ import br.com.sprint1.challenge.exception.TokenExpiredException;
 import br.com.sprint1.challenge.exception.UserLockedException;
 import br.com.sprint1.challenge.repository.UserRepository;
 import br.com.sprint1.challenge.service.impl.AuthServiceImpl;
+import br.com.sprint1.challenge.util.TotpUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -428,159 +430,243 @@ class AuthServiceTest {
 
     // --- MFA Tests ---
 
+    private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2026-09-15T12:00:00Z"), ZoneOffset.UTC);
+    private static final long CURRENT_STEP = Instant.parse("2026-09-15T12:00:00Z").getEpochSecond() / 30;
+    private static final String MFA_SECRET = "JBSWY3DPEHPK3PXP";
+
+    private String codeForStep(long step) {
+        return TotpUtil.generateCode(TotpUtil.base32Decode(MFA_SECRET), step);
+    }
+
     @Test
     void enableMfa_retornaSecretEQrCode() {
-        // Given
         User user = new User();
         user.setId(TEST_USER_ID);
         user.setEmail(TEST_EMAIL);
 
-        when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
 
-        // When
         MfaEnableResponse response = authService.enableMfa(TEST_USER_ID);
 
-        // Then
         assertNotNull(response);
         assertNotNull(response.secret());
-        assertNotNull(response.qrCodeUri());
         assertTrue(response.qrCodeUri().contains("otpauth://totp/"));
         assertTrue(response.qrCodeUri().contains(TEST_EMAIL));
-        verify(userRepository).save(user);
         assertNotNull(user.getMfaSecret());
+        assertFalse(user.getMfaEnabled());
     }
 
     @Test
-    void verifyMfa_codigoValido_ativaMfa() {
-        // Given
+    void enableMfa_mfaJaAtivo_lancaExcecao() {
         User user = new User();
         user.setId(TEST_USER_ID);
         user.setEmail(TEST_EMAIL);
-        String secret = "JBSWY3DPEHPK3PXP"; // valid base32
-        user.setMfaSecret(secret);
+        user.setMfaEnabled(true);
+        user.setMfaSecret(MFA_SECRET);
 
-        when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
 
-        // Generate a valid TOTP code for current time window
-        String validCode = generateValidTotpCode(secret);
+        assertThrows(IllegalStateException.class, () -> authService.enableMfa(TEST_USER_ID));
+        assertEquals(MFA_SECRET, user.getMfaSecret()); // not overwritten
+    }
 
-        MfaVerifyRequest request = new MfaVerifyRequest(validCode);
+    @Test
+    void verifyMfa_codigoValido_ativaMfaERevogaRefresh() {
+        User user = new User();
+        user.setId(TEST_USER_ID);
+        user.setEmail(TEST_EMAIL);
+        user.setMfaSecret(MFA_SECRET);
+        user.setRefreshToken("old-refresh");
+        user.setRefreshTokenExpiresAt(LocalDateTime.of(2026, 10, 1, 0, 0));
 
-        // When
-        assertDoesNotThrow(() -> authService.verifyMfa(TEST_USER_ID, request));
+        when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
 
-        // Then
-        verify(userRepository).save(user);
+        String validCode = codeForStep(CURRENT_STEP);
+        assertDoesNotThrow(() -> authService.verifyMfa(TEST_USER_ID, new MfaVerifyRequest(validCode)));
+
         assertTrue(user.getMfaEnabled());
+        assertEquals(CURRENT_STEP, user.getMfaLastUsedStep());
+        assertNull(user.getRefreshToken());
+        assertNull(user.getRefreshTokenExpiresAt());
     }
 
     @Test
-    void verifyMfa_codigoInvalido_lancaExcecao() {
-        // Given
+    void verifyMfa_codigoInvalido_lancaExcecaoEIncrementaFalhas() {
         User user = new User();
         user.setId(TEST_USER_ID);
         user.setEmail(TEST_EMAIL);
-        user.setMfaSecret("JBSWY3DPEHPK3PXP");
+        user.setMfaSecret(MFA_SECRET);
+        user.setFailedLoginAttempts(0);
 
-        when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
 
-        MfaVerifyRequest request = new MfaVerifyRequest("000000");
-
-        // When/Then
-        assertThrows(InvalidCredentialsException.class, () -> authService.verifyMfa(TEST_USER_ID, request));
+        assertThrows(InvalidCredentialsException.class,
+                () -> authService.verifyMfa(TEST_USER_ID, new MfaVerifyRequest("000000")));
+        assertEquals(1, user.getFailedLoginAttempts());
     }
 
     @Test
-    void verifyMfa_mfaNaoHabilitado_lancaExcecao() {
-        // Given
+    void verifyMfa_semSecret_lancaExcecao() {
         User user = new User();
         user.setId(TEST_USER_ID);
         user.setEmail(TEST_EMAIL);
         user.setMfaSecret(null);
 
-        when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
 
-        MfaVerifyRequest request = new MfaVerifyRequest("123456");
-
-        // When/Then
-        assertThrows(InvalidTokenException.class, () -> authService.verifyMfa(TEST_USER_ID, request));
+        assertThrows(InvalidTokenException.class,
+                () -> authService.verifyMfa(TEST_USER_ID, new MfaVerifyRequest("123456")));
     }
 
     @Test
-    void disableMfa_desativaMfaELimpaSecret() {
-        // Given
+    void disableMfa_credenciaisValidas_limpaMfaERevogaRefresh() {
         User user = new User();
         user.setId(TEST_USER_ID);
         user.setEmail(TEST_EMAIL);
+        user.setHashedPassword(BCrypt.hashpw(TEST_PASSWORD, BCrypt.gensalt(10)));
         user.setMfaEnabled(true);
-        user.setMfaSecret("JBSWY3DPEHPK3PXP");
+        user.setMfaSecret(MFA_SECRET);
+        user.setRefreshToken("old-refresh");
+        user.setRefreshTokenExpiresAt(LocalDateTime.of(2026, 10, 1, 0, 0));
 
-        when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
 
-        // When
-        assertDoesNotThrow(() -> authService.disableMfa(TEST_USER_ID));
+        String validCode = codeForStep(CURRENT_STEP);
+        MfaDisableRequest request = new MfaDisableRequest(TEST_PASSWORD, validCode);
 
-        // Then
-        verify(userRepository).save(user);
+        assertDoesNotThrow(() -> authService.disableMfa(TEST_USER_ID, request));
+
         assertFalse(user.getMfaEnabled());
         assertNull(user.getMfaSecret());
+        assertNull(user.getMfaLastUsedStep());
+        assertNull(user.getRefreshToken());
+        assertNull(user.getRefreshTokenExpiresAt());
+    }
+
+    @Test
+    void disableMfa_senhaErrada_lancaExcecao() {
+        User user = new User();
+        user.setId(TEST_USER_ID);
+        user.setEmail(TEST_EMAIL);
+        user.setHashedPassword(BCrypt.hashpw(TEST_PASSWORD, BCrypt.gensalt(10)));
+        user.setMfaEnabled(true);
+        user.setMfaSecret(MFA_SECRET);
+        user.setFailedLoginAttempts(0);
+
+        when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
+
+        MfaDisableRequest request = new MfaDisableRequest("wrongpassword", codeForStep(CURRENT_STEP));
+        assertThrows(InvalidCredentialsException.class, () -> authService.disableMfa(TEST_USER_ID, request));
+        assertEquals(1, user.getFailedLoginAttempts());
+    }
+
+    @Test
+    void disableMfa_codigoErrado_lancaExcecao() {
+        User user = new User();
+        user.setId(TEST_USER_ID);
+        user.setEmail(TEST_EMAIL);
+        user.setHashedPassword(BCrypt.hashpw(TEST_PASSWORD, BCrypt.gensalt(10)));
+        user.setMfaEnabled(true);
+        user.setMfaSecret(MFA_SECRET);
+        user.setFailedLoginAttempts(0);
+
+        when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
+
+        MfaDisableRequest request = new MfaDisableRequest(TEST_PASSWORD, "000000");
+        assertThrows(InvalidCredentialsException.class, () -> authService.disableMfa(TEST_USER_ID, request));
+        assertEquals(1, user.getFailedLoginAttempts());
+    }
+
+    @Test
+    void disableMfa_mfaNaoAtivo_lancaExcecao() {
+        User user = new User();
+        user.setId(TEST_USER_ID);
+        user.setEmail(TEST_EMAIL);
+        user.setMfaEnabled(false);
+
+        when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
+
+        MfaDisableRequest request = new MfaDisableRequest(TEST_PASSWORD, "123456");
+        assertThrows(InvalidTokenException.class, () -> authService.disableMfa(TEST_USER_ID, request));
+    }
+
+    @Test
+    void loginComMfa_semCodigo_falha() {
+        User user = new User();
+        user.setId(TEST_USER_ID);
+        user.setEmail(TEST_EMAIL);
+        user.setHashedPassword(BCrypt.hashpw(TEST_PASSWORD, BCrypt.gensalt(10)));
+        user.setMfaEnabled(true);
+        user.setMfaSecret(MFA_SECRET);
+
+        when(userRepository.findByEmailForUpdate(TEST_EMAIL)).thenReturn(Optional.of(user));
+
+        AuthRequest request = new AuthRequest(TEST_EMAIL, TEST_PASSWORD);
+        assertThrows(InvalidCredentialsException.class, () -> authService.authenticate(request));
+    }
+
+    @Test
+    void loginComMfa_codigoValido_retornaTokens() {
+        User user = new User();
+        user.setId(TEST_USER_ID);
+        user.setEmail(TEST_EMAIL);
+        user.setHashedPassword(BCrypt.hashpw(TEST_PASSWORD, BCrypt.gensalt(10)));
+        user.setMfaEnabled(true);
+        user.setMfaSecret(MFA_SECRET);
+        user.setUserType(new UserType());
+        user.getUserType().setType("USER");
+
+        when(userRepository.findByEmailForUpdate(TEST_EMAIL)).thenReturn(Optional.of(user));
+        when(jwtService.generateToken(TEST_USER_ID, TEST_EMAIL, "USER")).thenReturn(TEST_ACCESS_TOKEN);
+        when(jwtService.generateRefreshToken(TEST_USER_ID)).thenReturn(TEST_REFRESH_TOKEN);
+
+        String code = codeForStep(CURRENT_STEP);
+        AuthRequest request = new AuthRequest(TEST_EMAIL, TEST_PASSWORD, code);
+        AuthResponse response = authService.authenticate(request);
+
+        assertNotNull(response);
+        assertEquals(CURRENT_STEP, user.getMfaLastUsedStep());
+    }
+
+    @Test
+    void loginComMfa_codigoErrado_incrementaFalhas() {
+        User user = new User();
+        user.setId(TEST_USER_ID);
+        user.setEmail(TEST_EMAIL);
+        user.setHashedPassword(BCrypt.hashpw(TEST_PASSWORD, BCrypt.gensalt(10)));
+        user.setMfaEnabled(true);
+        user.setMfaSecret(MFA_SECRET);
+        user.setFailedLoginAttempts(0);
+
+        when(userRepository.findByEmailForUpdate(TEST_EMAIL)).thenReturn(Optional.of(user));
+
+        AuthRequest request = new AuthRequest(TEST_EMAIL, TEST_PASSWORD, "000000");
+        assertThrows(InvalidCredentialsException.class, () -> authService.authenticate(request));
+        assertEquals(1, user.getFailedLoginAttempts());
+    }
+
+    @Test
+    void loginComMfa_replayMesmoStep_falha() {
+        User user = new User();
+        user.setId(TEST_USER_ID);
+        user.setEmail(TEST_EMAIL);
+        user.setHashedPassword(BCrypt.hashpw(TEST_PASSWORD, BCrypt.gensalt(10)));
+        user.setMfaEnabled(true);
+        user.setMfaSecret(MFA_SECRET);
+        user.setMfaLastUsedStep(CURRENT_STEP); // already used
+        user.setUserType(new UserType());
+        user.getUserType().setType("USER");
+
+        when(userRepository.findByEmailForUpdate(TEST_EMAIL)).thenReturn(Optional.of(user));
+
+        String code = codeForStep(CURRENT_STEP);
+        AuthRequest request = new AuthRequest(TEST_EMAIL, TEST_PASSWORD, code);
+        assertThrows(InvalidCredentialsException.class, () -> authService.authenticate(request));
     }
 
     private String hashToken(String token) throws Exception {
         return HexFormat.of().formatHex(
                 MessageDigest.getInstance("SHA-256")
                         .digest(token.getBytes(StandardCharsets.UTF_8)));
-    }
-
-    // Helper to generate valid TOTP code
-    private String generateValidTotpCode(String secret) {
-        try {
-            long timeWindow = System.currentTimeMillis() / 1000 / 30;
-            byte[] key = base32Decode(secret);
-            byte[] data = new byte[8];
-            long tw = timeWindow;
-            for (int i = 7; i >= 0; i--) {
-                data[i] = (byte) (tw & 0xFF);
-                tw >>= 8;
-            }
-
-            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA1");
-            mac.init(new javax.crypto.spec.SecretKeySpec(key, "HmacSHA1"));
-            byte[] hash = mac.doFinal(data);
-
-            int offset = hash[hash.length - 1] & 0xF;
-            int truncatedHash = 0;
-            for (int i = 0; i < 4; i++) {
-                truncatedHash <<= 8;
-                truncatedHash |= (hash[offset + i] & 0xFF);
-            }
-
-            truncatedHash &= 0x7FFFFFFF;
-            int totp = truncatedHash % 1000000;
-            return String.format("%06d", totp);
-        } catch (Exception e) {
-            return "000000";
-        }
-    }
-
-    private byte[] base32Decode(String encoded) {
-        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-        encoded = encoded.toUpperCase().replaceAll("[^A-Z2-7]", "");
-        int bits = encoded.length() * 5;
-        byte[] result = new byte[bits / 8];
-        int buffer = 0;
-        int bitsLeft = 0;
-        int index = 0;
-        for (char c : encoded.toCharArray()) {
-            int val = alphabet.indexOf(c);
-            if (val < 0) continue;
-            buffer = (buffer << 5) | val;
-            bitsLeft += 5;
-            if (bitsLeft >= 8) {
-                result[index++] = (byte) ((buffer >> (bitsLeft - 8)) & 0xFF);
-                bitsLeft -= 8;
-            }
-        }
-        return result;
     }
 }

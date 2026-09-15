@@ -7,6 +7,7 @@ import br.com.sprint1.challenge.dto.AuthDtos.RefreshTokenResponse;
 import br.com.sprint1.challenge.dto.AuthDtos.ForgotPasswordRequest;
 import br.com.sprint1.challenge.dto.AuthDtos.ResetPasswordRequest;
 import br.com.sprint1.challenge.dto.AuthDtos.ChangePasswordRequest;
+import br.com.sprint1.challenge.dto.AuthDtos.MfaDisableRequest;
 import br.com.sprint1.challenge.dto.AuthDtos.MfaEnableResponse;
 import br.com.sprint1.challenge.dto.AuthDtos.MfaVerifyRequest;
 
@@ -18,5 +19,5 @@ public interface AuthService {
     void changePassword(String userId, ChangePasswordRequest request);
     MfaEnableResponse enableMfa(String userId);
     void verifyMfa(String userId, MfaVerifyRequest request);
-    void disableMfa(String userId);
+    void disableMfa(String userId, MfaDisableRequest request);
 }

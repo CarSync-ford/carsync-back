@@ -53,7 +53,8 @@ class SecurityConfigTest {
             .andExpect(status().isUnauthorized());
 
         mockMvc.perform(post("/api/v1/auth/mfa/disable")
-                .contentType("application/json"))
+                .contentType("application/json")
+                .content("{\"currentPassword\":\"x\",\"code\":\"123456\"}"))
             .andExpect(status().isUnauthorized());
     }
 

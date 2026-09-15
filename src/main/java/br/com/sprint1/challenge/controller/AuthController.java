@@ -4,6 +4,7 @@ import br.com.sprint1.challenge.dto.AuthDtos.AuthRequest;
 import br.com.sprint1.challenge.dto.AuthDtos.AuthResponse;
 import br.com.sprint1.challenge.dto.AuthDtos.ChangePasswordRequest;
 import br.com.sprint1.challenge.dto.AuthDtos.ForgotPasswordRequest;
+import br.com.sprint1.challenge.dto.AuthDtos.MfaDisableRequest;
 import br.com.sprint1.challenge.dto.AuthDtos.MfaEnableResponse;
 import br.com.sprint1.challenge.dto.AuthDtos.MfaVerifyRequest;
 import br.com.sprint1.challenge.dto.AuthDtos.RefreshTokenRequest;
@@ -147,15 +148,18 @@ public class AuthController {
     }
 
     @PostMapping(value = "/mfa/disable", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Disable MFA", description = "Disables MFA for the user.")
+    @Operation(summary = "Disable MFA", description = "Disables MFA for the user. Requires current password and a valid TOTP code.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "MFA disabled"),
-            @ApiResponse(responseCode = "401", description = "Not authenticated"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload"),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials or MFA code"),
             @ApiResponse(responseCode = "403", description = "Not authenticated")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<Void> disableMfa(@AuthenticationPrincipal String userId) {
-        authService.disableMfa(userId);
+    public ResponseEntity<Void> disableMfa(
+            @AuthenticationPrincipal String userId,
+            @Valid @RequestBody MfaDisableRequest request) {
+        authService.disableMfa(userId, request);
         return ResponseEntity.noContent().build();
     }
 }
