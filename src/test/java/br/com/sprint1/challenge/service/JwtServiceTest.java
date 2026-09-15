@@ -27,6 +27,8 @@ class JwtServiceTest {
         
         assertEquals("user-123", claims.getSubject());
         assertEquals("test@example.com", claims.get("email"));
+        assertEquals("USER", claims.get("role"));
+        assertEquals("ACCESS", claims.get("type"));
         assertEquals("carsync-auth", claims.getIssuer());
     }
 

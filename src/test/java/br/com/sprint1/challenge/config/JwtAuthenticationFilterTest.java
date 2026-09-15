@@ -43,7 +43,10 @@ class JwtAuthenticationFilterTest {
         request.addHeader("Authorization", "Bearer valid-token");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        Claims claims = new DefaultClaims(Map.of("sub", "user-123"));
+        Claims claims = new DefaultClaims(Map.of(
+                "sub", "user-123",
+                "role", "USER",
+                "type", "ACCESS"));
         when(jwtService.parse("valid-token")).thenReturn(claims);
 
         filter.doFilterInternal(request, response, filterChain);
@@ -51,6 +54,40 @@ class JwtAuthenticationFilterTest {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         assertNotNull(auth);
         assertEquals("user-123", auth.getName());
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void refreshToken_naoSetaAuthentication() throws ServletException, IOException {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Authorization", "Bearer refresh-token");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        Claims claims = new DefaultClaims(Map.of(
+                "sub", "user-123",
+                "type", "REFRESH"));
+        when(jwtService.parse("refresh-token")).thenReturn(claims);
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void accessTokenSemRole_naoSetaAuthentication() throws ServletException, IOException {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Authorization", "Bearer access-token");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        Claims claims = new DefaultClaims(Map.of(
+                "sub", "user-123",
+                "type", "ACCESS"));
+        when(jwtService.parse("access-token")).thenReturn(claims);
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
         verify(filterChain).doFilter(request, response);
     }
 

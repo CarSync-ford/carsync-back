@@ -20,7 +20,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -112,9 +111,9 @@ public class AuthController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> changePassword(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal String userId,
             @Valid @RequestBody ChangePasswordRequest request) {
-        authService.changePassword(userDetails.getUsername(), request);
+        authService.changePassword(userId, request);
         return ResponseEntity.noContent().build();
     }
 
@@ -126,8 +125,8 @@ public class AuthController {
             @ApiResponse(responseCode = "403", description = "Not authenticated")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<MfaEnableResponse> enableMfa(@AuthenticationPrincipal UserDetails userDetails) {
-        MfaEnableResponse response = authService.enableMfa(userDetails.getUsername());
+    public ResponseEntity<MfaEnableResponse> enableMfa(@AuthenticationPrincipal String userId) {
+        MfaEnableResponse response = authService.enableMfa(userId);
         return ResponseEntity.ok(response);
     }
 
@@ -141,9 +140,9 @@ public class AuthController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> verifyMfa(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal String userId,
             @Valid @RequestBody MfaVerifyRequest request) {
-        authService.verifyMfa(userDetails.getUsername(), request);
+        authService.verifyMfa(userId, request);
         return ResponseEntity.noContent().build();
     }
 
@@ -155,8 +154,8 @@ public class AuthController {
             @ApiResponse(responseCode = "403", description = "Not authenticated")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<Void> disableMfa(@AuthenticationPrincipal UserDetails userDetails) {
-        authService.disableMfa(userDetails.getUsername());
+    public ResponseEntity<Void> disableMfa(@AuthenticationPrincipal String userId) {
+        authService.disableMfa(userId);
         return ResponseEntity.noContent().build();
     }
 }

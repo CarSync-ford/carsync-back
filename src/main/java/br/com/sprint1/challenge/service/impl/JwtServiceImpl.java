@@ -45,6 +45,7 @@ public class JwtServiceImpl implements JwtService {
                 .subject(userId)
                 .claim("email", email)
                 .claim("role", role)
+                .claim("type", "ACCESS")
                 .issuer(jwtProperties.getIssuer())
                 .issuedAt(now)
                 .expiration(exp)
@@ -95,6 +96,7 @@ public class JwtServiceImpl implements JwtService {
 
         return Jwts.parser()
                 .verifyWith(key)
+                .requireIssuer(jwtProperties.getIssuer())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

@@ -37,6 +37,35 @@ class SecurityConfigTest {
     }
 
     @Test
+    void privateAuthEndpoints_withoutJwt_return401() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/change-password")
+                .contentType("application/json")
+                .content("{}"))
+            .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(post("/api/v1/auth/mfa/enable")
+                .contentType("application/json"))
+            .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(post("/api/v1/auth/mfa/verify")
+                .contentType("application/json")
+                .content("{}"))
+            .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(post("/api/v1/auth/mfa/disable")
+                .contentType("application/json"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void publicAuthEndpoint_withoutJwt_reachesValidation() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/forgot-password")
+                .contentType("application/json")
+                .content("{}"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void securityHeaders_presentOnHealthEndpoint() throws Exception {
         mockMvc.perform(get("/api/v1/health"))
             .andExpect(status().isOk())

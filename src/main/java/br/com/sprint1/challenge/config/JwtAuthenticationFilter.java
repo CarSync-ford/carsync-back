@@ -38,8 +38,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 var claims = jwtService.parse(token);
                 String userId = claims.getSubject();
                 String role = claims.get("role", String.class);
-                if (role == null || role.isBlank()) {
-                    role = "USER";
+                String type = claims.get("type", String.class);
+                if (!"ACCESS".equals(type) || userId == null || userId.isBlank()
+                        || role == null || role.isBlank()) {
+                    throw new IllegalArgumentException("Invalid access token claims");
                 }
                 var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
                 var auth = new UsernamePasswordAuthenticationToken(userId, null, authorities);
