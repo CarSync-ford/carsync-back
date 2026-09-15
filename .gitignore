@@ -8,3 +8,4 @@ target/
 !.aider.conf.yml
 .env
 features/PullRequestSummarizer.md
+graphify-out/
