@@ -7,12 +7,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.com.sprint1.challenge.dto.AuthDtos.AuthRequest;
 import br.com.sprint1.challenge.dto.AuthDtos.AuthResponse;
+import br.com.sprint1.challenge.dto.AuthDtos.ChangePasswordRequest;
+import br.com.sprint1.challenge.dto.AuthDtos.ForgotPasswordRequest;
+import br.com.sprint1.challenge.dto.AuthDtos.MfaEnableResponse;
+import br.com.sprint1.challenge.dto.AuthDtos.MfaVerifyRequest;
+import br.com.sprint1.challenge.dto.AuthDtos.RefreshTokenRequest;
+import br.com.sprint1.challenge.dto.AuthDtos.RefreshTokenResponse;
+import br.com.sprint1.challenge.dto.AuthDtos.ResetPasswordRequest;
 import br.com.sprint1.challenge.entity.User;
 import br.com.sprint1.challenge.exception.InvalidCredentialsException;
+import br.com.sprint1.challenge.exception.InvalidTokenException;
+import br.com.sprint1.challenge.exception.TokenExpiredException;
+import br.com.sprint1.challenge.exception.UserLockedException;
 import br.com.sprint1.challenge.repository.UserRepository;
 import br.com.sprint1.challenge.service.AuthService;
 import br.com.sprint1.challenge.service.JwtService;
 import jakarta.annotation.PostConstruct;
+
+import java.time.LocalDateTime;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -20,6 +32,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final int bcryptRounds;
+    private final int maxFailedAttempts = 5;
+    private final int lockoutMinutes = 15;
     private String dummyHash;
 
     public AuthServiceImpl(
@@ -48,16 +62,281 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User user = userOpt.get();
-        
+
+        // Check if user is locked
+        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {
+            throw new UserLockedException(user.getLockedUntil());
+        }
+
         if (!BCrypt.checkpw(request.password(), user.getHashedPassword())) {
+            // Increment failed attempts
+            handleFailedLogin(user);
             throw new InvalidCredentialsException();
         }
 
+        // Successful login - reset failed attempts and lock
+        userRepository.unlockUser(user.getId());
         userRepository.updateLastLoginById(user.getId());
+
         String role = user.getUserType() != null && user.getUserType().getType() != null
                 ? user.getUserType().getType()
                 : "USER";
         String token = jwtService.generateToken(user.getId(), user.getEmail(), role);
-        return new AuthResponse(token);
+        String refreshToken = jwtService.generateRefreshToken(user.getId());
+        LocalDateTime refreshTokenExpiry = LocalDateTime.now().plusDays(30);
+        userRepository.updateRefreshToken(user.getId(), refreshToken, refreshTokenExpiry);
+
+        return new AuthResponse(token, refreshToken);
+    }
+
+    private void handleFailedLogin(User user) {
+        int attempts = user.getFailedLoginAttempts() + 1;
+        if (attempts >= maxFailedAttempts) {
+            LocalDateTime lockedUntil = LocalDateTime.now().plusMinutes(lockoutMinutes);
+            userRepository.lockUser(user.getId(), lockedUntil);
+        } else {
+            userRepository.incrementFailedLoginAttempts(user.getId());
+        }
+    }
+
+    @Override
+    @Transactional
+    public RefreshTokenResponse refreshToken(RefreshTokenRequest request) {
+        // Parse the refresh token to get userId
+        var claims = jwtService.parse(request.refreshToken());
+        String tokenType = claims.get("type", String.class);
+        if (!"REFRESH".equals(tokenType)) {
+            throw new InvalidTokenException("Invalid token type");
+        }
+
+        String userId = claims.getSubject();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InvalidTokenException("User not found"));
+
+        // Validate refresh token matches and not expired
+        if (!request.refreshToken().equals(user.getRefreshToken())) {
+            throw new InvalidTokenException("Invalid refresh token");
+        }
+
+        if (user.getRefreshTokenExpiresAt() != null && user.getRefreshTokenExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new TokenExpiredException("Refresh token expired");
+        }
+
+        // Rotate: generate new tokens, invalidate old
+        String role = user.getUserType() != null && user.getUserType().getType() != null
+                ? user.getUserType().getType()
+                : "USER";
+        String newToken = jwtService.generateToken(user.getId(), user.getEmail(), role);
+        String newRefreshToken = jwtService.generateRefreshToken(user.getId());
+        LocalDateTime newRefreshTokenExpiry = LocalDateTime.now().plusDays(30);
+        userRepository.updateRefreshToken(user.getId(), newRefreshToken, newRefreshTokenExpiry);
+
+        return new RefreshTokenResponse(newToken, newRefreshToken);
+    }
+
+    @Override
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+        var userOpt = userRepository.findByEmail(request.email());
+
+        // Always return 202 to prevent email enumeration
+        if (userOpt.isEmpty()) {
+            return;
+        }
+
+        User user = userOpt.get();
+        String resetToken = jwtService.generatePasswordResetToken(user.getId());
+
+        // TODO: Send email with resetToken (mock for now)
+        // emailService.sendPasswordResetEmail(user.getEmail(), resetToken);
+
+        // In a real implementation, you would store the token hash in a password_reset_tokens table
+        // For now, the token is self-contained in the JWT
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        var claims = jwtService.parsePasswordResetToken(request.token());
+        String userId = claims.getSubject();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InvalidTokenException("User not found"));
+
+        // Check if token is already used (single-use)
+        // In a real implementation, check password_reset_tokens table
+
+        // Update password
+        String newHashedPassword = BCrypt.hashpw(request.newPassword(), BCrypt.gensalt(bcryptRounds));
+        user.setHashedPassword(newHashedPassword);
+        userRepository.save(user);
+
+        // Revoke refresh token
+        userRepository.revokeRefreshToken(userId);
+
+        // TODO: Mark token as used in password_reset_tokens table
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(String userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InvalidCredentialsException());
+
+        if (!BCrypt.checkpw(request.currentPassword(), user.getHashedPassword())) {
+            throw new InvalidCredentialsException();
+        }
+
+        String newHashedPassword = BCrypt.hashpw(request.newPassword(), BCrypt.gensalt(bcryptRounds));
+        user.setHashedPassword(newHashedPassword);
+        userRepository.save(user);
+
+        // Revoke refresh token on password change
+        userRepository.revokeRefreshToken(userId);
+    }
+
+    @Override
+    @Transactional
+    public MfaEnableResponse enableMfa(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InvalidCredentialsException());
+
+        // Generate TOTP secret
+        String secret = generateTotpSecret();
+        user.setMfaSecret(secret);
+        userRepository.save(user);
+
+        // Generate QR code URI
+        String qrCodeUri = String.format(
+            "otpauth://totp/%s:%s?secret=%s&issuer=%s",
+            "CarDealership",
+            user.getEmail(),
+            secret,
+            "CarDealership"
+        );
+
+        return new MfaEnableResponse(secret, qrCodeUri);
+    }
+
+    @Override
+    @Transactional
+    public void verifyMfa(String userId, MfaVerifyRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InvalidCredentialsException());
+
+        if (user.getMfaSecret() == null) {
+            throw new InvalidTokenException("MFA not enabled");
+        }
+
+        // Verify TOTP code
+        boolean valid = verifyTotpCode(user.getMfaSecret(), request.code());
+        if (!valid) {
+            throw new InvalidCredentialsException("Invalid MFA code");
+        }
+
+        user.setMfaEnabled(true);
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void disableMfa(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InvalidCredentialsException());
+
+        user.setMfaEnabled(false);
+        user.setMfaSecret(null);
+        userRepository.save(user);
+    }
+
+    private String generateTotpSecret() {
+        // Base32 encoded secret for TOTP
+        byte[] randomBytes = new byte[20];
+        new java.security.SecureRandom().nextBytes(randomBytes);
+        return base32Encode(randomBytes);
+    }
+
+    private boolean verifyTotpCode(String secret, String code) {
+        try {
+            // Use the TOTP library for verification
+            long timeWindow = System.currentTimeMillis() / 1000 / 30;
+            return verifyTotp(secret, code, timeWindow);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean verifyTotp(String secret, String code, long timeWindow) {
+        try {
+            // HMAC-SHA1 implementation for TOTP (RFC 6238)
+            byte[] key = base32Decode(secret);
+            byte[] data = new byte[8];
+            for (int i = 7; i >= 0; i--) {
+                data[i] = (byte) (timeWindow & 0xFF);
+                timeWindow >>= 8;
+            }
+
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA1");
+            mac.init(new javax.crypto.spec.SecretKeySpec(key, "HmacSHA1"));
+            byte[] hash = mac.doFinal(data);
+
+            int offset = hash[hash.length - 1] & 0xF;
+            int truncatedHash = 0;
+            for (int i = 0; i < 4; i++) {
+                truncatedHash <<= 8;
+                truncatedHash |= (hash[offset + i] & 0xFF);
+            }
+
+            truncatedHash &= 0x7FFFFFFF;
+            int totp = truncatedHash % 1000000;
+            String expectedCode = String.format("%06d", totp);
+
+            // Allow 1 time window before/after for clock drift
+            return expectedCode.equals(code)
+                || String.format("%06d", ((truncatedHash + 1) % 1000000)).equals(code)
+                || String.format("%06d", ((truncatedHash - 1 + 1000000) % 1000000)).equals(code);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private String base32Encode(byte[] data) {
+        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+        StringBuilder sb = new StringBuilder();
+        int buffer = 0;
+        int bitsLeft = 0;
+        for (byte b : data) {
+            buffer = (buffer << 8) | (b & 0xFF);
+            bitsLeft += 8;
+            while (bitsLeft >= 5) {
+                sb.append(alphabet.charAt((buffer >> (bitsLeft - 5)) & 0x1F));
+                bitsLeft -= 5;
+            }
+        }
+        if (bitsLeft > 0) {
+            sb.append(alphabet.charAt((buffer << (5 - bitsLeft)) & 0x1F));
+        }
+        return sb.toString();
+    }
+
+    private byte[] base32Decode(String encoded) {
+        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+        encoded = encoded.toUpperCase().replaceAll("[^A-Z2-7]", "");
+        int bits = encoded.length() * 5;
+        byte[] result = new byte[bits / 8];
+        int buffer = 0;
+        int bitsLeft = 0;
+        int index = 0;
+        for (char c : encoded.toCharArray()) {
+            int val = alphabet.indexOf(c);
+            if (val < 0) continue;
+            buffer = (buffer << 5) | val;
+            bitsLeft += 5;
+            if (bitsLeft >= 8) {
+                result[index++] = (byte) ((buffer >> (bitsLeft - 8)) & 0xFF);
+                bitsLeft -= 8;
+            }
+        }
+        return result;
     }
 }

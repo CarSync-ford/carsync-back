@@ -8,5 +8,8 @@ public interface JwtService {
     }
 
     String generateToken(String userId, String email, String role);
+    String generateRefreshToken(String userId);
+    String generatePasswordResetToken(String userId);
     Claims parse(String token);
+    Claims parsePasswordResetToken(String token);
 }

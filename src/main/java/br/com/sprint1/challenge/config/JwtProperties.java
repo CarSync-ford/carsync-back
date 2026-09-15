@@ -9,6 +9,7 @@ public class JwtProperties {
     private String secret;
     private int expirationMinutes;
     private String issuer;
+    private int refreshTokenExpiryDays;
 
     public String getSecret() { return secret; }
     public void setSecret(String secret) { this.secret = secret; }
@@ -16,4 +17,6 @@ public class JwtProperties {
     public void setExpirationMinutes(int expirationMinutes) { this.expirationMinutes = expirationMinutes; }
     public String getIssuer() { return issuer; }
     public void setIssuer(String issuer) { this.issuer = issuer; }
+    public int getRefreshTokenExpiryDays() { return refreshTokenExpiryDays; }
+    public void setRefreshTokenExpiryDays(int refreshTokenExpiryDays) { this.refreshTokenExpiryDays = refreshTokenExpiryDays; }
 }

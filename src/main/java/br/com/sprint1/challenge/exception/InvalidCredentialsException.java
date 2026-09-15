@@ -4,4 +4,8 @@ public class InvalidCredentialsException extends RuntimeException {
     public InvalidCredentialsException() {
         super("Credenciais inválidas: Usuário não encontrado ou senha incorreta");
     }
+
+    public InvalidCredentialsException(String message) {
+        super(message);
+    }
 }
