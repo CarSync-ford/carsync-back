@@ -25,6 +25,21 @@ spring:
     enabled: true
   bcrypt:
     salt: ${BCRYPT_SALT}
+  mail:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+
+mail:
+  from: ${MAIL_FROM}
 
 server:
   port: ${SERVER_PORT:8080}

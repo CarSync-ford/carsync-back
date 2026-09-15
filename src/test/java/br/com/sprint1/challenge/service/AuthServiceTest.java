@@ -25,10 +25,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.HexFormat;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,6 +46,9 @@ class AuthServiceTest {
 
     @Mock
     private JwtService jwtService;
+
+    @Mock
+    private PasswordResetEmailService passwordResetEmailService;
 
     private AuthService authService;
 
@@ -59,6 +65,7 @@ class AuthServiceTest {
         authService = new AuthServiceImpl(
                 userRepository,
                 jwtService,
+                passwordResetEmailService,
                 jwtProperties,
                 Clock.fixed(Instant.parse("2026-09-15T12:00:00Z"), ZoneOffset.UTC),
                 10);
@@ -306,7 +313,7 @@ class AuthServiceTest {
     void forgotPassword_usuarioNaoExistente_retorna202() {
         // Given
         ForgotPasswordRequest request = new ForgotPasswordRequest(TEST_EMAIL);
-        when(userRepository.findByEmail(TEST_EMAIL)).thenReturn(Optional.empty());
+        when(userRepository.findByEmailForUpdate(TEST_EMAIL)).thenReturn(Optional.empty());
 
         // When
         assertDoesNotThrow(() -> authService.forgotPassword(request));
@@ -316,57 +323,59 @@ class AuthServiceTest {
     }
 
     @Test
-    void forgotPassword_usuarioExiste_geraToken() {
-        // Given
+    void forgotPassword_usuarioExiste_persisteHashEEnviaToken() {
         ForgotPasswordRequest request = new ForgotPasswordRequest(TEST_EMAIL);
         User user = new User();
         user.setId(TEST_USER_ID);
         user.setEmail(TEST_EMAIL);
 
-        when(userRepository.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailForUpdate(TEST_EMAIL)).thenReturn(Optional.of(user));
         when(jwtService.generatePasswordResetToken(TEST_USER_ID)).thenReturn("reset-token");
 
-        // When
         assertDoesNotThrow(() -> authService.forgotPassword(request));
 
-        // Then
-        verify(jwtService).generatePasswordResetToken(TEST_USER_ID);
+        verify(passwordResetEmailService).sendPasswordResetEmail(TEST_EMAIL, "reset-token");
+        assertEquals(64, user.getPasswordResetTokenHash().length());
+        assertNotEquals("reset-token", user.getPasswordResetTokenHash());
+        assertEquals(LocalDateTime.of(2026, 9, 15, 12, 15), user.getPasswordResetTokenExpiresAt());
     }
 
     // --- Reset Password Tests ---
 
     @Test
-    void resetPassword_tokenValido_atualizaSenhaERevogaRefreshToken() {
-        // Given
+    void resetPassword_tokenValido_atualizaSenhaConsomeTokenERevogaRefreshToken() throws Exception {
         ResetPasswordRequest request = new ResetPasswordRequest("reset-token", "NewPassword1!");
         var claims = mock(io.jsonwebtoken.Claims.class);
         when(claims.getSubject()).thenReturn(TEST_USER_ID);
+        when(claims.getExpiration()).thenReturn(java.util.Date.from(Instant.parse("2026-09-15T12:15:00Z")));
         when(jwtService.parsePasswordResetToken("reset-token")).thenReturn(claims);
 
         User user = new User();
         user.setId(TEST_USER_ID);
         user.setEmail(TEST_EMAIL);
-        when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(user));
+        user.setPasswordResetTokenHash(hashToken("reset-token"));
+        user.setPasswordResetTokenExpiresAt(LocalDateTime.of(2026, 9, 15, 12, 15));
+        user.setRefreshToken(TEST_REFRESH_TOKEN);
+        user.setRefreshTokenExpiresAt(LocalDateTime.of(2026, 10, 15, 12, 0));
+        when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
 
-        // When
         assertDoesNotThrow(() -> authService.resetPassword(request));
 
-        // Then
-        verify(userRepository).save(user);
-        verify(userRepository).revokeRefreshToken(TEST_USER_ID);
         assertTrue(BCrypt.checkpw("NewPassword1!", user.getHashedPassword()));
+        assertNull(user.getPasswordResetTokenHash());
+        assertNull(user.getPasswordResetTokenExpiresAt());
+        assertNull(user.getRefreshToken());
+        assertNull(user.getRefreshTokenExpiresAt());
     }
 
     @Test
     void resetPassword_usuarioNaoExiste_lancaExcecao() {
-        // Given
         ResetPasswordRequest request = new ResetPasswordRequest("reset-token", "NewPassword1!");
         var claims = mock(io.jsonwebtoken.Claims.class);
         when(claims.getSubject()).thenReturn(TEST_USER_ID);
         when(jwtService.parsePasswordResetToken("reset-token")).thenReturn(claims);
-        when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.empty());
+        when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.empty());
 
-        // When/Then
         assertThrows(InvalidTokenException.class, () -> authService.resetPassword(request));
     }
 
@@ -380,6 +389,10 @@ class AuthServiceTest {
         user.setId(TEST_USER_ID);
         user.setEmail(TEST_EMAIL);
         user.setHashedPassword(hashedPassword);
+        user.setPasswordResetTokenHash("pending-reset-hash");
+        user.setPasswordResetTokenExpiresAt(LocalDateTime.of(2026, 9, 15, 12, 15));
+        user.setRefreshToken(TEST_REFRESH_TOKEN);
+        user.setRefreshTokenExpiresAt(LocalDateTime.of(2026, 10, 15, 12, 0));
 
         when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
 
@@ -389,9 +402,11 @@ class AuthServiceTest {
         assertDoesNotThrow(() -> authService.changePassword(TEST_USER_ID, request));
 
         // Then
-        verify(userRepository).save(user);
-        verify(userRepository).revokeRefreshToken(TEST_USER_ID);
         assertTrue(BCrypt.checkpw("NewPassword1!", user.getHashedPassword()));
+        assertNull(user.getPasswordResetTokenHash());
+        assertNull(user.getPasswordResetTokenExpiresAt());
+        assertNull(user.getRefreshToken());
+        assertNull(user.getRefreshTokenExpiresAt());
     }
 
     @Test
@@ -509,6 +524,12 @@ class AuthServiceTest {
         verify(userRepository).save(user);
         assertFalse(user.getMfaEnabled());
         assertNull(user.getMfaSecret());
+    }
+
+    private String hashToken(String token) throws Exception {
+        return HexFormat.of().formatHex(
+                MessageDigest.getInstance("SHA-256")
+                        .digest(token.getBytes(StandardCharsets.UTF_8)));
     }
 
     // Helper to generate valid TOTP code

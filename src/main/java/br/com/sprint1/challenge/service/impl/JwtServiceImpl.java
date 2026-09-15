@@ -12,7 +12,10 @@ import org.springframework.stereotype.Service;
 
 import br.com.sprint1.challenge.config.JwtProperties;
 import br.com.sprint1.challenge.service.JwtService;
+import br.com.sprint1.challenge.exception.InvalidTokenException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -97,12 +100,18 @@ public class JwtServiceImpl implements JwtService {
     public Claims parse(String token) {
         SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
 
-        return Jwts.parser()
-                .verifyWith(key)
-                .requireIssuer(jwtProperties.getIssuer())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        try {
+            return Jwts.parser()
+                    .verifyWith(key)
+                    .requireIssuer(jwtProperties.getIssuer())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (ExpiredJwtException ex) {
+            throw new InvalidTokenException("Expired token");
+        } catch (JwtException | IllegalArgumentException ex) {
+            throw new InvalidTokenException("Invalid token");
+        }
     }
 
     @Override
@@ -110,7 +119,7 @@ public class JwtServiceImpl implements JwtService {
         Claims claims = parse(token);
         String type = claims.get("type", String.class);
         if (!"PASSWORD_RESET".equals(type)) {
-            throw new IllegalArgumentException("Invalid token type for password reset");
+            throw new InvalidTokenException("Invalid token type for password reset");
         }
         return claims;
     }

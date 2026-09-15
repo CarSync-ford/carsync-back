@@ -1,7 +1,10 @@
 package br.com.sprint1.challenge.service.impl;
 
 import org.mindrot.jbcrypt.BCrypt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,16 +26,24 @@ import br.com.sprint1.challenge.exception.UserLockedException;
 import br.com.sprint1.challenge.repository.UserRepository;
 import br.com.sprint1.challenge.service.AuthService;
 import br.com.sprint1.challenge.service.JwtService;
+import br.com.sprint1.challenge.service.PasswordResetEmailService;
 import jakarta.annotation.PostConstruct;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.HexFormat;
 
 @Service
 public class AuthServiceImpl implements AuthService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
+
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final PasswordResetEmailService passwordResetEmailService;
     private final JwtProperties jwtProperties;
     private final Clock clock;
     private final int bcryptRounds;
@@ -43,11 +54,13 @@ public class AuthServiceImpl implements AuthService {
     public AuthServiceImpl(
             UserRepository userRepository,
             JwtService jwtService,
+            PasswordResetEmailService passwordResetEmailService,
             JwtProperties jwtProperties,
             Clock clock,
             @Value("${spring.bcrypt.salt:10}") int bcryptRounds) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.passwordResetEmailService = passwordResetEmailService;
         this.jwtProperties = jwtProperties;
         this.clock = clock;
         this.bcryptRounds = bcryptRounds;
@@ -149,21 +162,23 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
-        var userOpt = userRepository.findByEmail(request.email());
+        var userOpt = userRepository.findByEmailForUpdate(request.email());
 
-        // Always return 202 to prevent email enumeration
         if (userOpt.isEmpty()) {
             return;
         }
 
         User user = userOpt.get();
         String resetToken = jwtService.generatePasswordResetToken(user.getId());
+        user.setPasswordResetTokenHash(hashToken(resetToken));
+        user.setPasswordResetTokenExpiresAt(LocalDateTime.now(clock).plusMinutes(15));
 
-        // TODO: Send email with resetToken (mock for now)
-        // emailService.sendPasswordResetEmail(user.getEmail(), resetToken);
-
-        // In a real implementation, you would store the token hash in a password_reset_tokens table
-        // For now, the token is self-contained in the JWT
+        try {
+            passwordResetEmailService.sendPasswordResetEmail(user.getEmail(), resetToken);
+        } catch (MailException ex) {
+            clearPasswordReset(user);
+            log.error("Password reset email delivery failed");
+        }
     }
 
     @Override
@@ -171,22 +186,31 @@ public class AuthServiceImpl implements AuthService {
     public void resetPassword(ResetPasswordRequest request) {
         var claims = jwtService.parsePasswordResetToken(request.token());
         String userId = claims.getSubject();
+        if (userId == null || userId.isBlank()) {
+            throw new InvalidTokenException("Invalid password reset token");
+        }
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new InvalidTokenException("User not found"));
+        User user = userRepository.findByIdForUpdate(userId)
+                .orElseThrow(() -> new InvalidTokenException("Invalid password reset token"));
+        LocalDateTime now = LocalDateTime.now(clock);
+        String storedHash = user.getPasswordResetTokenHash();
+        if (storedHash == null
+                || user.getPasswordResetTokenExpiresAt() == null
+                || !user.getPasswordResetTokenExpiresAt().isAfter(now)
+                || !MessageDigest.isEqual(
+                        storedHash.getBytes(StandardCharsets.US_ASCII),
+                        hashToken(request.token()).getBytes(StandardCharsets.US_ASCII))) {
+            throw new InvalidTokenException("Invalid or expired password reset token");
+        }
+        if (claims.getExpiration() == null
+                || !claims.getExpiration().toInstant().isAfter(clock.instant())) {
+            throw new InvalidTokenException("Invalid or expired password reset token");
+        }
 
-        // Check if token is already used (single-use)
-        // In a real implementation, check password_reset_tokens table
-
-        // Update password
-        String newHashedPassword = BCrypt.hashpw(request.newPassword(), BCrypt.gensalt(bcryptRounds));
-        user.setHashedPassword(newHashedPassword);
-        userRepository.save(user);
-
-        // Revoke refresh token
-        userRepository.revokeRefreshToken(userId);
-
-        // TODO: Mark token as used in password_reset_tokens table
+        user.setHashedPassword(BCrypt.hashpw(request.newPassword(), BCrypt.gensalt(bcryptRounds)));
+        clearPasswordReset(user);
+        user.setRefreshToken(null);
+        user.setRefreshTokenExpiresAt(null);
     }
 
     @Override
@@ -201,10 +225,24 @@ public class AuthServiceImpl implements AuthService {
 
         String newHashedPassword = BCrypt.hashpw(request.newPassword(), BCrypt.gensalt(bcryptRounds));
         user.setHashedPassword(newHashedPassword);
-        userRepository.save(user);
+        clearPasswordReset(user);
+        user.setRefreshToken(null);
+        user.setRefreshTokenExpiresAt(null);
+    }
 
-        // Revoke refresh token on password change
-        userRepository.revokeRefreshToken(userId);
+    private void clearPasswordReset(User user) {
+        user.setPasswordResetTokenHash(null);
+        user.setPasswordResetTokenExpiresAt(null);
+    }
+
+    private String hashToken(String token) {
+        try {
+            return HexFormat.of().formatHex(
+                    MessageDigest.getInstance("SHA-256")
+                            .digest(token.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException("SHA-256 is unavailable", ex);
+        }
     }
 
     @Override

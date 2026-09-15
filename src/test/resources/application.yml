@@ -9,6 +9,21 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+  mail:
+    host: smtp.test.invalid
+    port: 587
+    username: test-user
+    password: test-password
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.connectiontimeout: 1000
+      mail.smtp.timeout: 1000
+      mail.smtp.writetimeout: 1000
+
+mail:
+  from: no-reply@test.invalid
 
 server:
   ssl:

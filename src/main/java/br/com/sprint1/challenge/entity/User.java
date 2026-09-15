@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 import org.hibernate.envers.Audited;
-import org.hibernate.validator.constraints.UniqueElements;
+import org.hibernate.envers.NotAudited;
 
 @Entity
 @Audited
@@ -21,6 +21,7 @@ public class User {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    @NotAudited
     @Column(name = "hashed_password", nullable = false)
     private String hashedPassword;
 
@@ -34,12 +35,14 @@ public class User {
     @JoinColumn(name = "user_type", nullable = false)
     private UserType userType;
 
+    @NotAudited
     @Column(name = "mfa_secret")
     private String mfaSecret;
 
     @Column(name = "mfa_enabled", nullable = false)
     private Boolean mfaEnabled = false;
 
+    @NotAudited
     @Column(name = "refresh_token", length = 2048)
     private String refreshToken;
 
@@ -54,6 +57,14 @@ public class User {
 
     @Column(name = "refresh_token_expires_at")
     private LocalDateTime refreshTokenExpiresAt;
+
+    @NotAudited
+    @Column(name = "password_reset_token_hash", length = 64)
+    private String passwordResetTokenHash;
+
+    @NotAudited
+    @Column(name = "password_reset_token_expires_at")
+    private LocalDateTime passwordResetTokenExpiresAt;
 
     public User() {}
 
@@ -98,4 +109,10 @@ public class User {
 
     public LocalDateTime getRefreshTokenExpiresAt() { return refreshTokenExpiresAt; }
     public void setRefreshTokenExpiresAt(LocalDateTime refreshTokenExpiresAt) { this.refreshTokenExpiresAt = refreshTokenExpiresAt; }
+
+    public String getPasswordResetTokenHash() { return passwordResetTokenHash; }
+    public void setPasswordResetTokenHash(String passwordResetTokenHash) { this.passwordResetTokenHash = passwordResetTokenHash; }
+
+    public LocalDateTime getPasswordResetTokenExpiresAt() { return passwordResetTokenExpiresAt; }
+    public void setPasswordResetTokenExpiresAt(LocalDateTime passwordResetTokenExpiresAt) { this.passwordResetTokenExpiresAt = passwordResetTokenExpiresAt; }
 }
