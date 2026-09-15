@@ -1,6 +1,7 @@
 package br.com.sprint1.challenge.service.impl;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.util.Date;
 import java.util.UUID;
 
@@ -19,9 +20,11 @@ import io.jsonwebtoken.security.Keys;
 public class JwtServiceImpl implements JwtService {
 
     private final JwtProperties jwtProperties;
+    private final Clock clock;
 
-    public JwtServiceImpl(JwtProperties jwtProperties) {
+    public JwtServiceImpl(JwtProperties jwtProperties, Clock clock) {
         this.jwtProperties = jwtProperties;
+        this.clock = clock;
     }
 
     @PostConstruct
@@ -38,7 +41,7 @@ public class JwtServiceImpl implements JwtService {
     public String generateToken(String userId, String email, String role) {
         SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
 
-        Date now = new Date();
+        Date now = Date.from(clock.instant());
         Date exp = new Date(now.getTime() + (jwtProperties.getExpirationMinutes() * 60 * 1000));
 
         return Jwts.builder()
@@ -57,7 +60,7 @@ public class JwtServiceImpl implements JwtService {
     public String generateRefreshToken(String userId) {
         SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
 
-        Date now = new Date();
+        Date now = Date.from(clock.instant());
         Date exp = new Date(now.getTime() + (jwtProperties.getRefreshTokenExpiryDays() * 24L * 60 * 60 * 1000));
 
         return Jwts.builder()
@@ -75,7 +78,7 @@ public class JwtServiceImpl implements JwtService {
     public String generatePasswordResetToken(String userId) {
         SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
 
-        Date now = new Date();
+        Date now = Date.from(clock.instant());
         Date exp = new Date(now.getTime() + (15 * 60 * 1000)); // 15 minutes
 
         return Jwts.builder()

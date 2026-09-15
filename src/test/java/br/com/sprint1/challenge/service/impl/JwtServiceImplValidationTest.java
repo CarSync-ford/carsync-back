@@ -7,6 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -21,7 +22,7 @@ class JwtServiceImplValidationTest {
         JwtProperties props = mock(JwtProperties.class);
         when(props.getSecret()).thenReturn("exactly32characterslongsecretkey!");
 
-        JwtServiceImpl service = new JwtServiceImpl(props);
+        JwtServiceImpl service = new JwtServiceImpl(props, Clock.systemUTC());
         ReflectionTestUtils.invokeMethod(service, "validateSecret");
 
         assertDoesNotThrow(() -> ReflectionTestUtils.invokeMethod(service, "validateSecret"));
@@ -32,7 +33,7 @@ class JwtServiceImplValidationTest {
         JwtProperties props = mock(JwtProperties.class);
         when(props.getSecret()).thenReturn("exactly33characterslongsecretkey!a");
 
-        JwtServiceImpl service = new JwtServiceImpl(props);
+        JwtServiceImpl service = new JwtServiceImpl(props, Clock.systemUTC());
         assertDoesNotThrow(() -> ReflectionTestUtils.invokeMethod(service, "validateSecret"));
     }
 
@@ -41,7 +42,7 @@ class JwtServiceImplValidationTest {
         JwtProperties props = mock(JwtProperties.class);
         when(props.getSecret()).thenReturn("only31characterslongsecret!");
 
-        JwtServiceImpl service = new JwtServiceImpl(props);
+        JwtServiceImpl service = new JwtServiceImpl(props, Clock.systemUTC());
         IllegalStateException ex = assertThrows(IllegalStateException.class,
             () -> ReflectionTestUtils.invokeMethod(service, "validateSecret"));
 
@@ -54,7 +55,7 @@ class JwtServiceImplValidationTest {
         JwtProperties props = mock(JwtProperties.class);
         when(props.getSecret()).thenReturn("");
 
-        JwtServiceImpl service = new JwtServiceImpl(props);
+        JwtServiceImpl service = new JwtServiceImpl(props, Clock.systemUTC());
         IllegalStateException ex = assertThrows(IllegalStateException.class,
             () -> ReflectionTestUtils.invokeMethod(service, "validateSecret"));
 
@@ -66,7 +67,7 @@ class JwtServiceImplValidationTest {
         JwtProperties props = mock(JwtProperties.class);
         when(props.getSecret()).thenReturn(null);
 
-        JwtServiceImpl service = new JwtServiceImpl(props);
+        JwtServiceImpl service = new JwtServiceImpl(props, Clock.systemUTC());
         IllegalStateException ex = assertThrows(IllegalStateException.class,
             () -> ReflectionTestUtils.invokeMethod(service, "validateSecret"));
 
@@ -79,7 +80,7 @@ class JwtServiceImplValidationTest {
         JwtProperties props = mock(JwtProperties.class);
         when(props.getSecret()).thenReturn("abcdefghijklmnopqrstuvwxyzçãõ"); // 32 chars but more bytes
 
-        JwtServiceImpl service = new JwtServiceImpl(props);
+        JwtServiceImpl service = new JwtServiceImpl(props, Clock.systemUTC());
         assertDoesNotThrow(() -> ReflectionTestUtils.invokeMethod(service, "validateSecret"));
     }
 }

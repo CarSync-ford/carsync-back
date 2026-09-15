@@ -1,5 +1,6 @@
 package br.com.sprint1.challenge.service;
 
+import br.com.sprint1.challenge.config.JwtProperties;
 import br.com.sprint1.challenge.dto.AuthDtos.AuthRequest;
 import br.com.sprint1.challenge.dto.AuthDtos.AuthResponse;
 import br.com.sprint1.challenge.dto.AuthDtos.ChangePasswordRequest;
@@ -53,9 +54,12 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        JwtProperties jwtProperties = new JwtProperties();
+        jwtProperties.setRefreshTokenExpiryDays(30);
         authService = new AuthServiceImpl(
                 userRepository,
                 jwtService,
+                jwtProperties,
                 Clock.fixed(Instant.parse("2026-09-15T12:00:00Z"), ZoneOffset.UTC),
                 10);
         // Manually invoke @PostConstruct init()
@@ -224,7 +228,7 @@ class AuthServiceTest {
         user.setId(TEST_USER_ID);
         user.setEmail(TEST_EMAIL);
         user.setRefreshToken(TEST_REFRESH_TOKEN);
-        user.setRefreshTokenExpiresAt(LocalDateTime.now().plusDays(10));
+        user.setRefreshTokenExpiresAt(LocalDateTime.of(2026, 9, 25, 12, 0));
         user.setUserType(new UserType());
         user.getUserType().setType("USER");
 
@@ -232,7 +236,7 @@ class AuthServiceTest {
         when(claims.getSubject()).thenReturn(TEST_USER_ID);
         when(claims.get("type", String.class)).thenReturn("REFRESH");
         when(jwtService.parse(TEST_REFRESH_TOKEN)).thenReturn(claims);
-        when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
         when(jwtService.generateToken(TEST_USER_ID, TEST_EMAIL, "USER")).thenReturn("new-access-token");
         when(jwtService.generateRefreshToken(TEST_USER_ID)).thenReturn("new-refresh-token");
 
@@ -255,7 +259,7 @@ class AuthServiceTest {
         when(claims.getSubject()).thenReturn(TEST_USER_ID);
         when(claims.get("type", String.class)).thenReturn("REFRESH");
         when(jwtService.parse("invalid-token")).thenReturn(claims);
-        when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.empty());
+        when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.empty());
 
         // When/Then
         assertThrows(InvalidTokenException.class, () -> authService.refreshToken(request));
@@ -269,13 +273,13 @@ class AuthServiceTest {
         user.setId(TEST_USER_ID);
         user.setEmail(TEST_EMAIL);
         user.setRefreshToken(TEST_REFRESH_TOKEN);
-        user.setRefreshTokenExpiresAt(LocalDateTime.now().minusDays(1));
+        user.setRefreshTokenExpiresAt(LocalDateTime.of(2026, 9, 14, 12, 0));
 
         var claims = mock(io.jsonwebtoken.Claims.class);
         when(claims.getSubject()).thenReturn(TEST_USER_ID);
         when(claims.get("type", String.class)).thenReturn("REFRESH");
         when(jwtService.parse(TEST_REFRESH_TOKEN)).thenReturn(claims);
-        when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
 
         // When/Then
         assertThrows(TokenExpiredException.class, () -> authService.refreshToken(request));
@@ -377,7 +381,7 @@ class AuthServiceTest {
         user.setEmail(TEST_EMAIL);
         user.setHashedPassword(hashedPassword);
 
-        when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
 
         ChangePasswordRequest request = new ChangePasswordRequest(TEST_PASSWORD, "newpassword123");
 
@@ -399,7 +403,7 @@ class AuthServiceTest {
         user.setEmail(TEST_EMAIL);
         user.setHashedPassword(hashedPassword);
 
-        when(userRepository.findById(TEST_USER_ID)).thenReturn(Optional.of(user));
+        when(userRepository.findByIdForUpdate(TEST_USER_ID)).thenReturn(Optional.of(user));
 
         ChangePasswordRequest request = new ChangePasswordRequest("wrongpassword", "newpassword123");
 

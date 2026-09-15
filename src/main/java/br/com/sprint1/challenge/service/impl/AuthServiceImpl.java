@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.com.sprint1.challenge.config.JwtProperties;
 import br.com.sprint1.challenge.dto.AuthDtos.AuthRequest;
 import br.com.sprint1.challenge.dto.AuthDtos.AuthResponse;
 import br.com.sprint1.challenge.dto.AuthDtos.ChangePasswordRequest;
@@ -32,6 +33,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final JwtProperties jwtProperties;
     private final Clock clock;
     private final int bcryptRounds;
     private final int maxFailedAttempts = 5;
@@ -41,10 +43,12 @@ public class AuthServiceImpl implements AuthService {
     public AuthServiceImpl(
             UserRepository userRepository,
             JwtService jwtService,
+            JwtProperties jwtProperties,
             Clock clock,
             @Value("${spring.bcrypt.salt:10}") int bcryptRounds) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.jwtProperties = jwtProperties;
         this.clock = clock;
         this.bcryptRounds = bcryptRounds;
     }
@@ -90,7 +94,8 @@ public class AuthServiceImpl implements AuthService {
                 : "USER";
         String token = jwtService.generateToken(user.getId(), user.getEmail(), role);
         String refreshToken = jwtService.generateRefreshToken(user.getId());
-        LocalDateTime refreshTokenExpiry = LocalDateTime.now().plusDays(30);
+        LocalDateTime refreshTokenExpiry = LocalDateTime.now(clock)
+                .plusDays(jwtProperties.getRefreshTokenExpiryDays());
         userRepository.updateRefreshToken(user.getId(), refreshToken, refreshTokenExpiry);
 
         return new AuthResponse(token, refreshToken);
@@ -115,7 +120,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String userId = claims.getSubject();
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new InvalidTokenException("User not found"));
 
         // Validate refresh token matches and not expired
@@ -123,7 +128,8 @@ public class AuthServiceImpl implements AuthService {
             throw new InvalidTokenException("Invalid refresh token");
         }
 
-        if (user.getRefreshTokenExpiresAt() != null && user.getRefreshTokenExpiresAt().isBefore(LocalDateTime.now())) {
+        if (user.getRefreshTokenExpiresAt() == null
+                || !user.getRefreshTokenExpiresAt().isAfter(LocalDateTime.now(clock))) {
             throw new TokenExpiredException("Refresh token expired");
         }
 
@@ -133,7 +139,8 @@ public class AuthServiceImpl implements AuthService {
                 : "USER";
         String newToken = jwtService.generateToken(user.getId(), user.getEmail(), role);
         String newRefreshToken = jwtService.generateRefreshToken(user.getId());
-        LocalDateTime newRefreshTokenExpiry = LocalDateTime.now().plusDays(30);
+        LocalDateTime newRefreshTokenExpiry = LocalDateTime.now(clock)
+                .plusDays(jwtProperties.getRefreshTokenExpiryDays());
         userRepository.updateRefreshToken(user.getId(), newRefreshToken, newRefreshTokenExpiry);
 
         return new RefreshTokenResponse(newToken, newRefreshToken);
@@ -185,7 +192,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void changePassword(String userId, ChangePasswordRequest request) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new InvalidCredentialsException());
 
         if (!BCrypt.checkpw(request.currentPassword(), user.getHashedPassword())) {

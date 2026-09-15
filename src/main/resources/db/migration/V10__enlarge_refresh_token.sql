@@ -1,0 +1,2 @@
+ALTER TABLE users ALTER COLUMN refresh_token TYPE VARCHAR(2048);
+ALTER TABLE users_aud ALTER COLUMN refresh_token TYPE VARCHAR(2048);
