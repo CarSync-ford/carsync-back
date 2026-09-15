@@ -24,6 +24,7 @@ import br.com.sprint1.challenge.service.AuthService;
 import br.com.sprint1.challenge.service.JwtService;
 import jakarta.annotation.PostConstruct;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 
 @Service
@@ -31,6 +32,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final Clock clock;
     private final int bcryptRounds;
     private final int maxFailedAttempts = 5;
     private final int lockoutMinutes = 15;
@@ -39,9 +41,11 @@ public class AuthServiceImpl implements AuthService {
     public AuthServiceImpl(
             UserRepository userRepository,
             JwtService jwtService,
+            Clock clock,
             @Value("${spring.bcrypt.salt:10}") int bcryptRounds) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.clock = clock;
         this.bcryptRounds = bcryptRounds;
     }
 
@@ -51,9 +55,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = InvalidCredentialsException.class)
     public AuthResponse authenticate(AuthRequest request) {
-        var userOpt = userRepository.findByEmail(request.email());
+        var userOpt = userRepository.findByEmailForUpdate(request.email());
 
         if (userOpt.isEmpty()) {
             // Anti-timing: perform dummy hash check
@@ -63,20 +67,23 @@ public class AuthServiceImpl implements AuthService {
 
         User user = userOpt.get();
 
-        // Check if user is locked
-        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {
+        LocalDateTime now = LocalDateTime.now(clock);
+        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(now)) {
             throw new UserLockedException(user.getLockedUntil());
+        }
+        if (user.getLockedUntil() != null) {
+            user.setLockedUntil(null);
+            user.setFailedLoginAttempts(0);
         }
 
         if (!BCrypt.checkpw(request.password(), user.getHashedPassword())) {
-            // Increment failed attempts
-            handleFailedLogin(user);
+            handleFailedLogin(user, now);
             throw new InvalidCredentialsException();
         }
 
-        // Successful login - reset failed attempts and lock
-        userRepository.unlockUser(user.getId());
-        userRepository.updateLastLoginById(user.getId());
+        user.setFailedLoginAttempts(0);
+        user.setLockedUntil(null);
+        user.setLastLogin(now);
 
         String role = user.getUserType() != null && user.getUserType().getType() != null
                 ? user.getUserType().getType()
@@ -89,13 +96,11 @@ public class AuthServiceImpl implements AuthService {
         return new AuthResponse(token, refreshToken);
     }
 
-    private void handleFailedLogin(User user) {
+    private void handleFailedLogin(User user, LocalDateTime now) {
         int attempts = user.getFailedLoginAttempts() + 1;
+        user.setFailedLoginAttempts(attempts);
         if (attempts >= maxFailedAttempts) {
-            LocalDateTime lockedUntil = LocalDateTime.now().plusMinutes(lockoutMinutes);
-            userRepository.lockUser(user.getId(), lockedUntil);
-        } else {
-            userRepository.incrementFailedLoginAttempts(user.getId());
+            user.setLockedUntil(now.plusMinutes(lockoutMinutes));
         }
     }
 

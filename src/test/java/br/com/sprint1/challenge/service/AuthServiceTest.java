@@ -24,7 +24,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,7 +53,11 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        authService = new AuthServiceImpl(userRepository, jwtService, 10);
+        authService = new AuthServiceImpl(
+                userRepository,
+                jwtService,
+                Clock.fixed(Instant.parse("2026-09-15T12:00:00Z"), ZoneOffset.UTC),
+                10);
         // Manually invoke @PostConstruct init()
         var initMethod = AuthServiceImpl.class.getDeclaredMethod("init");
         initMethod.setAccessible(true);
@@ -63,7 +70,7 @@ class AuthServiceTest {
     void usuarioNaoExistente_lancaExcecaoGenerica() {
         // Given
         AuthRequest request = new AuthRequest(TEST_EMAIL, TEST_PASSWORD);
-        when(userRepository.findByEmail(TEST_EMAIL)).thenReturn(Optional.empty());
+        when(userRepository.findByEmailForUpdate(TEST_EMAIL)).thenReturn(Optional.empty());
 
         // When/Then
         assertThrows(InvalidCredentialsException.class, () -> authService.authenticate(request));
@@ -81,7 +88,7 @@ class AuthServiceTest {
         user.setEmail(TEST_EMAIL);
         user.setHashedPassword(hashedPassword);
 
-        when(userRepository.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailForUpdate(TEST_EMAIL)).thenReturn(Optional.of(user));
 
         // When/Then
         assertThrows(InvalidCredentialsException.class, () -> authService.authenticate(request));
@@ -104,7 +111,7 @@ class AuthServiceTest {
         String expectedToken = "jwt-token";
         String expectedRefreshToken = "refresh-token";
 
-        when(userRepository.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailForUpdate(TEST_EMAIL)).thenReturn(Optional.of(user));
         when(jwtService.generateToken(TEST_USER_ID, TEST_EMAIL, "USER")).thenReturn(expectedToken);
         when(jwtService.generateRefreshToken(TEST_USER_ID)).thenReturn(expectedRefreshToken);
 
@@ -115,8 +122,9 @@ class AuthServiceTest {
         assertNotNull(response);
         assertEquals(expectedToken, response.token());
         assertEquals(expectedRefreshToken, response.refreshToken());
-        verify(userRepository).updateLastLoginById(TEST_USER_ID);
-        verify(userRepository).unlockUser(TEST_USER_ID);
+        assertEquals(LocalDateTime.of(2026, 9, 15, 12, 0), user.getLastLogin());
+        assertEquals(0, user.getFailedLoginAttempts());
+        assertNull(user.getLockedUntil());
         verify(userRepository).updateRefreshToken(eq(TEST_USER_ID), eq(expectedRefreshToken), any());
     }
 
@@ -130,9 +138,9 @@ class AuthServiceTest {
         user.setId(TEST_USER_ID);
         user.setEmail(TEST_EMAIL);
         user.setHashedPassword(hashedPassword);
-        user.setLockedUntil(LocalDateTime.now().plusMinutes(10));
+        user.setLockedUntil(LocalDateTime.of(2026, 9, 15, 12, 10));
 
-        when(userRepository.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailForUpdate(TEST_EMAIL)).thenReturn(Optional.of(user));
 
         // When/Then
         UserLockedException ex = assertThrows(UserLockedException.class, () -> authService.authenticate(request));
@@ -150,10 +158,10 @@ class AuthServiceTest {
         user.setId(TEST_USER_ID);
         user.setEmail(TEST_EMAIL);
         user.setHashedPassword(hashedPassword);
-        user.setLockedUntil(LocalDateTime.now().minusMinutes(10)); // expired lock
+        user.setLockedUntil(LocalDateTime.of(2026, 9, 15, 11, 50)); // expired lock
         user.setFailedLoginAttempts(5);
 
-        when(userRepository.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailForUpdate(TEST_EMAIL)).thenReturn(Optional.of(user));
         when(jwtService.generateToken(TEST_USER_ID, TEST_EMAIL, "USER")).thenReturn(TEST_ACCESS_TOKEN);
         when(jwtService.generateRefreshToken(TEST_USER_ID)).thenReturn(TEST_REFRESH_TOKEN);
 
@@ -162,7 +170,8 @@ class AuthServiceTest {
 
         // Then
         assertNotNull(response);
-        verify(userRepository).unlockUser(TEST_USER_ID);
+        assertNull(user.getLockedUntil());
+        assertEquals(0, user.getFailedLoginAttempts());
     }
 
     @Test
@@ -177,11 +186,12 @@ class AuthServiceTest {
         user.setHashedPassword(hashedPassword);
         user.setFailedLoginAttempts(0);
 
-        when(userRepository.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailForUpdate(TEST_EMAIL)).thenReturn(Optional.of(user));
 
         // When/Then
         assertThrows(InvalidCredentialsException.class, () -> authService.authenticate(request));
-        verify(userRepository).incrementFailedLoginAttempts(TEST_USER_ID);
+        assertEquals(1, user.getFailedLoginAttempts());
+        assertNull(user.getLockedUntil());
     }
 
     @Test
@@ -196,11 +206,12 @@ class AuthServiceTest {
         user.setHashedPassword(hashedPassword);
         user.setFailedLoginAttempts(4); // 4 attempts, next will be 5th
 
-        when(userRepository.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailForUpdate(TEST_EMAIL)).thenReturn(Optional.of(user));
 
         // When/Then
         assertThrows(InvalidCredentialsException.class, () -> authService.authenticate(request));
-        verify(userRepository).lockUser(eq(TEST_USER_ID), any(LocalDateTime.class));
+        assertEquals(5, user.getFailedLoginAttempts());
+        assertEquals(LocalDateTime.of(2026, 9, 15, 12, 15), user.getLockedUntil());
     }
 
     // --- Refresh Token Tests ---
