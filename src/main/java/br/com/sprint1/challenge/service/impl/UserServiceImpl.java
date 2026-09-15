@@ -11,8 +11,9 @@ import br.com.sprint1.challenge.exception.ResourceNotFoundException;
 import br.com.sprint1.challenge.repository.UserRepository;
 import br.com.sprint1.challenge.repository.UserTypeRepository;
 import br.com.sprint1.challenge.service.UserService;
-import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -22,7 +23,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserTypeRepository userTypeRepository;
-    private final int bcryptRounds;
+    private final PasswordEncoder passwordEncoder;
 
     public UserServiceImpl(
             UserRepository userRepository,
@@ -30,7 +31,7 @@ public class UserServiceImpl implements UserService {
             @Value("${spring.bcrypt.salt:10}") int bcryptRounds) {
         this.userRepository = userRepository;
         this.userTypeRepository = userTypeRepository;
-        this.bcryptRounds = bcryptRounds;
+        this.passwordEncoder = new BCryptPasswordEncoder(bcryptRounds);
     }
 
     @Override
@@ -46,7 +47,7 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setUsername(request.username());
         user.setEmail(request.email());
-        user.setHashedPassword(BCrypt.hashpw(request.password(), BCrypt.gensalt(bcryptRounds)));
+        user.setHashedPassword(passwordEncoder.encode(request.password()));
         user.setCpf(request.cpf());
         user.setMfaEnabled(false);
         user.setMfaSecret(null);

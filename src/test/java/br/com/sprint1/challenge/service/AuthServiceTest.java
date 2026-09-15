@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -29,6 +30,7 @@ class AuthServiceTest {
     private JwtService jwtService;
 
     private AuthService authService;
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
 
     private static final String TEST_EMAIL = "test@example.com";
     private static final String TEST_PASSWORD = "password123";
@@ -58,13 +60,13 @@ class AuthServiceTest {
     void senhaInvalida_lancaExcecaoGenerica() {
         // Given
         AuthRequest request = new AuthRequest(TEST_EMAIL, "wrongpassword");
-        String hashedPassword = BCrypt.hashpw(TEST_PASSWORD, BCrypt.gensalt(10));
-        
+        String hashedPassword = passwordEncoder.encode(TEST_PASSWORD);
+
         User user = new User();
         user.setId(TEST_USER_ID);
         user.setEmail(TEST_EMAIL);
         user.setHashedPassword(hashedPassword);
-        
+
         when(userRepository.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(user));
 
         // When/Then
@@ -76,7 +78,7 @@ class AuthServiceTest {
     void credenciaisValidas_retornaTokenEAtualizaLastLogin() {
         // Given
         AuthRequest request = new AuthRequest(TEST_EMAIL, TEST_PASSWORD);
-        String hashedPassword = BCrypt.hashpw(TEST_PASSWORD, BCrypt.gensalt(10));
+        String hashedPassword = passwordEncoder.encode(TEST_PASSWORD);
         
         User user = new User();
         user.setId(TEST_USER_ID);

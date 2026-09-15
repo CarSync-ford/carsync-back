@@ -1,7 +1,8 @@
 package br.com.sprint1.challenge.service.impl;
 
-import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +20,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
-    private final int bcryptRounds;
+    private final PasswordEncoder passwordEncoder;
     private String dummyHash;
 
     public AuthServiceImpl(
@@ -28,12 +29,12 @@ public class AuthServiceImpl implements AuthService {
             @Value("${spring.bcrypt.salt:10}") int bcryptRounds) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
-        this.bcryptRounds = bcryptRounds;
+        this.passwordEncoder = new BCryptPasswordEncoder(bcryptRounds);
     }
 
     @PostConstruct
     public void init() {
-        this.dummyHash = BCrypt.hashpw("__dummy__", BCrypt.gensalt(bcryptRounds));
+        this.dummyHash = passwordEncoder.encode("__dummy__");
     }
 
     @Override
@@ -43,13 +44,13 @@ public class AuthServiceImpl implements AuthService {
 
         if (userOpt.isEmpty()) {
             // Anti-timing: perform dummy hash check
-            BCrypt.checkpw(request.password(), dummyHash);
+            passwordEncoder.matches(request.password(), dummyHash);
             throw new InvalidCredentialsException();
         }
 
         User user = userOpt.get();
-        
-        if (!BCrypt.checkpw(request.password(), user.getHashedPassword())) {
+
+        if (!passwordEncoder.matches(request.password(), user.getHashedPassword())) {
             throw new InvalidCredentialsException();
         }
 
