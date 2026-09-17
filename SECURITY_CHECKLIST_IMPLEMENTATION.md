@@ -47,10 +47,6 @@
 - **CORS default:** Fail-fast implementado, mas precisa espelhar config do ACA Ingress
 
 ### Ausente ❌
-- **Account Lockout / Brute-force protection** (colunas `failed_login_attempts`, `locked_until` ausentes)
-- **Refresh Token Rotation + Expiry** (coluna `refresh_token_expires_at` ausente)
-- **Password Reset Flow** (inexistente)
-- **MFA/TOTP:** Colunas `mfa_secret`, `mfa_enabled` existem mas sem lógica
 - **MQTT/TLS IoT:** Não aplicável (projeto não tem componente IoT)
 - **IaC Security:** Sem Terraform/K8s manifests, sem hadolint/Trivy no CI
 

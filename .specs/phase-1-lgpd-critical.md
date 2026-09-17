@@ -1,106 +1,63 @@
-# Phase 1 - LGPD Crítico (Semanas 1-2)
+# Phase 1 — Perfis exigidos e mapeamento LGPD
 
-**Prioridade:** P0 - Bloqueante | **Esforço:** ~2 semanas
+**Estado:** plano de adequação. Código já possui USER/ANALYST, analytics mascarados e jobs de retenção; isso não atende automaticamente aos perfis exigidos nem comprova LGPD.
+**Origem:** `SEC-REQUIREMENTS.md:28–29,62` (RBAC, LGPD).
+**Contrato:** `.specs/README.md`.
 
-Bloqueia compliance LGPD. Dois pilares independentes: Anonymization Pipeline (SEC-001) e Data Retention (SEC-002).
+## RBAC-1 — Definir matriz dos três perfis [High]
 
----
+**Entradas:** controllers existentes, `SecurityConfig`, `JwtAuthenticationFilter`, serviços de usuário/auth, `User`, `UserType`, migrações de `user_type` e DTOs de cadastro/edição.
+**Saída:** matriz na atividade 2 de `docs/security/SEC-DELIVERY.md`.
 
-## 1.1 Anonymization Pipeline (SEC-001)
+1. Inventariar endpoints reais e permissões atuais; separar autenticação de autorização.
+2. Representar explicitamente **Brigadista, Gestor e Administrador**. Proposta de nomes técnicos: `BRIGADISTA`, `GESTOR`, `ADMINISTRADOR`, respeitando prefixo `ROLE_` do Spring no ponto apropriado.
+3. Mapear `método/rota | operação | Brigadista | Gestor | Administrador | restrição de objeto | justificativa`. Não criar endpoints de negócio para preencher matriz.
+4. O enunciado nomeia perfis, mas não define suas permissões. Obter aprovação da matriz e do destino de usuários USER/ANALYST antes de migrar dados ou conceder acesso. Não converter ANALYST em Administrador nem USER em Gestor por suposição.
+5. Inspecionar cadastro público (`POST /api/v1/user`) e atualização de usuário: cliente não pode escolher/promover papel privilegiado. Definir perfil inicial permitido na matriz aprovada.
 
-### Entregáveis
+**Aceite:** três perfis presentes, operações existentes cobertas e decisão de transição explícita. Sem aprovação das permissões, RBAC-2 fica `BLOQUEADO`; não usar N/A para substituir perfis pedidos.
 
-#### Migração V6: `V6__add_analyst_user_type.sql`
-```sql
-INSERT INTO user_type (id, name, description) VALUES (3, 'ANALYST', 'Analista com acesso a dados anonimizados');
-```
+## RBAC-2 — Aplicar autorização e transição [High]
 
-#### Utilitário: `br.com.sprint1.challenge.util.DataMasker`
-Métodos estáticos para mascarar:
-- CPF: `123.456.789-00` → `***.***.***-**`
-- Email: `user@domain.com` → `u***@domain.com`
-- Phone: `(11) 99999-9999` → `(**) ****-****`
-- Name: `João Silva` → `J*** S****`
+**Pré-condição:** RBAC-1 aprovado; coordenar CLEAN-3 da phase-7.
+**Arquivos-alvo:** entidade/repositório/serviço de perfis e usuários, auth/JWT, controllers com `@PreAuthorize`, migração nova em `src/main/resources/db/migration/` e par H2 em `src/test/resources/db/migration/h2/`.
 
-#### DTOs Analytics (novos)
-- `CustomerAnalyticsView` - campos mascarados
-- `LeadAnalyticsView` - campos mascarados
-- `VehicleAnalyticsView` - sem PII
+1. Reutilizar modelo de perfis existente, incluindo tipo real do ID. Não copiar `INSERT` antigo com ID inteiro se banco usa UUID.
+2. Criar os três perfis por migração incremental com próximo número livre. Não reescrever V2/V6 ou outra migração histórica.
+3. Aplicar matriz em rotas existentes e restrições de objeto quando necessárias ao acesso autorizado. Não basta trocar nome do role em uma única annotation.
+4. Impedir alteração de papel por payload não autorizado e elevação via cadastro, edição ou claims JWT manipulados.
+5. Tratar tokens de papéis antigos: nenhum USER/ANALYST pode manter acesso por regra ampla após corte. Definir expiração/revogação/reautenticação compatível com mecanismo real, sem prometer invalidação de access JWT stateless que não exista.
+6. Migrar usuários apenas segundo mapeamento aprovado, preservando vínculos e integridade. Remover papel ANALYST conforme CLEAN-3; decidir destino de USER sem inventar quarto perfil de negócio permanente.
+7. Adicionar testes parametrizados no padrão existente: cada perfil tem sucesso apenas onde permitido; sem autenticação recebe 401; papel inadequado recebe 403; cadastro/edição não elevam privilégio; token legado não contorna nova matriz.
 
-#### Endpoints: `/api/v1/analytics/**`
-- `@PreAuthorize("hasRole('ANALYST')")`
-- Retornam DTOs mascarados
-- Log: `INFO ANALYTICS_ACCESS user:{} resource:{}`
+**Aceite:** matriz demonstrada por testes positivos/negativos, sem abertura transitória de endpoints. Produção exige plano autorizado de migração e rollback seguro; teste local não comprova usuários migrados.
 
-#### Testes
-- Integração: USER recebe 403, ANALYST recebe 200
-- Validação: campos PII mascarados no response
+## DATA-1 — Inventário LGPD mínimo [High]
 
----
+**Entradas:** entidades/DTOs, logs, integrações, dados mobile/IoT/ML identificados em phase-8.
+**Saída:** atividade 4 do documento consolidado, complementada em phase-5.
 
-## 1.2 Data Retention / Secure Disposal (SEC-002)
+Tabela obrigatória: `classe de dado | campos reais | origem | finalidade | base legal a validar | acesso | armazenamento/transporte | compartilhamento | retenção/descarte | proteção/evidência | lacuna`.
 
-### Entregáveis
+Cobrir separadamente:
 
-#### Migração V7: `deleted_at` columns
-```sql
-ALTER TABLE users ADD COLUMN deleted_at TIMESTAMP;
-ALTER TABLE customers ADD COLUMN deleted_at TIMESTAMP;
-ALTER TABLE leads ADD COLUMN deleted_at TIMESTAMP;
-CREATE INDEX idx_users_deleted_at ON users(deleted_at);
-CREATE INDEX idx_customers_deleted_at ON customers(deleted_at);
-CREATE INDEX idx_leads_deleted_at ON leads(deleted_at);
-```
+- **Dados pessoais:** identificadores, cadastro e contatos realmente tratados.
+- **Telemetria:** sinais do veículo/dispositivo e possibilidade de vinculação a pessoa.
+- **Localização:** coordenadas ou outros dados de localização efetivamente coletados; identificar componente responsável mesmo se externo ao backend.
 
-#### Entidades: Add `@Column(name = "deleted_at") LocalDateTime deletedAt`
-- `User.java`
-- `Customer.java`
-- `Lead.java`
+Reutilizar mascaramento e minimização úteis. Não chamar mascaramento reversível/parcial de anonimização garantida. Não criar ANALYST, endpoints de analytics de PII ou jobs de descarte como condição artificial de LGPD. Prazos legais dependem de finalidade/base legal; 30 dias e 5 anos do plano antigo não são requisitos SEC.
 
-#### Configuração: `application.yml`
-```yaml
-data-retention:
-  hard-delete-days: 30
-  anonymization-inactive-years: 5
-  schedule:
-    hard-delete: "0 0 2 * * ?"      # Diário 02:00
-    anonymization: "0 0 3 ? * SUN"  # Domingo 03:00
-```
+**Aceite:** três classes analisadas; ausência de componente ou política é lacuna explícita. Nenhum dado de produção é apagado por esta tarefa.
 
-#### `DataRetentionProperties` class
-Mapeia configuração acima.
+## Retirada do plano anterior
 
-#### `DataRetentionService` com 2 Jobs `@Scheduled`
-- **Job 1 (Diário 02:00):** Hard delete onde `deleted_at > 30 dias`
-- **Job 2 (Semanal Domingo 03:00):** Anonimização PII usuários inativos `last_login > 5 anos`
+- Criação de ANALYST e endpoints exclusivos de listagem mascarada: substituída pela matriz de três perfis; remoção do excedente em CLEAN-3.
+- `DataRetentionService` e política automática arbitrária: retirada planejada em CLEAN-4.
+- Não remover mascaramento dos endpoints preservados nem fazer registros com `deleted_at` voltarem a aparecer. Segurança de dados continua obrigatória.
 
-#### Métricas Micrometer
-```java
-Counter dataRetentionRemoved = Counter.builder("data_retention.removed")
-    .tag("type", "hard_delete|anonymization")
-    .register(meterRegistry);
-```
+## Checklist
 
-#### Testes
-- Usar `Clock` injetado (`java.time.Clock`) para avançar tempo
-- Verificar contadores métricas
-
----
-
-## Critério de Pronto Fase 1
-
-- [ ] Migração V6 aplicada (ANALYST role existe no banco)
-- [ ] `DataMasker` com 100% cobertura unitária (todos métodos)
-- [ ] Analytics DTOs mascarados funcionando
-- [ ] Endpoints `/api/v1/analytics/**` retornam 403 para USER, 200 para ANALYST
-- [ ] Migração V7 aplicada (soft delete columns + índices)
-- [ ] `DataRetentionService` com 2 jobs executando (testados com Clock)
-- [ ] Métricas `data_retention.removed` visíveis no App Insights
-
----
-
-## Notas de Implementação
-
-- **Multi-tenancy:** Não existe. Se adicionar no futuro, revisar `DataMasker` e `DataRetentionService` para incluir `dealership_id`
-- **Event-driven:** Não há message broker. Jobs usam `@Scheduled` (funciona no ACA single instance). Para multi-replica: considerar **ShedLock** ou mover para **Azure Functions Timer Trigger**
-- **Testes:** Perfil `test` usa H2. Migrações V6-V7 precisam versões H2 em `src/test/resources/db/migration/h2/`
+- [ ] RBAC-1: matriz e transição aprovadas.
+- [ ] RBAC-2: três perfis e testes de autorização.
+- [ ] DATA-1: dados pessoais, telemetria e localização inventariados.
+- [ ] Remoções de ANALYST/retention coordenadas com phase-7, sem exposição de PII.

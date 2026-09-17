@@ -1,119 +1,79 @@
-# Phase 4 - Observabilidade & Resposta (Semana 5-6)
+# Phase 4 — Observabilidade, monitoramento e resposta
 
-**Prioridade:** P2 - Média | **Esforço:** ~1-2 semanas
+**Estado:** plano revisado; instrumentação e ambiente precisam ser conferidos.
+**Origem:** `SEC-REQUIREMENTS.md:39–51` (LOG, MON, IR).
+**Contrato:** `.specs/README.md`.
 
-Dependência: Logs `SECURITY_VIOLATION` já existem no código.
+## Limite
 
----
+Usar stack de observabilidade já disponível no projeto. Azure Monitor/App Insights é opção, não obrigação de contratar/provisionar serviços. Não criar dashboard comercial, mapa geográfico de IPs ou integração APIM/Cloudflare. Plano de resposta deve funcionar com controles existentes, sem depender de MFA que será removido.
 
-## 4.1 KQL Alerts no Azure Monitor
+Entregar atividade 3 em `docs/security/SEC-DELIVERY.md`, incluindo prints reais, exemplos de logs sanitizados e fluxo de resposta. Documento sem essas evidências permanece incompleto.
 
-Base: `AZURE_SEC_CHANGES.md` §25
+## LOG-1 — Eventos estruturados [High]
 
-### Alertas a criar
+**Entradas:** configuração de logging em `src/main/resources/`, handlers de autenticação, rate limit, autorização e operações críticas existentes.
 
-#### Alert 1: SECURITY_VIOLATION Spike
-```kql
-ContainerAppConsoleLogs_CL
-| where Log_s has "SECURITY_VIOLATION"
-| summarize count() by bin(TimeGenerated, 5m)
-| where count_ > 10
-```
-- **Severidade:** High
-- **Ação:** Notificar team Security + On-call
+1. Identificar formato/coletor atual. Reutilizar suporte estruturado instalado antes de adicionar dependência.
+2. Emitir eventos de login bem-sucedido, falha de login e alteração crítica (por exemplo, troca autenticada de senha ou alteração autorizada de perfil, quando existir).
+3. Campos mínimos: timestamp UTC, evento, componente, resultado, identificador de correlação. Identidade técnica do ator apenas quando necessária; não expor email/CPF/localização precisa.
+4. Incluir falhas de JWT/autorização/rate limit já disponíveis, sem duplicar logs por camada.
+5. Proibir senha, token, cabeçalho Authorization, seed TOTP, chaves e conteúdo sensível. Tratar campos controlados pelo cliente para evitar injeção em logs.
+6. Testar estrutura parseável e ausência de segredos com dados sintéticos, usando infraestrutura de testes existente.
 
-#### Alert 2: Failed Login Spike
-```kql
-ContainerAppConsoleLogs_CL
-| where Log_s has "AUTH_FAILED" or Log_s has "LOGIN_FAILED"
-| summarize count() by bin(TimeGenerated, 5m), IP_s
-| where count_ > 20
-```
-- **Severidade:** High
-- **Ação:** Bloquear IP temporário no Cloudflare/APIM
+**Aceite:** teste produz e valida os três tipos exigidos (login, falha, alteração crítica); exemplos reais sanitizados anexados à atividade 3. Logs textuais existentes não contam automaticamente como estruturados.
 
-#### Alert 3: Rate Limit Excedido Repetidamente
-```kql
-ContainerAppConsoleLogs_CL
-| where Log_s has "RATE_LIMIT_EXCEEDED"
-| summarize count() by bin(TimeGenerated, 5m), IP_s
-| where count_ > 50
-```
-- **Severidade:** Medium
-- **Ação:** Investigar possível ataque DDoS/credential stuffing
+## MON-1 — Contrato de métricas e alertas por componente [High]
 
-#### Alert 4: HMAC Validation Failures
-```kql
-ContainerAppConsoleLogs_CL
-| where Log_s has "HMAC_INVALID" or Log_s has "HMAC_MISSING"
-| summarize count() by bin(TimeGenerated, 5m)
-| where count_ > 5
-```
-- **Severidade:** Medium
-- **Ação:** Possível tentativa de replay/forgery
+**Pré-condição:** localizar os componentes reais Ford com phase-8. Se componente externo não estiver disponível, registrar tarefa de integração bloqueada, não N/A.
 
----
+| Componente | Sinais mínimos propostos | Alerta proposto | Fonte a identificar |
+|---|---|---|---|
+| API | Volume de falhas de autenticação, respostas 5xx, latência e rate limit | Aumento sustentado de falhas/erros | Logs/métricas da API |
+| Mobile | Falhas de autenticação e comunicação segura | Aumento de falhas TLS/autenticação | Telemetria sanitizada do app real |
+| IoT | Falhas de autenticação/TLS e desconexões MQTT | Dispositivos sem conexão ou rejeições repetidas | Cliente/broker MQTT real |
+| ML | Erros de inferência e rejeições de entrada/acesso | Aumento sustentado de erros/rejeições | Componente de inferência real |
 
-## 4.2 Dashboards Azure Monitor / App Insights
+Esses sinais são escolhas mínimas para MON, não nova suíte de analytics. Não criar modelo ML ou aplicação mobile para gerar métricas artificiais.
 
-### Dashboard 1: Overview Operacional
-- Request rate (req/s)
-- Error rate (%)
-- Latency p50 / p95 / p99
-- Active instances (ACA replicas)
+1. Para cada sinal, registrar nome/campo real, origem, unidade, janela, limiar escolhido e justificativa, destinatário e ação.
+2. Reutilizar métricas/logs existentes. Adicionar apenas instrumentação faltante no componente correto.
+3. Evitar labels de alta cardinalidade e PII, como token, email, coordenada ou ID por usuário/dispositivo.
+4. Testar alerta com amostra sintética identificada como tal; demonstrar recuperação quando condição deixa de existir.
 
-### Dashboard 2: Security
-- `SECURITY_VIOLATION` timeline (últimas 24h)
-- Top 10 IPs por violações
-- Auth failures por tipo (JWT invalid, HMAC missing, rate limit)
-- Geographic map de IPs suspeitos
+**Aceite:** API/mobile/IoT/ML constam no plano, com fonte real e status de integração; alertas disponíveis têm evidência de teste. Fonte ausente permanece pendência visível.
 
-### Dashboard 3: Business
-- Active users (últimos 30 min)
-- Leads conversion rate
-- Churn risk distribution (LOW/MEDIUM/HIGH)
-- Vehicle interactions volume
+## MON-2 — Dashboard e consultas [Low]
 
----
+**Dependência:** LOG-1 e contrato MON-1 com campos reais.
+**Arquivos-alvo:** configuração/exportação suportada pela stack existente; `docs/security/SEC-DELIVERY.md`.
 
-## 4.3 Plano de Resposta a Incidentes
+1. Criar ou ajustar dashboard de segurança/monitoramento cobrindo sinais MON-1. Quantidade de painéis segue necessidade, sem metas arbitrárias de "3+ alertas" ou "2+ dashboards".
+2. Conferir schema do coletor antes de escrever consultas. Não presumir coluna `IP_s` nem que JSON em `Log_s` já esteja extraído.
+3. Salvar consultas/exportação para reprodução quando ferramenta permitir.
+4. Capturar prints legíveis, com janela temporal, nomes dos sinais e dados sensíveis removidos. Ausência de componente não deve aparecer como zero incidentes.
 
-### Arquivo: `docs/security/incident-response.md`
+**Aceite:** consultas executam no schema disponível; prints reais e fontes explicadas na atividade 3. Mock de dashboard não substitui evidência.
 
-#### Fases (NIST SP 800-61)
-1. **Detecção** - Alertas KQL, logs, relatórios usuários
-2. **Análise** - Triagem, classificação severidade, escopo
-3. **Contenção** - Curto prazo (block IP, revogar token), Longo prazo (patch, config)
-4. **Erradicação** - Remover causa raiz, limpar sistemas
-5. **Recuperação** - Restore, validação, monitoramento reforçado
-6. **Lições Aprendidas** - Post-mortem, atualizar runbooks
+## IR-1 — Resposta a incidentes [Low]
 
-#### Runbooks por Cenário
-| Cenário | Detecção | Contenção Imediata |
-|---------|----------|-------------------|
-| Credential Stuffing | Failed login spike | Block IP no Cloudflare, enable MFA forçado |
-| Token Leak | Logs HMAC/JWT anômalos | Rotacionar secrets (JWT, HMAC), revogar tokens |
-| Data Breach | Alert PII access anômalo | Isolar instância, audit trail Envers, notificar DPO |
-| DDoS | Rate limit spike + latency | Cloudflare Under Attack mode, APIM throttle |
+**Arquivo-alvo:** atividade 3 de `docs/security/SEC-DELIVERY.md`.
 
-#### Contatos & Escalação
-- Security Team: security@company.com
-- On-call: rotação semanal
-- DPO: dpo@company.com (LGPD)
-- Azure Support: caso infra
+Descrever cinco etapas obrigatórias:
 
----
+1. **Detecção:** alerta/log e registro de horário, componente e correlação.
+2. **Análise:** escopo, severidade, impacto e preservação de evidências sem divulgar PII.
+3. **Contenção:** limitar acesso/isolar componente ou revogar sessão conforme recurso realmente disponível e autorização necessária.
+4. **Erradicação:** corrigir causa, substituir credenciais comprometidas quando aplicável e remover artefato malicioso.
+5. **Recuperação:** restaurar serviço/dados conforme rotina de backup, validar integridade e acompanhar sinais.
 
-## Critério de Pronto Fase 4
+Incluir tabela `cenário | sinal | análise | contenção | erradicação | recuperação | responsável`. Cobrir vazamento de credencial, abuso de API e falha de segurança MQTT/TLS com ações suportadas pelo ambiente. Não inventar emails como `security@company.com`, DPO nomeado ou equipe/on-call inexistente; responsável não definido fica pendente.
 
-- [ ] 3+ KQL alerts ativos no Azure Monitor
-- [ ] 2+ dashboards operacionais publicados
-- [ ] Plano resposta incidentes aprovado e testado (tabletop exercise)
+**Aceite:** fluxo completo e coerente com infraestrutura existente; cada ação indica pré-condição e responsável a confirmar. Exercício operacional pode servir de evidência, mas certificação NIST, plantão e programa de drills não são novas obrigações.
 
----
+## Checklist
 
-## Notas
-
-- **App Insights:** Já instrumentado (agent auto). Métricas custom usam `Micrometer` + `ApplicationInsightsMeterRegistry`
-- **Log Analytics:** Workspace já recebe `ContainerAppConsoleLogs_CL`
-- **Regex masking:** `logback-spring.xml` já mascara password, cpf, token, secret
+- [ ] LOG-1: logs estruturados e amostras sanitizadas.
+- [ ] MON-1: plano API/mobile/IoT/ML, métricas e alertas rastreáveis.
+- [ ] MON-2: dashboard e prints reais.
+- [ ] IR-1: fluxo das cinco etapas com ações viáveis.

@@ -1,119 +1,55 @@
-# Phase 2 - Auth Hardening (Semanas 2-3)
+# Phase 2 — Validar hardening de API sem funcionalidades excedentes
 
-**Prioridade:** P1 - Alta | **Esforço:** ~2 semanas
+**Estado:** lockout e rotação de refresh presentes no código; revalidar após remoções da phase-7. Recuperação de senha e MFA também estão implementados, mas devem ser retirados, não expandidos.
+**Origem:** `SEC-REQUIREMENTS.md:26–27` (API).
+**Contrato:** `.specs/README.md`.
 
-Dependência: Migrações V8, V9 (pós V7).
+## Escopo preservado
 
----
+Login, autenticação JWT, refresh seguro, troca autenticada de senha existente, BCrypt/validação de senha, proteção contra força bruta, rate limit e validação de entrada. Lockout e rotação são escolhas técnicas já existentes para hardening, não novas funcionalidades a construir.
 
-## 2.1 Account Lockout / Brute-force Protection
+**Fora do alvo:** forgot/reset password, tokens PASSWORD_RESET, SMTP exclusivo de recuperação e MFA/TOTP. Retirada detalhada em phase-7. Não criar novo mecanismo de recuperação ou bypass administrativo de senha como substituto.
 
-### Migração V8: `V8__add_account_lockout_columns.sql`
-```sql
-ALTER TABLE users ADD COLUMN failed_login_attempts INT DEFAULT 0;
-ALTER TABLE users ADD COLUMN locked_until TIMESTAMP;
-CREATE INDEX idx_users_locked_until ON users(locked_until);
-```
+## API-1 — Regressão de autenticação e tokens [High]
 
-### `AuthServiceImpl` - Lógica
-- Incrementar `failed_login_attempts` a cada falha
-- Lock após 5 tentativas: setar `locked_until = now() + 15 minutos`
-- No login: verificar se `locked_until > now()` → bloquear
-- Login bem-sucedido: resetar `failed_login_attempts = 0`, `locked_until = null`
-- Query para unlock automático (job ou no próprio login)
+**Entradas/arquivos-alvo:** `AuthController`, `AuthDtos`, `AuthService`, `AuthServiceImpl`, `JwtServiceImpl`, `JwtAuthenticationFilter`, `JwtProperties`, `UserRepository` e testes correspondentes.
+**Pré-condição para aceite final:** CLEAN-1 e CLEAN-2 concluídos.
 
-### `UserRepository`
-```java
-@Modifying
-@Query("UPDATE User u SET u.failedLoginAttempts = 0, u.lockedUntil = null WHERE u.id = :id")
-void unlockUser(@Param("id") Long id);
-```
+1. Preservar login com credenciais válidas e rejeição genérica de credenciais inválidas, sem enumeração de usuários.
+2. Validar assinatura, expiração e tipo/finalidade de JWT. Access token não pode substituir refresh; antigo token PASSWORD_RESET não pode autenticar API nem renovar sessão após retirada do reset.
+3. Preservar rotação single-use de refresh, expiração consistente com configuração e serialização concorrente. Não introduzir outro prazo/configuração de 30 dias divergente do TTL atual.
+4. Preservar persistência de falhas e bloqueio após cinco tentativas por quinze minutos, caso esses sejam os valores confirmados no código; não refazer lockout nem adicionar job de desbloqueio desnecessário.
+5. Preservar troca autenticada de senha com senha atual válida, política forte e revogação de refresh. Não alegar revogação imediata de access token sem mecanismo real.
+6. Adaptar apenas testes afetados pelas remoções, mantendo cobertura dos controles remanescentes.
 
----
+**Testes de referência:** `AuthServiceLockoutIntegrationTest`, `AuthServiceRefreshIntegrationTest`, `AuthTokenErrorIntegrationTest`, `JwtAuthenticationFilterTest`, `JwtServiceTest`, `JwtServiceImplValidationTest`, `AuthServiceTest`. Confirmar nomes atuais antes de executar.
 
-## 2.2 Refresh Token Rotation + Expiry
+**Aceite:** casos positivos, negativos e concorrentes passam; auth não depende de SMTP/TOTP; nenhum token legado de reset ganha acesso genérico.
 
-### Migração V9: `V9__add_refresh_token_expiry.sql`
-```sql
-ALTER TABLE users ADD COLUMN refresh_token_expires_at TIMESTAMP;
-```
+## API-2 — Rate limit e validação de entrada [High]
 
-### `AuthServiceImpl` - Lógica
-- No login: gerar refresh token + setar `refresh_token_expires_at = now() + 30 dias`
-- No refresh (`POST /api/v1/auth/refresh`):
-  - Validar token não expirado
-  - **Rotacionar:** invalidar atual, gerar novo, atualizar expiry
-  - Retornar novo access + refresh
-- Na troca de senha (`POST /api/v1/auth/change-password`): revogar refresh token (setar expiry = now())
+**Entradas:** `RateLimitFilter`, DTOs/Bean Validation, tratamento global de exceções e `RateLimitFilterTest`.
 
-### Configuração: `application.yml`
-```yaml
-jwt:
-  refresh-token-expiry-days: 30
-```
+1. Conferir limites reais, rotas cobertas, identificação do cliente e resposta 429. Headers encaminhados só podem ser confiados conforme proxy real; não aceitar IP arbitrário do cliente para contornar limite.
+2. Testar burst acima do limite e requisição válida permitida. Preservar diferenciação existente de rotas sensíveis quando útil.
+3. Documentar rate limit por instância e topologia usada na demonstração. Não afirmar limite global em múltiplas réplicas nem adicionar Redis/APIM preventivamente.
+4. Escolher DTOs reais de autenticação e entrada de negócio e demonstrar rejeição de campos ausentes/inválidos, limites e payload inválido, sem stack trace ou dados sensíveis na resposta.
+5. Corrigir apenas gaps necessários aos controles exigidos; CORS não substitui validação de payload.
 
----
+**Aceite:** testes demonstram 429 e rejeições 400 consistentes com contrato; chamadas válidas continuam funcionando; limitações de implantação registradas.
 
-## 2.3 Password Reset Flow
+## API-3 — Evidências [Low]
 
-### Endpoints
+**Dependência:** API-1, API-2 e baseline phase-0.
+**Arquivo-alvo:** atividade 2 de `docs/security/SEC-DELIVERY.md`.
 
-#### `POST /api/v1/auth/forgot-password`
-- Input: `{ "email": "user@domain.com" }`
-- Gera JWT curto (15 min, single-use) com claim `purpose: PASSWORD_RESET`
-- Envia email (mock ou integração real - ex: SendGrid, Azure Communication Services)
-- Response: `202 Accepted` (sempre, para não vazar existência de email)
+Registrar controles, trechos de código, testes/comandos, prints sanitizados quando pertinentes e commits existentes. Explicar diferença entre hardening preservado e funcionalidades retiradas. Executar `mvn test` ao final da integração; registrar falhas, nunca afirmar suíte verde sem execução.
 
-#### `POST /api/v1/auth/reset-password`
-- Input: `{ "token": "jwt...", "newPassword": "..." }`
-- Valida: token válido, não expirado, claim `purpose: PASSWORD_RESET`, single-use
-- Atualiza senha (BCrypt)
-- Revoga refresh token do usuário
-- Marca token como usado (pode armazenar hash do token em tabela `password_reset_tokens`)
+**Aceite:** rate limit, validação e JWT seguro têm evidências individuais, não apenas lista de bibliotecas.
 
-### Tabela opcional para single-use
-```sql
-CREATE TABLE password_reset_tokens (
-    id BIGSERIAL PRIMARY KEY,
-    token_hash VARCHAR(64) NOT NULL,
-    user_id BIGINT REFERENCES users(id),
-    used BOOLEAN DEFAULT FALSE,
-    expires_at TIMESTAMP NOT NULL
-);
-```
+## Checklist
 
----
-
-## 2.4 MFA Decision
-
-### Opção A: Implementar TOTP (RFC 6238)
-- Lib: `com.google.authenticator:google-authenticator:0.2.0` ou `dev.samstevens.totp:totp:1.1.0`
-- Colunas já existem: `mfa_secret`, `mfa_enabled` em `users`
-- Endpoints:
-  - `POST /api/v1/auth/mfa/enable` → retorna QR code / secret
-  - `POST /api/v1/auth/mfa/verify` → valida código, ativa MFA
-  - `POST /api/v1/auth/mfa/disable` → desativa
-- No login: se `mfa_enabled=true`, exigir código TOTP (2º fator)
-
-### Opção B: Remover colunas se não usado
-- Migração: `DROP COLUMN mfa_secret, mfa_enabled`
-- Remover referências no código
-
-### Decisão
-Basear em requisito de negócio. Documentar ADR.
-
----
-
-## Critério de Pronto Fase 2
-
-- [ ] Lockout após 5 falhas, unlock automático 15 min
-- [ ] Refresh token rotaciona a cada uso, expira em 30 dias
-- [ ] Password reset flow end-to-end (token 15 min, single-use)
-- [ ] MFA decidido e implementado/removido
-
----
-
-## Notas
-
-- **Testes:** Perfil `test` usa H2. Migrações V8-V9 precisam versões H2 em `src/test/resources/db/migration/h2/`
-- **Front/Mobile:** Testar integração **após** Fase 2 (auth flow muda)
+- [ ] API-1: login/JWT/refresh/lockout/troca autenticada sem regressão.
+- [ ] API-2: rate limit e validação demonstrados.
+- [ ] API-3: evidências reais consolidadas.
+- [ ] Reset/SMTP e MFA ausentes conforme phase-7; migrações históricas preservadas.

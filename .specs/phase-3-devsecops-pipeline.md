@@ -1,144 +1,62 @@
-# Phase 3 - Pipeline DevSecOps (Semanas 3-5)
+# Phase 3 — Pipeline DevSecOps
 
-**Prioridade:** P1 - Alta | **Esforço:** ~2-3 semanas
+**Estado:** plano revisado; verificar workflow atual antes de implementar.
+**Origem:** `SEC-REQUIREMENTS.md:4–18` (PIPE).
+**Contrato de execução:** `.specs/README.md`, uma tarefa por vez.
 
-Independente, pode iniciar cedo (paralelo com outras fases).
+## Resultado exigido
 
----
+Atividade 1 de `docs/security/SEC-DELIVERY.md`: desenho CI/CD do commit ao deploy, etapas SAST/SCA/Secret Scanning/Container Security aplicável, riscos reduzidos e explicação da execução no Ford. O enunciado aceita explicar como o pipeline seria executado; não apresentar configuração planejada como execução comprovada.
 
-## 3.1 SAST: Semgrep
+Reutilizar GitHub Actions e workflow de deploy existente. Não criar outra plataforma CI, ambiente de produção ou segundo pipeline concorrente. Não adicionar assinatura de imagens, SBOM ou serviço pago como nova obrigação.
 
-### Workflow: `.github/workflows/deploy.yml` - Adicionar job
-```yaml
-- name: SAST (Semgrep)
-  uses: returntocorp/semgrep-action@v1
-  with:
-    config: >-
-      p/ci
-      p/java-spring
-      p/secrets
-    generateSarif: true
-```
+## PIPE-1 — Inventário e desenho mínimo [Low]
 
-### Redução de risco
-- Detecta: SQL injection, path traversal, hardcoded secrets, weak crypto, XSS patterns
-- Roda em todo PR → bloqueia merge se finding crítico/alto
+**Entradas:** `.github/workflows/`, `pom.xml`, `Dockerfile`, `.github/dependabot.yml` se existir.
 
----
+1. Identificar triggers, build/teste, construção de imagem, push e deploy reais. Não assumir nome de job ou variável.
+2. Desenhar Mermaid com: commit/PR, testes, SAST, SCA, secrets, build de imagem, scan de imagem, push e deploy. Representar dependências reais; scans independentes podem executar em paralelo.
+3. Separar PR de deploy. PR não recebe credenciais de produção nem publica imagem/deploy; deploy depende dos checks de segurança aplicáveis.
+4. Registrar arquivos/componentes Ford cobertos. Dependências de mobile/IoT/ML em outros repositórios ficam identificadas, não presumidas como escaneadas por Maven.
 
-## 3.2 SCA: OWASP Dependency Check + Dependabot
+**Saída:** diagrama e tabela `etapa | gatilho | ferramenta | artefato analisado | risco | resultado/planejado`, na atividade 1.
+**Aceite:** todos os estágios do enunciado rastreáveis; branches/triggers consistentes com workflow real.
 
-### Maven Plugin: `pom.xml`
-```xml
-<plugin>
-  <groupId>org.owasp</groupId>
-  <artifactId>dependency-check-maven</artifactId>
-  <version>9.0.0</version>
-  <configuration>
-    <failBuildOnCVSS>7</failBuildOnCVSS>
-    <suppressionFiles>
-      <suppressionFile>dependency-check-suppressions.xml</suppressionFile>
-    </suppressionFiles>
-  </configuration>
-  <executions>
-    <execution>
-      <goals>
-        <goal>check</goal>
-      </goals>
-    </execution>
-  </executions>
-</plugin>
-```
+## PIPE-2 — Scans necessários [High]
 
-### Dependabot: `.github/dependabot.yml`
-```yaml
-version: 2
-updates:
-  - package-ecystem: "maven"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
-```
+**Arquivos-alvo:** workflow existente em `.github/workflows/`; `.github/dependabot.yml`; `pom.xml` somente se ferramenta escolhida exigir.
 
-### Redução de risco
-- Dependency Check: CVE conhecidas em dependências transitivas
-- Dependabot: PRs automáticos para updates de versão
+Escolhas mínimas, salvo equivalente já instalado:
 
----
+- SAST: Semgrep para fontes Java/Spring. Conferir interface suportada e versão atual antes de configurar; não copiar o antigo `returntocorp/semgrep-action@v1` sem validação.
+- SCA: reutilizar scanner existente; na ausência, usar Trivy em modo filesystem para dependências suportadas. Se não cobrir dependências Maven resolvidas/transitivas neste projeto, usar OWASP Dependency Check **em substituição**, não acrescentar scanners redundantes. Registrar cobertura e limitações.
+- Secret Scanning: Gitleaks, com saída redigida e escopo de histórico documentado.
+- Container Security: Trivy na imagem efetivamente produzida pelo Dockerfile, antes da publicação/deploy. Scan de imagem não comprova análise de configuração do Dockerfile; essa revisão pertence à phase-0.
+- Revisão contínua de dependências: Dependabot, se ainda ausente, usando chave correta `package-ecosystem: maven` e frequência semanal. Isso apoia CONT sem criar outro serviço.
 
-## 3.3 Secret Scanning: Gitleaks
+Passos:
 
-### Workflow: `.github/workflows/deploy.yml`
-```yaml
-- name: Secret Scan (Gitleaks)
-  uses: gitleaks/gitleaks-action@v2
-  with:
-    args: --verbose --redact
-```
+1. Verificar documentação da versão escolhida. Fixar versões/referências imutáveis de ações, não `@master`; não inventar inputs de actions.
+2. Usar permissões mínimas. Não usar execução privilegiada de código de PR não confiável com secrets (`pull_request_target` com checkout do PR, por exemplo).
+3. Fazer findings altos/críticos de SAST/SCA/container e secrets confirmados falharem o check. Configurar comando/exit code real; texto no README não bloqueia merge.
+4. Não ocultar vulnerabilidades sem correção disponível silenciosamente. Exceções precisam justificativa, prazo e responsável na entrega, sem expor segredo.
+5. Manter relatórios sanitizados como evidência. SARIF é opcional se integração existente o suportar, não nova entrega.
 
-### Redução de risco
-- Detecta secrets hardcoded no código/histórico Git
-- Bloqueia commit/PR com vazamento
+**Aceite:** configuração válida; comandos compatíveis com versões; caso limpo passa e fixture sintética segura demonstra falha de cada scanner aplicável. Nunca inserir segredo real ou código explorável na aplicação para testar scanner. Se GitHub/registry indisponível, registrar apenas validação local, deixando execução remota pendente.
 
----
+## PIPE-3 — Evidências e redução de riscos [Low]
 
-## 3.4 Container Security: Trivy
+**Dependência:** PIPE-1 e PIPE-2 ou identificação explícita do que permanece planejado.
 
-### Workflow: `.github/workflows/deploy.yml` (no job de deploy, antes do push ACR)
-```yaml
-- name: Container Scan (Trivy)
-  uses: aquasecurity/trivy-action@master
-  with:
-    image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-    severity: HIGH,CRITICAL
-    exit-code: 1
-    ignore-unfixed: true
-```
+1. Referenciar workflow/comandos e resultados reais, quando executados, na atividade 1.
+2. Explicar ao menos: SAST detecta padrões inseguros; SCA detecta dependências vulneráveis; secrets detecta credenciais expostas; container detecta vulnerabilidades na imagem.
+3. Relacionar cada etapa a riscos da revisão STRIDE/DevSecOps, sem afirmar que scanner elimina todo risco.
+4. Explicar como falha impede avanço até deploy. Branch protection exige configuração no GitHub; não declarar merge bloqueado se só existe job no YAML.
 
-### Redução de risco
-- Vulnerabilidades na imagem base (Alpine, Eclipse Temurin)
-- Configurações inseguras no Dockerfile
-- Bloqueia deploy se CRITICAL/HIGH
+**Aceite:** documento + diagrama + explicação da execução Ford, com estado honesto de cada evidência.
 
----
+## Checklist
 
-## 3.5 Documentação Pipeline
-
-### Arquivo: `docs/security/pipeline-devsecops.md`
-Conteúdo:
-- Diagrama Mermaid do pipeline CI/CD
-- Explicação por etapa: risco mitigado + ferramenta
-- Exemplo execução no projeto Ford Challenge
-- Matriz: etapa → risco OWASP/STRIDE mitigado
-
-### Exemplo diagrama Mermaid
-```mermaid
-graph LR
-    A[Push/PR] --> B[Maven Test]
-    B --> C[SAST - Semgrep]
-    C --> D[SCA - Dependency Check]
-    D --> E[Secret Scan - Gitleaks]
-    E --> F[Docker Build]
-    F --> G[Container Scan - Trivy]
-    G --> H[Push ACR]
-    H --> I[Deploy ACA]
-```
-
----
-
-## Critério de Pronto Fase 3
-
-- [ ] SAST roda em todo PR (Semgrep)
-- [ ] SCA roda em todo PR (Dependency Check)
-- [ ] Secret scan roda em todo PR (Gitleaks)
-- [ ] Container scan roda no deploy (Trivy)
-- [ ] Documento pipeline com diagrama publicado em `docs/security/pipeline-devsecops.md`
-
----
-
-## Notas
-
-- **Fail-fast:** Configurar `failBuildOnCVSS: 7` (Dependency Check) e `exit-code: 1` (Trivy) para bloquear pipeline
-- **SARIF:** Semgrep gera SARIF → upload para GitHub Security tab
-- **Suppression:** Criar `dependency-check-suppressions.xml` para falsos positivos conhecidos
+- [ ] PIPE-1: desenho commit–deploy e cobertura dos componentes.
+- [ ] PIPE-2: SAST, SCA, secrets e container aplicável preparados/validados, com estado registrado.
+- [ ] PIPE-3: riscos e evidências na atividade 1 do documento único.

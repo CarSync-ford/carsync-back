@@ -1,59 +1,56 @@
-# Phase 0 - Quick Wins (1-2 dias)
+# Phase 0 — Baseline de hardening e IaC
 
-**Prioridade:** Imediato | **Esforço:** ~0.5 semana
+**Estado:** controles presentes no código; validação atual e evidências pendentes.
+**Origem:** `SEC-REQUIREMENTS.md:24–36` (API, IAC, CODE-EVIDENCE).
+**Contrato:** `.specs/README.md`.
 
-Já implementados no código, apenas validar/ativar em produção.
+Não recriar HMAC, headers, CORS ou validação de JWT já existentes. Não tratar alegação antiga de "92 testes passaram" como resultado desta revisão. Nenhuma configuração de produção foi verificada pelas specs.
 
-## Itens
+## BASE-1 — Conferir e evidenciar controles existentes [Low]
 
-### 1. HMAC enabled por default
-- **Arquivo:** `src/main/resources/application.yml:47`
-- **Status:** ✅ Implementado (`hmac.enabled: ${HMAC_ENABLED:true}`)
-- **Ação:** Confirmar que no ACA a variável `HMAC_ENABLED=true` e `HMAC_SECRET` está configurada como secret/env var
+**Arquivos-alvo:**
 
-### 2. Security Headers
-- **Arquivo:** `src/main/java/br/com/sprint1/challenge/config/SecurityConfig.java:71-76`
-- **Status:** ✅ Implementado
-- **Headers:**
-  - `X-Content-Type-Options: nosniff`
-  - `X-Frame-Options: DENY`
-  - `Referrer-Policy: strict-origin-when-cross-origin`
-  - `Permissions-Policy: geolocation=(), microphone=()`
+- `src/main/java/br/com/sprint1/challenge/config/SecurityConfig.java`
+- `src/main/java/br/com/sprint1/challenge/config/HmacSignatureFilter.java`
+- `src/main/java/br/com/sprint1/challenge/config/RateLimitFilter.java`
+- `src/main/java/br/com/sprint1/challenge/service/impl/JwtServiceImpl.java`
+- `src/main/resources/application.yml`
+- Testes correspondentes em `src/test/java/`.
 
-### 3. JWT Secret Validation
-- **Arquivo:** `src/main/java/br/com/sprint1/challenge/service/impl/JwtServiceImpl.java:27-34`
-- **Status:** ✅ Implementado
-- **Validação:** `@PostConstruct` lança `IllegalStateException` se secret < 32 chars (256 bits)
+Passos:
 
-### 4. CORS Fail-fast
-- **Arquivo:** `src/main/java/br/com/sprint1/challenge/config/SecurityConfig.java:45-51`
-- **Status:** ✅ Implementado
-- **Validação:** `@PostConstruct` rejeita `CORS_ALLOWED_ORIGINS` vazio ou `*`
+1. Conferir controle, configuração e teste existente de HMAC, headers, CORS, JWT e rate limit. Registrar símbolos atuais; números de linha antigos não são contrato.
+2. Rodar testes existentes pertinentes, incluindo `SecurityHeadersIntegrationTest`, `SecurityConfigCorsIntegrationTest`, `JwtServiceImplIntegrationTest`, `HmacSignatureFilterTest` e `HmacSignatureFilterIntegrationTest`, após confirmar seus nomes no checkout.
+3. Se um controle falhar, registrar falha e encaminhar correção pontual High vinculada a API; não desligar filtro para obter teste verde.
+4. Registrar na atividade 2 de `docs/security/SEC-DELIVERY.md` código, comando/resultado e risco mitigado. HMAC é assinatura, não evidência de criptografia local. Contagem de caracteres não comprova entropia da chave JWT.
 
-### 5. Validar HMAC_SECRET nos secrets/env vars do Container App (ACA)
-- **Ação:** Verificar via Azure CLI:
-  ```bash
-  # Listar secrets no Container App
-  az containerapp secret list --name <app-name> --resource-group <rg> -o table
-  
-  # Adicionar secret no Container App (se ausente)
-  az containerapp secret set --name <app-name> --resource-group <rg> --secrets hmac-secret=<valor>
-  
-  # Ver env vars injetadas no Container App
-  az containerapp show --name <app-name> --resource-group <rg> --query "properties.template.containers[0].env" -o table
-  ```
+**Aceite:** controles existentes descritos sem novos mecanismos; resultados verificáveis e pendências de ambiente separadas.
 
-## Critério de Pronto
+## IAC-1 — Segurança do Dockerfile existente [High]
 
-### Implementação e Testes Automatizados (Concluído)
-- [x] `HMAC_ENABLED=true` como default em `application.yml` e probes `/actuator/health/**` liberadas sem assinatura (`HmacSignatureFilterTest`, `HmacSignatureFilterIntegrationTest`)
-- [x] Security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`) configurados e validados via integração (`SecurityHeadersIntegrationTest`)
-- [x] JWT secret validation (mínimo 256 bits / 32 caracteres) com fail-fast no startup testado (`JwtServiceImplIntegrationTest`)
-- [x] CORS fail-fast (rejeição de vazio ou `*`) com startup testado (`SecurityConfigCorsIntegrationTest`)
-- [x] Suíte de 92 testes automatizados executando com sucesso (`mvn clean test`)
+**Entradas:** `Dockerfile`, `.dockerignore` se existir, workflow de build/deploy e configuração realmente usada.
 
-### Validação em Produção / Azure Container Apps (Pós-Deploy)
-- [ ] `HMAC_ENABLED=true` confirmado no ambiente de produção (ACA)
-- [ ] `HMAC_SECRET` configurado no Container App (`az containerapp secret set`) e mapeado em env var
-- [ ] Security headers confirmados em resposta HTTP pública (`curl -I https://<app-domain>/api/v1/health`)
-- [ ] Startup em produção validado com origins de CORS e JWT Secret configurados
+1. Verificar usuário de execução, imagem base, arquivos copiados, secrets, portas e necessidade real de privilégios.
+2. Corrigir apenas problemas encontrados: execução não root quando suportada, exclusão de `.env`/chaves e arquivos desnecessários do contexto, ausência de credenciais em ARG/ENV/layers e permissões mínimas de arquivos.
+3. Preservar build Java 21, inicialização, health check e acesso aos diretórios necessários. Não acrescentar Terraform/Kubernetes.
+4. Construir imagem e testar inicialização com configuração de teste, nunca credenciais de produção. Conferir usuário e arquivos/configuração da imagem sem revelar segredos.
+5. Se Docker não estiver disponível, registrar bloqueio; leitura estática não comprova execução do container.
+
+**Aceite:** trecho/diff do Dockerfile, explicação e evidência de build/startup; scan de imagem fica em phase-3. Dockerfile existente torna demonstração de IaC aplicável, salvo mudança de arquitetura documentada.
+
+## BASE-2 — Validação de ambiente e evidências [Low]
+
+**Pré-condição:** acesso autorizado ao ambiente. Não provisionar nem alterar secrets nesta tarefa.
+
+- Verificar presença das configurações exigidas pelo código sem imprimir valores secretos.
+- Conferir headers na URL real e comportamento de startup com configuração válida.
+- Registrar ambiente, data e resultado. Evidência local e evidência remota devem permanecer distintas.
+- Capturar prints/trechos sanitizados na atividade 2. Não executar comandos com valor de segredo literal no histórico do shell.
+
+**Aceite:** validação comprovada ou pendência explícita de acesso. Não considerar ACA/Cloudflare configurados apenas por menção nos documentos antigos.
+
+## Checklist
+
+- [ ] BASE-1: baseline conferido e testes registrados.
+- [ ] IAC-1: Dockerfile revisado, correções necessárias e demonstração.
+- [ ] BASE-2: evidências do ambiente disponível e bloqueios identificados.
