@@ -43,6 +43,11 @@ jwt:
   issuer: ${JWT_ISSUER}
   refresh-token-expiry-days: ${JWT_REFRESH_TOKEN_EXPIRY_DAYS:30}
 
+rate-limit:
+  enabled: ${RATE_LIMIT_ENABLED:true}
+  capacity: ${RATE_LIMIT_CAPACITY:10}
+  tokens-per-second: ${RATE_LIMIT_TOKENS_PER_SECOND:10}
+
 hmac:
   secret: ${HMAC_SECRET}
   enabled: ${HMAC_ENABLED:true}

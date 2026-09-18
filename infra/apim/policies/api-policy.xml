@@ -1,0 +1,112 @@
+<!--
+  Azure API Management (APIM) - CarSync API Policy Configuration
+  Fase 6: Escala & Hardening na Borda
+-->
+<policies>
+    <inbound>
+        <base />
+
+        <!-- 1. Tracing & Correlation ID -->
+        <choose>
+            <when condition="@(!context.Request.Headers.ContainsKey(&quot;X-Correlation-ID&quot;))">
+                <set-header name="X-Correlation-ID" exists-action="override">
+                    <value>@(Guid.NewGuid().ToString())</value>
+                </set-header>
+            </when>
+        </choose>
+
+        <!-- 2. Extração e Normalização de IP do Cliente (Cloudflare / Direto) -->
+        <set-variable name="clientIp" value="@{
+            string ip = context.Request.Headers.GetValueOrDefault(&quot;CF-Connecting-IP&quot;, &quot;&quot;);
+            if (string.IsNullOrEmpty(ip)) {
+                ip = context.Request.Headers.GetValueOrDefault(&quot;X-Forwarded-For&quot;, &quot;&quot;).Split(',')[0].Trim();
+            }
+            if (string.IsNullOrEmpty(ip)) {
+                ip = context.Request.IpAddress;
+            }
+            return ip;
+        }" />
+
+        <!-- 3. Distributed Rate Limiting na Borda por IP (100 chamadas / 60 segundos) -->
+        <rate-limit calls="100" renewal-period="60" counter-key="@((string)context.Variables[&quot;clientIp&quot;])" />
+
+        <!-- 4. Rate Limiting por Subscription Key (quando aplicável) -->
+        <choose>
+            <when condition="@(context.Subscription != null)">
+                <rate-limit-by-key calls="1000" renewal-period="60" counter-key="@(context.Subscription.Id)" />
+            </when>
+        </choose>
+
+        <!-- 5. Validação de JWT na Borda (rotas protegidas; rotas públicas bypassam) -->
+        <choose>
+            <when condition="@(!context.Request.Url.Path.StartsWith(&quot;/api/v1/auth&quot;) &amp;&amp; !context.Request.Url.Path.StartsWith(&quot;/api/v1/health&quot;) &amp;&amp; !context.Request.Url.Path.StartsWith(&quot;/v3/api-docs&quot;) &amp;&amp; !context.Request.Url.Path.StartsWith(&quot;/swagger-ui&quot;))">
+                <validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="{ &quot;error&quot;: &quot;Unauthorized: Invalid or expired JWT token&quot; }">
+                    <openid-config url="https://login.microsoftonline.com/{{tenant-id}}/v2.0/.well-known/openid-configuration" />
+                    <audiences>
+                        <audience>{{client-id}}</audience>
+                    </audiences>
+                    <issuers>
+                        <issuer>https://login.microsoftonline.com/{{tenant-id}}/v2.0</issuer>
+                    </issuers>
+                </validate-jwt>
+            </when>
+        </choose>
+
+        <!-- 6. Repasse seguro de cabeçalhos ao backend ACA -->
+        <set-header name="X-Forwarded-For" exists-action="override">
+            <value>@((string)context.Variables[&quot;clientIp&quot;])</value>
+        </set-header>
+        <set-header name="X-Gateway-Source" exists-action="override">
+            <value>Azure-APIM</value>
+        </set-header>
+
+        <!-- 7. Encaminhamento para o Origin Backend (ACA) -->
+        <set-backend-service base-url="{{backend-aca-url}}" />
+    </inbound>
+
+    <backend>
+        <base />
+    </backend>
+
+    <outbound>
+        <base />
+
+        <!-- 1. Headers de Segurança Estritos -->
+        <set-header name="Strict-Transport-Security" exists-action="override">
+            <value>max-age=31536000; includeSubDomains; preload</value>
+        </set-header>
+        <set-header name="X-Content-Type-Options" exists-action="override">
+            <value>nosniff</value>
+        </set-header>
+        <set-header name="X-Frame-Options" exists-action="override">
+            <value>DENY</value>
+        </set-header>
+        <set-header name="Content-Security-Policy" exists-action="override">
+            <value>default-src 'none'; frame-ancestors 'none';</value>
+        </set-header>
+        <set-header name="Referrer-Policy" exists-action="override">
+            <value>strict-origin-when-cross-origin</value>
+        </set-header>
+
+        <!-- 2. Remoção de Assinaturas e Informações Internas -->
+        <set-header name="Server" exists-action="delete" />
+        <set-header name="X-Powered-By" exists-action="delete" />
+        <set-header name="X-AspNet-Version" exists-action="delete" />
+    </outbound>
+
+    <on-error>
+        <base />
+        <set-header name="Content-Type" exists-action="override">
+            <value>application/json</value>
+        </set-header>
+        <set-body>@{
+            return new Newtonsoft.Json.Linq.JObject(
+                new Newtonsoft.Json.Linq.JProperty("timestamp", DateTime.UtcNow.ToString("o")),
+                new Newtonsoft.Json.Linq.JProperty("status", context.Response.StatusCode),
+                new Newtonsoft.Json.Linq.JProperty("error", context.LastError.Source),
+                new Newtonsoft.Json.Linq.JProperty("message", context.LastError.Message),
+                new Newtonsoft.Json.Linq.JProperty("correlationId", context.Request.Headers.GetValueOrDefault("X-Correlation-ID", ""))
+            ).ToString();
+        }</set-body>
+    </on-error>
+</policies>
