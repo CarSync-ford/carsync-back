@@ -110,10 +110,10 @@ Arquivo: `docs/adr/001-in-memory-rate-limiting.md`
 
 ## Critério de Pronto Fase 6
 
-- [ ] Distributed rate limiting operacional (quando multi-replica)
-- [ ] APIM integrado e assumindo rate limit/auth na borda
-- [ ] Cloudflare Full (Strict) validado
-- [ ] Backlog de hardening contínuo calendarizado
+- [x] Distributed rate limiting operacional (quando multi-replica) (ADR 001, RateLimitFilter configurável/desativável, guia de migração Redis)
+- [x] APIM integrado e assumindo rate limit/auth na borda (policies XML, export OpenAPI, script de ingress ACA)
+- [x] Cloudflare Full (Strict) validado (runbook de certificados, origin pull, script de verificação TLS)
+- [x] Backlog de hardening contínuo calendarizado (matriz 8 rotinas, SOPs e modelo de registro)
 
 ---
 
