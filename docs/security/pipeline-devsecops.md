@@ -35,7 +35,7 @@ graph LR
 - **Política:** Falha de qualquer teste unitário ou de integração encerra o pipeline imediatamente. Relatórios JUnit são arquivados como artefatos de build.
 
 ### 2.2 SAST: Static Application Security Testing (Semgrep)
-- **Ferramenta:** `returntocorp/semgrep-action@v1`
+- **Ferramenta:** `returntocorp/semgrep-action@713efdd345f3035192eaa63f56867b88e63e4e5d` (pinned SHA, v1)
 - **Configuração de Regras:**
   - `p/ci`: regras consolidadas para integração contínua.
   - `p/java-spring`: detecção de vulnerabilidades específicas de Spring Framework (Spring Security, Spring MVC, Spring Data).
@@ -65,7 +65,7 @@ graph LR
 - **Política:** Bloqueia qualquer commit ou Pull Request que introduza credenciais no histórico do Git. Os valores nos logs são automaticamente mascarados (`--redact`).
 
 ### 2.5 Container Security (Trivy)
-- **Ferramenta:** `aquasecurity/trivy-action@master`
+- **Ferramenta:** `aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25` (pinned SHA, v0.36.0)
 - **Gatilho:** Executado no job de deploy, após o `docker build` da imagem local e estritamente **antes** do envio ao Azure Container Registry (`docker push`).
 - **Alvo:** Imagem local `${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}` baseada em `eclipse-temurin:21-jre-alpine`.
 - **Configuração:**

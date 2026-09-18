@@ -129,11 +129,11 @@ graph LR
 
 ## Critério de Pronto Fase 3
 
-- [ ] SAST roda em todo PR (Semgrep)
-- [ ] SCA roda em todo PR (Dependency Check)
-- [ ] Secret scan roda em todo PR (Gitleaks)
-- [ ] Container scan roda no deploy (Trivy)
-- [ ] Documento pipeline com diagrama publicado em `docs/security/pipeline-devsecops.md`
+- [x] SAST roda em todo PR (Semgrep)
+- [x] SCA roda em todo PR (Dependency Check)
+- [x] Secret scan roda em todo PR (Gitleaks)
+- [x] Container scan roda no deploy (Trivy)
+- [x] Documento pipeline com diagrama publicado em `docs/security/pipeline-devsecops.md`
 
 ---
 
