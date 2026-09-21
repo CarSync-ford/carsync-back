@@ -40,7 +40,7 @@ public class User {
     @Column(name = "mfa_enabled", nullable = false)
     private Boolean mfaEnabled = false;
 
-    @Column(name = "refresh_token")
+    @Column(name = "refresh_token", length = 1024)
     private String refreshToken;
 
     @Column(name = "deleted_at")
