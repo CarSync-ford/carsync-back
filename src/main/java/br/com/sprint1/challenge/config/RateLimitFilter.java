@@ -27,12 +27,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
     @Value("${rate-limit.enabled:true}")
     private boolean enabled;
 
-    @Value("${rate-limit.capacity:10}")
-    private long capacity;
-
-    @Value("${rate-limit.tokens-per-second:10}")
-    private long tokensPerSecond;
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
@@ -55,10 +49,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     private Bucket createBucket() {
-        Bandwidth limit = Bandwidth.builder()
-                .capacity(capacity)
-                .refillIntervally(tokensPerSecond, Duration.ofSeconds(1))
-                .build();
+        Bandwidth limit = Bandwidth.classic(10, Refill.intervally(10, Duration.ofSeconds(1)));
         return Bucket.builder().addLimit(limit).build();
     }
 
