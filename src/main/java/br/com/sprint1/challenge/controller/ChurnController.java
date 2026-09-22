@@ -3,6 +3,7 @@ package br.com.sprint1.challenge.controller;
 import br.com.sprint1.challenge.dto.ChurnDtos.ChurnPredictionResponse;
 import br.com.sprint1.challenge.service.ChurnService;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import java.util.List;
         MediaType.APPLICATION_JSON_VALUE,
         MediaType.APPLICATION_XML_VALUE
 })
+@PreAuthorize("hasAnyRole('USER','ANALYST')")
 public class ChurnController {
 
     private final ChurnService churnService;

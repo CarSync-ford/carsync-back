@@ -3,6 +3,7 @@ package br.com.sprint1.challenge.controller;
 import br.com.sprint1.challenge.dto.StockDtos.StockPredictionResponse;
 import br.com.sprint1.challenge.service.StockService;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
         MediaType.APPLICATION_JSON_VALUE,
         MediaType.APPLICATION_XML_VALUE
 })
+@PreAuthorize("hasRole('USER')")
 public class StockController {
 
     private final StockService stockService;

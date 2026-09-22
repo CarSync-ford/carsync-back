@@ -3,6 +3,7 @@ package br.com.sprint1.challenge.controller;
 import br.com.sprint1.challenge.dto.Customer360Dtos.Customer360Response;
 import br.com.sprint1.challenge.service.Customer360Service;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
         MediaType.APPLICATION_JSON_VALUE,
         MediaType.APPLICATION_XML_VALUE
 })
+@PreAuthorize("hasAnyRole('USER','ANALYST')")
 public class Customer360Controller {
 
     private final Customer360Service customer360Service;
