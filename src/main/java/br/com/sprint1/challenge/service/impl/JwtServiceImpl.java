@@ -2,6 +2,7 @@ package br.com.sprint1.challenge.service.impl;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.crypto.SecretKey;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import br.com.sprint1.challenge.config.JwtProperties;
 import br.com.sprint1.challenge.service.JwtService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -36,65 +38,55 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public String generateToken(String userId, String email, String role) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
-
-        Date now = new Date();
-        Date exp = new Date(now.getTime() + (jwtProperties.getExpirationMinutes() * 60 * 1000));
-
-        return Jwts.builder()
-                .subject(userId)
-                .claim("email", email)
-                .claim("role", role)
-                .issuer(jwtProperties.getIssuer())
-                .issuedAt(now)
-                .expiration(exp)
-                .signWith(key, Jwts.SIG.HS256)
-                .compact();
+        long expirationMillis = jwtProperties.getExpirationMinutes() * 60 * 1000L;
+        return buildToken(userId, Map.of("email", email, "role", role), expirationMillis, null);
     }
 
     @Override
     public String generateRefreshToken(String userId) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
-
-        Date now = new Date();
-        Date exp = new Date(now.getTime() + (jwtProperties.getRefreshTokenExpiryDays() * 24L * 60 * 60 * 1000));
-
-        return Jwts.builder()
-                .subject(userId)
-                .claim("type", "REFRESH")
-                .issuer(jwtProperties.getIssuer())
-                .issuedAt(now)
-                .expiration(exp)
-                .id(UUID.randomUUID().toString())
-                .signWith(key, Jwts.SIG.HS256)
-                .compact();
+        long expirationMillis = jwtProperties.getRefreshTokenExpiryDays() * 24L * 60 * 60 * 1000;
+        return buildToken(userId, Map.of("type", "REFRESH"), expirationMillis, UUID.randomUUID().toString());
     }
 
     @Override
     public String generatePasswordResetToken(String userId) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
+        long expirationMillis = 15 * 60 * 1000L; // 15 minutes
+        Map<String, Object> claims = Map.of("type", "PASSWORD_RESET", "purpose", "PASSWORD_RESET");
+        return buildToken(userId, claims, expirationMillis, UUID.randomUUID().toString());
+    }
 
+    /**
+     * Template Method: concentra a montagem/assinatura do JWT hoje repetida em
+     * cada método de geração (chave, claims, expiração, issuer). Evita a
+     * duplicação anterior do {@code Jwts.builder()...signWith(...)} em 3 lugares.
+     */
+    private String buildToken(String subject, Map<String, Object> claims, long expirationMillis, String jwtId) {
         Date now = new Date();
-        Date exp = new Date(now.getTime() + (15 * 60 * 1000)); // 15 minutes
+        Date exp = new Date(now.getTime() + expirationMillis);
 
-        return Jwts.builder()
-                .subject(userId)
-                .claim("type", "PASSWORD_RESET")
-                .claim("purpose", "PASSWORD_RESET")
+        JwtBuilder builder = Jwts.builder()
+                .subject(subject)
                 .issuer(jwtProperties.getIssuer())
                 .issuedAt(now)
-                .expiration(exp)
-                .id(UUID.randomUUID().toString())
-                .signWith(key, Jwts.SIG.HS256)
-                .compact();
+                .expiration(exp);
+
+        claims.forEach(builder::claim);
+
+        if (jwtId != null) {
+            builder.id(jwtId);
+        }
+
+        return builder.signWith(signingKey(), Jwts.SIG.HS256).compact();
+    }
+
+    private SecretKey signingKey() {
+        return Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
     public Claims parse(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
-
         return Jwts.parser()
-                .verifyWith(key)
+                .verifyWith(signingKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

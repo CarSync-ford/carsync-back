@@ -5,6 +5,7 @@ import br.com.sprint1.challenge.dto.LeadDtos.LeadResponse;
 import br.com.sprint1.challenge.dto.LeadDtos.ProactiveLeadRequest;
 import br.com.sprint1.challenge.entity.Customer;
 import br.com.sprint1.challenge.entity.Lead;
+import br.com.sprint1.challenge.entity.LeadStatus;
 import br.com.sprint1.challenge.entity.Vehicle;
 import br.com.sprint1.challenge.exception.ResourceNotFoundException;
 import br.com.sprint1.challenge.repository.CustomerRepository;
@@ -79,7 +80,7 @@ public class LeadServiceImpl implements LeadService {
                 title,
                 description,
                 urgency,
-                "OPEN",
+                LeadStatus.OPEN,
                 request.source() == null || request.source().isBlank() ? "NEXT_BEST_ACTION" : request.source(),
                 LocalDateTime.now(),
                 null);
@@ -91,10 +92,10 @@ public class LeadServiceImpl implements LeadService {
     @Override
     public LeadConversionResponse convert(Long id) {
         Lead lead = findLead(id);
-        lead.setStatus("CONVERTED");
+        lead.setStatus(LeadStatus.CONVERTED);
         lead.setConvertedAt(LocalDateTime.now());
         leadRepository.save(lead);
-        return new LeadConversionResponse(lead.getId(), lead.getStatus(), lead.getConvertedAt());
+        return new LeadConversionResponse(lead.getId(), lead.getStatus().name(), lead.getConvertedAt());
     }
 
     private Lead findLead(Long id) {
@@ -125,7 +126,7 @@ public class LeadServiceImpl implements LeadService {
                 lead.getTitle(),
                 lead.getDescription(),
                 lead.getUrgency(),
-                lead.getStatus(),
+                lead.getStatus().name(),
                 lead.getSource(),
                 lead.getCreatedAt(),
                 lead.getConvertedAt());

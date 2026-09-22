@@ -4,6 +4,7 @@ import br.com.sprint1.challenge.config.DataRetentionProperties;
 import br.com.sprint1.challenge.entity.Customer;
 import br.com.sprint1.challenge.entity.Dealership;
 import br.com.sprint1.challenge.entity.Lead;
+import br.com.sprint1.challenge.entity.LeadStatus;
 import br.com.sprint1.challenge.entity.User;
 import br.com.sprint1.challenge.entity.UserType;
 import br.com.sprint1.challenge.entity.Vehicle;
@@ -147,7 +148,7 @@ class DataRetentionServiceIntegrationTest {
 
         leadRepository.save(new Lead(
                 null, expiredCustomer.getId(), vehicle.getId(), dealership.getId(),
-                "Customer Lead", "Test", "LOW", "OPEN", "WEB", now.minusDays(40), null
+                "Customer Lead", "Test", "LOW", LeadStatus.OPEN, "WEB", now.minusDays(40), null
         ));
 
         // 5. Expired soft-deleted Lead (deleted 32 days ago) on active customer
@@ -156,7 +157,7 @@ class DataRetentionServiceIntegrationTest {
         ));
         Lead expiredLead = leadRepository.save(new Lead(
                 null, activeCustomer.getId(), null, dealership.getId(),
-                "Expired Lead", "Test", "LOW", "OPEN", "WEB", now.minusDays(50), null
+                "Expired Lead", "Test", "LOW", LeadStatus.OPEN, "WEB", now.minusDays(50), null
         ));
         expiredLead.setDeletedAt(now.minusDays(32));
         expiredLead = leadRepository.save(expiredLead);

@@ -3,6 +3,7 @@ package br.com.sprint1.challenge.controller;
 import br.com.sprint1.challenge.entity.Customer;
 import br.com.sprint1.challenge.entity.Dealership;
 import br.com.sprint1.challenge.entity.Lead;
+import br.com.sprint1.challenge.entity.LeadStatus;
 import br.com.sprint1.challenge.entity.Vehicle;
 import br.com.sprint1.challenge.repository.AssistantInteractionRepository;
 import br.com.sprint1.challenge.repository.CustomerRepository;
@@ -102,7 +103,7 @@ class AnalyticsSecurityIntegrationTest {
                 "Interesse em revisão preventiva",
                 "Cliente deseja agendar revisão de 30.000 km",
                 "MEDIUM",
-                "OPEN",
+                LeadStatus.OPEN,
                 "PORTAL",
                 LocalDateTime.now(),
                 null
