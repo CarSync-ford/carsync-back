@@ -29,12 +29,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DuplicateCpfException.class)
     public ResponseEntity<ApiErrorResponse> handleDuplicateCpf(DuplicateCpfException ex, HttpServletRequest request) {
-        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI(), List.of());
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI(), List.of());
     }
 
     @ExceptionHandler(DuplicateEmailException.class)
     public ResponseEntity<ApiErrorResponse> handleDuplicateEmail(DuplicateEmailException ex, HttpServletRequest request) {
-        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI(), List.of());
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI(), List.of());
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)

@@ -2,6 +2,7 @@ package br.com.sprint1.challenge.service.impl;
 
 import br.com.sprint1.challenge.dto.LeadDtos.LeadConversionResponse;
 import br.com.sprint1.challenge.dto.LeadDtos.LeadResponse;
+import br.com.sprint1.challenge.dto.LeadDtos.LeadUpdateRequest;
 import br.com.sprint1.challenge.dto.LeadDtos.ProactiveLeadRequest;
 import br.com.sprint1.challenge.entity.Customer;
 import br.com.sprint1.challenge.entity.Lead;
@@ -39,7 +40,7 @@ public class LeadServiceImpl implements LeadService {
 
     @Override
     public List<LeadResponse> listAll() {
-        return leadRepository.findAll().stream().map(this::toResponse).toList();
+        return leadRepository.findByDeletedAtIsNull().stream().map(this::toResponse).toList();
     }
 
     @Override
@@ -90,6 +91,16 @@ public class LeadServiceImpl implements LeadService {
 
     @Transactional
     @Override
+    public LeadResponse update(Long id, LeadUpdateRequest request) {
+        Lead lead = findLead(id);
+        lead.setTitle(request.title());
+        lead.setDescription(request.description());
+        lead.setUrgency(request.urgency());
+        return toResponse(leadRepository.save(lead));
+    }
+
+    @Transactional
+    @Override
     public LeadConversionResponse convert(Long id) {
         Lead lead = findLead(id);
         lead.setStatus(LeadStatus.CONVERTED);
@@ -98,9 +109,21 @@ public class LeadServiceImpl implements LeadService {
         return new LeadConversionResponse(lead.getId(), lead.getStatus().name(), lead.getConvertedAt());
     }
 
+    @Transactional
+    @Override
+    public void delete(Long id) {
+        Lead lead = findLead(id);
+        lead.setDeletedAt(LocalDateTime.now());
+        leadRepository.save(lead);
+    }
+
     private Lead findLead(Long id) {
-        return leadRepository.findById(id)
+        Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lead não encontrado: " + id));
+        if (lead.getDeletedAt() != null) {
+            throw new ResourceNotFoundException("Lead não encontrado: " + id);
+        }
+        return lead;
     }
 
     private String determineUrgency(Vehicle vehicle) {

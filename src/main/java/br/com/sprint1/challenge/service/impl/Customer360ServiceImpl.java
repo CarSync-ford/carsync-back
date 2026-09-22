@@ -81,7 +81,7 @@ public class Customer360ServiceImpl implements Customer360Service {
 
     private List<LeadDtos.LeadResponse> openLeadsFor(Long customerId) {
         return leadRepository.findByCustomerId(customerId).stream()
-                .filter(lead -> lead.getStatus() == LeadStatus.OPEN)
+                .filter(lead -> lead.getStatus() == LeadStatus.OPEN && lead.getDeletedAt() == null)
                 .map(this::toLeadResponse)
                 .toList();
     }

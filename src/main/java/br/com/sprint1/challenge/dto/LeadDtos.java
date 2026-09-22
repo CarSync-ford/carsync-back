@@ -2,6 +2,7 @@ package br.com.sprint1.challenge.dto;
 
 import java.time.LocalDateTime;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public final class LeadDtos {
@@ -10,6 +11,11 @@ public final class LeadDtos {
     }
 
     public record ProactiveLeadRequest(@NotNull Long customerId, Long vehicleId, String source) {
+    }
+
+    public record LeadUpdateRequest(@NotBlank String title,
+                                    @NotBlank String description,
+                                    @NotBlank String urgency) {
     }
 
     public record LeadResponse(Long id,

@@ -66,7 +66,7 @@ class UserControllerTest {
     }
 
     @Test
-    void postCpfDuplicado_retorna400() throws Exception {
+    void postCpfDuplicado_retorna409() throws Exception {
         Map<String, String> payload = Map.of(
                 "username", "johndoe",
                 "email", "john@example.com",
@@ -82,11 +82,11 @@ class UserControllerTest {
         mockMvc.perform(post("/api/v1/user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isConflict());
     }
 
     @Test
-    void postEmailDuplicado_retorna400() throws Exception {
+    void postEmailDuplicado_retorna409() throws Exception {
         Map<String, String> payload1 = Map.of(
                 "username", "user1",
                 "email", "duplicate@example.com",
@@ -98,7 +98,7 @@ class UserControllerTest {
                 "username", "user2",
                 "email", "duplicate@example.com",
                 "password", "Password@2",
-                "cpf", "42385312068"
+                "cpf", "11144477735"
         );
 
         mockMvc.perform(post("/api/v1/user")
@@ -109,7 +109,7 @@ class UserControllerTest {
         mockMvc.perform(post("/api/v1/user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload2)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isConflict());
     }
 
     @Test
