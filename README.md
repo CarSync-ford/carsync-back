@@ -137,16 +137,32 @@ Base path: `http://localhost:8080`
 ## Banco de dados e migracoes
 
 - Configuracao de datasource e JPA: `src/main/resources/application.yml`
-- Banco para execucao local: H2 em memoria
-- Migracao de schema com Flyway: `src/main/resources/db/migration/V1__create_schema.sql`
+- Execucao normal (`mvn spring-boot:run`): PostgreSQL, apontado via `DB_URL`/`DB_USERNAME`/`DB_PASSWORD`
+- Testes (`mvn clean test`): H2 em memoria, configurado à parte em `src/test/resources/application.yml` (perfil de teste, não precisa de Postgres)
+- Migracao de schema com Flyway: `src/main/resources/db/migration/*.sql`
 
 ## Como executar
 
+Pré-requisitos: Java 21, Maven e uma instância PostgreSQL acessível (local ou remota) para rodar a aplicação (os testes não precisam disso — usam H2 em memória).
+
 ```bash
-cd /home/hellen/Downloads/ArquiteturaOrientadaaServicos_Sprint1
+git clone <url-do-repositorio>
+cd carsync-back
+
+# 1. rodar os testes (não depende de Postgres nem de variáveis de ambiente)
 mvn clean test
+
+# 2. copiar o template de variáveis de ambiente e preencher com valores reais
+cp .env.example .env
+#   DB_URL, DB_USERNAME, DB_PASSWORD -> sua instância PostgreSQL
+#   JWT_SECRET  -> string aleatória com pelo menos 32 caracteres
+#   JWT_EXPIRATION_MINUTES, JWT_ISSUER, HMAC_SECRET, CORS_ALLOWED_ORIGINS, BCRYPT_SALT
+
+# 3. exportar as variáveis (ex.: via direnv com .envrc, ou manualmente) e subir a aplicação
 mvn spring-boot:run
 ```
+
+A aplicação sobe em `http://localhost:8080`. Sem essas variáveis definidas, o `spring-boot:run` falha no startup (`JwtProperties`/`SecurityConfig` validam o secret e as origens de CORS antes de subir o contexto).
 
 ## Como validar rapidamente
 
