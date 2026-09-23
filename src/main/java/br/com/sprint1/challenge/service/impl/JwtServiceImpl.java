@@ -39,7 +39,8 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public String generateToken(String userId, String email, String role) {
         long expirationMillis = jwtProperties.getExpirationMinutes() * 60 * 1000L;
-        return buildToken(userId, Map.of("email", email, "role", role), expirationMillis, null);
+        Map<String, Object> claims = Map.of("email", email, "role", role, "type", "ACCESS");
+        return buildToken(userId, claims, expirationMillis, null);
     }
 
     @Override
