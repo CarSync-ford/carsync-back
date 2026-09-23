@@ -155,6 +155,31 @@ curl -s http://localhost:8080/v3/api-docs | head
 curl -s http://localhost:8080/api/v1/churn/risk-list
 ```
 
+## Testes automatizados
+
+- Rodar toda a suíte: `mvn clean test`
+- Relatórios gerados em `target/surefire-reports/*.xml` (um arquivo por classe de teste, com resultado individual de cada `@Test`)
+- No CI (`.github/workflows/deploy.yml`), o job `test` roda `mvn test` a cada push/PR e publica esses relatórios como artefato (`test-reports`) antes do deploy prosseguir
+
+**Cobertura por tipo de cenário:**
+
+| Cenário | Onde |
+|---|---|
+| Sucesso (200/201/204) | `ControllerAuthorizationIntegrationTest`, `LeadRestMaturityIntegrationTest`, `AnalyticsSecurityIntegrationTest`, `AuthControllerIntegrationTest`, `UserControllerTest` |
+| Erro de negócio (400/404/409) | `LeadRestMaturityIntegrationTest` (validação e recurso inexistente), `UserControllerTest` (CPF/e-mail duplicado → 409) |
+| Acesso não autorizado (401/403) | `ControllerAuthorizationIntegrationTest` (401 sem token / 403 com role errada, para Churn/Customer360/Lead/Stock/Assistant), `AnalyticsSecurityIntegrationTest`, `SecurityConfigTest` |
+| Regras de negócio isoladas | `MileageRiskRuleTest`, `WarrantyRiskRuleTest`, `HealthStatusRiskRuleTest`, `ServiceHistoryRiskRuleTest` (Strategy de churn), `TotpServiceImplTest`, `CpfTest`, `EmailTest` (Value Objects) |
+| Segurança (JWT, HMAC, rate limit, CORS) | `JwtServiceImplIntegrationTest`, `JwtAuthenticationFilterTest`, `HmacSignatureFilterTest`, `RateLimitFilterTest`, `SecurityConfigCorsIntegrationTest` |
+
+**Última execução local (evidência):**
+
+```
+mvn clean test
+...
+[INFO] Tests run: 207, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+```
+
 ## Evidencias para a rubricagem da sprint
 
 - Integracao por Web Services: API REST implementada em `controller/` com contrato OpenAPI
