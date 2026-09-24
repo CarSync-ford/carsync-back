@@ -31,3 +31,13 @@ Arquivos e teste/comando: `pom.xml`, `.github/dependabot.yml`, `.github/workflow
 Resultado observado e data: YAML e XML válidos. Dependency-Check iniciou, mas não produziu análise: NVD respondeu HTTP 403, seguido por `NoDataException: No documents exist`; 2026-09-24. Dependabot atualiza versões; Dependency-Check analisa vulnerabilidades e falha em CVSS >= 7.
 Evidência: configuração registrada `dependency-check-suppressions.xml` sem supressões; plugin OWASP `9.0.0`; saída local resumida neste STATUS.
 Dependência externa / responsável / ação para desbloquear: acesso ao feed NVD e, preferencialmente, `NVD_API_KEY` / mantenedor do CI / configurar segredo e repetir o comando.
+
+## T2.C3
+
+Checkpoint: T2.C3
+Estado: BLOQUEADO
+Requisito: R04
+Arquivos e teste/comando: `.github/workflows/deploy.yml`; Gitleaks `8.30.1`: `gitleaks detect --source . --redact --report-format json`; teste separado com token sintético temporário e removido.
+Resultado observado e data: 149 commits e aproximadamente 9,57 MB analisados; 44 achados redigidos no histórico, portanto gate local falhou como esperado. Fixture sintética gerou 1 achado redigido e exit code 1; fixture removida sem commit; 2026-09-24. Valores e relatório detalhado não foram versionados para evitar redistribuição de material sensível.
+Evidência: resumo sanitizado neste STATUS; Gitleaks action fixada em `ff98106e4c7b2bc287b24eaf42907196329070c7`; `fetch-depth: 0`.
+Dependência externa / responsável / ação para desbloquear: 44 achados históricos / mantenedor de segurança / revisar localmente o JSON redigido, revogar credenciais ainda válidas e limpar ou permitir somente falsos positivos com justificativa.

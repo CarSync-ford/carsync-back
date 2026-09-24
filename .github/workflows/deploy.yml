@@ -96,9 +96,26 @@ jobs:
           path: target/dependency-check-report.html
           if-no-files-found: warn
 
+  secret-scan:
+    name: Secret Scan (Gitleaks)
+    runs-on: ubuntu-latest
+    needs: sca
+
+    steps:
+      - name: Checkout Full History
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: false
+
   deploy:
     runs-on: ubuntu-latest
-    needs: [test, sast, sca]
+    needs: [test, sast, sca, secret-scan]
 
     steps:
       - name: Checkout Source Code
