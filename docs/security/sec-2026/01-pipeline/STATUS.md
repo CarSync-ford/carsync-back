@@ -41,3 +41,13 @@ Arquivos e teste/comando: `.github/workflows/deploy.yml`; Gitleaks `8.30.1`: `gi
 Resultado observado e data: 149 commits e aproximadamente 9,57 MB analisados; 44 achados redigidos no histórico, portanto gate local falhou como esperado. Fixture sintética gerou 1 achado redigido e exit code 1; fixture removida sem commit; 2026-09-24. Valores e relatório detalhado não foram versionados para evitar redistribuição de material sensível.
 Evidência: resumo sanitizado neste STATUS; Gitleaks action fixada em `ff98106e4c7b2bc287b24eaf42907196329070c7`; `fetch-depth: 0`.
 Dependência externa / responsável / ação para desbloquear: 44 achados históricos / mantenedor de segurança / revisar localmente o JSON redigido, revogar credenciais ainda válidas e limpar ou permitir somente falsos positivos com justificativa.
+
+## T2.C4
+
+Checkpoint: T2.C4
+Estado: BLOQUEADO
+Requisito: R05
+Arquivos e teste/comando: `.github/workflows/deploy.yml`; `docker build -t carsync-api:sec-2026 .`; validação estrutural da ordem dos steps.
+Resultado observado e data: ordem `Build Docker image < Scan deployment image < Push approved Docker image < Deploy to Azure Container Apps` validada. Build local bloqueado por `permission denied while trying to connect to the docker API at unix:///var/run/docker.sock`; sem imagem, digest ou scan local legítimo; 2026-09-24.
+Evidência: Trivy action `ed142fd0673e97e23eac54620cfb913e5ce36c25`, severidades HIGH/CRITICAL, exit code 1, executada sobre a tag `${{ github.sha }}` antes do push.
+Dependência externa / responsável / ação para desbloquear: Docker daemon / mantenedor do ambiente / liberar socket, repetir build, registrar ID/digest e executar Trivy sobre `carsync-api:sec-2026`.
