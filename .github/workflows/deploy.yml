@@ -55,13 +55,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Semgrep
-        uses: returntocorp/semgrep-action@713efdd345f3035192eaa63f56867b88e63e4e5d
-        with:
-          config: >-
-            p/ci
-            p/java-spring
-            p/secrets
-          generateSarif: true
+        run: |
+          docker run --rm \
+            -v "$PWD:/src" \
+            semgrep/semgrep:1.178.0 \
+            semgrep scan \
+            --error \
+            --config p/ci \
+            --config p/java-spring \
+            --config p/secrets \
+            --sarif-output=/src/semgrep.sarif \
+            /src
 
       - name: Upload SARIF
         if: always()
@@ -87,6 +91,8 @@ jobs:
 
       - name: Run OWASP Dependency-Check
         run: mvn org.owasp:dependency-check-maven:check
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
 
       - name: Upload Dependency-Check Report
         if: always()
@@ -108,10 +114,15 @@ jobs:
           fetch-depth: 0
 
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_ENABLE_COMMENTS: false
+        run: |
+          docker run --rm \
+            -v "$PWD:/repo" \
+            ghcr.io/gitleaks/gitleaks:v8.30.1 \
+            detect \
+            --source /repo \
+            --config /repo/.gitleaks.toml \
+            --gitleaks-ignore-path /repo/.gitleaksignore \
+            --redact
 
   deploy:
     runs-on: ubuntu-latest

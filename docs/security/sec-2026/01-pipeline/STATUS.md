@@ -19,18 +19,18 @@ Estado: BLOQUEADO
 Requisito: R02
 Arquivos e teste/comando: `.github/workflows/deploy.yml`; `docker info --format '{{.ServerVersion}}'`; validação estrutural do YAML.
 Resultado observado e data: job Semgrep configurado com regras `p/ci`, `p/java-spring` e `p/secrets`, SARIF e gate anterior ao deploy. Execução local bloqueada: `permission denied while trying to connect to the docker API at unix:///var/run/docker.sock`; CLI Semgrep ausente; 2026-09-24.
-Evidência: `.github/workflows/deploy.yml`; Semgrep action `713efdd345f3035192eaa63f56867b88e63e4e5d`; nenhuma execução remota declarada.
-Dependência externa / responsável / ação para desbloquear: ambiente com Semgrep ou Docker acessível / mantenedor do ambiente / executar `docker run --rm -v "$PWD:/src" semgrep/semgrep semgrep scan --config p/ci --config p/java-spring --config p/secrets --sarif --output /src/semgrep.sarif /src`.
+Evidência: `.github/workflows/deploy.yml`; Semgrep CLI `1.178.0` fixada por tag; wrapper `semgrep-action` depreciado removido; nenhuma execução remota declarada.
+Dependência externa / responsável / ação para desbloquear: ambiente com Semgrep ou Docker acessível / mantenedor do ambiente / executar o container configurado no workflow ou validar pelo GitHub Actions.
 
 ## T2.C2
 
 Checkpoint: T2.C2
 Estado: BLOQUEADO
 Requisito: R03
-Arquivos e teste/comando: `pom.xml`, `.github/dependabot.yml`, `.github/workflows/deploy.yml`, `dependency-check-suppressions.xml`; `mvn -B -DskipTests org.owasp:dependency-check-maven:9.0.0:check`.
-Resultado observado e data: YAML e XML válidos. Dependency-Check iniciou, mas não produziu análise: NVD respondeu HTTP 403, seguido por `NoDataException: No documents exist`; 2026-09-24. Dependabot atualiza versões; Dependency-Check analisa vulnerabilidades e falha em CVSS >= 7.
-Evidência: configuração registrada `dependency-check-suppressions.xml` sem supressões; plugin OWASP `9.0.0`; saída local resumida neste STATUS.
-Dependência externa / responsável / ação para desbloquear: acesso ao feed NVD e, preferencialmente, `NVD_API_KEY` / mantenedor do CI / configurar segredo e repetir o comando.
+Arquivos e teste/comando: `pom.xml`, `.github/dependabot.yml`, `.github/workflows/deploy.yml`, `dependency-check-suppressions.xml`; tentativa local anterior com `9.0.0`; `mvn -B -DskipTests validate` após atualização.
+Resultado observado e data: tentativa com `9.0.0` não produziu análise porque NVD respondeu HTTP 403. Plugin atualizado para `13.0.0`, configuração Maven validada e segredo `NVD_API_KEY` confirmado no repositório sem leitura do valor; scan remoto ainda não executado; 2026-09-24. Dependabot atualiza versões; Dependency-Check analisa vulnerabilidades e falha em CVSS >= 7.
+Evidência: `dependency-check-suppressions.xml` sem supressões; plugin OWASP `13.0.0`; `mvn validate` com `BUILD SUCCESS`; segredo `NVD_API_KEY` listado pelo GitHub CLI.
+Dependência externa / responsável / ação para desbloquear: GitHub Actions / publicar branch e executar o job SCA com o segredo configurado.
 
 ## T2.C3
 
@@ -39,7 +39,7 @@ Estado: VERIFICADO
 Requisito: R04
 Arquivos e teste/comando: `.github/workflows/deploy.yml`, `.gitleaks.toml`, `.gitleaksignore`; Gitleaks `8.30.1`: `gitleaks detect --source . --config .gitleaks.toml --gitleaks-ignore-path .gitleaksignore --redact` e teste separado com token sintético temporário.
 Resultado observado e data: 151 commits e aproximadamente 9,58 MB analisados, zero vazamentos e exit code 0. Allowlist limitada ao cache gerado `graphify-out/cache/`; cinco fingerprints revisados cobrem vetor público RFC 6238 e chaves JWT de teste/exemplo. Fixture sintética nova gerou 1 achado e exit code 1; fixture removida; 2026-09-24.
-Evidência: resumo sanitizado neste STATUS; Gitleaks action `ff98106e4c7b2bc287b24eaf42907196329070c7`; `fetch-depth: 0`; configurações raiz registradas `.gitleaks.toml` e `.gitleaksignore`.
+Evidência: resumo sanitizado neste STATUS; Gitleaks CLI `8.30.1` em container, sem licença de Action; `fetch-depth: 0`; configurações raiz registradas `.gitleaks.toml` e `.gitleaksignore`.
 Dependência externa / responsável / ação para desbloquear: nenhuma para execução local; CI remoto ainda depende de publicação da branch.
 
 ## T2.C4
