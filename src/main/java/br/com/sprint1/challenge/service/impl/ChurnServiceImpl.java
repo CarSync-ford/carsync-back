@@ -1,5 +1,6 @@
 package br.com.sprint1.challenge.service.impl;
 
+import br.com.sprint1.challenge.domain.RiskLevel;
 import br.com.sprint1.challenge.dto.ChurnDtos.ChurnPredictionResponse;
 import br.com.sprint1.challenge.dto.ChurnDtos.VehicleChurnInsight;
 import br.com.sprint1.challenge.entity.Customer;
@@ -10,28 +11,39 @@ import br.com.sprint1.challenge.repository.CustomerRepository;
 import br.com.sprint1.challenge.repository.ServiceRecordRepository;
 import br.com.sprint1.challenge.repository.VehicleRepository;
 import br.com.sprint1.challenge.service.ChurnService;
+import br.com.sprint1.challenge.service.churnrule.ChurnRiskRule;
+import br.com.sprint1.challenge.service.churnrule.RiskContribution;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Orquestra o cálculo de churn combinando as {@link ChurnRiskRule} registradas
+ * como beans (Strategy pattern) — depende só da abstração, não das regras
+ * concretas (DIP), e novas regras podem ser adicionadas sem alterar esta classe (OCP).
+ */
 @Service
 public class ChurnServiceImpl implements ChurnService {
+
+    private static final int BASE_SCORE = 20;
+    private static final int MAX_SCORE = 100;
 
     private final CustomerRepository customerRepository;
     private final VehicleRepository vehicleRepository;
     private final ServiceRecordRepository serviceRecordRepository;
+    private final List<ChurnRiskRule> riskRules;
 
     public ChurnServiceImpl(CustomerRepository customerRepository,
                             VehicleRepository vehicleRepository,
-                            ServiceRecordRepository serviceRecordRepository) {
+                            ServiceRecordRepository serviceRecordRepository,
+                            List<ChurnRiskRule> riskRules) {
         this.customerRepository = customerRepository;
         this.vehicleRepository = vehicleRepository;
         this.serviceRecordRepository = serviceRecordRepository;
+        this.riskRules = riskRules;
     }
 
     @Override
@@ -51,7 +63,7 @@ public class ChurnServiceImpl implements ChurnService {
                 customer.getId(),
                 customer.getFullName(),
                 score,
-                riskLevel(score),
+                RiskLevel.fromScore(score).label(),
                 new ArrayList<>(reasons),
                 vehicleInsights);
     }
@@ -64,59 +76,22 @@ public class ChurnServiceImpl implements ChurnService {
     }
 
     private VehicleChurnInsight buildVehicleInsight(Vehicle vehicle) {
-        int score = 20;
-        Set<String> reasons = new LinkedHashSet<>();
-
-        if (vehicle.getMileage() != null && vehicle.getMileage() > 40000) {
-            score += 20;
-            reasons.add("Quilometragem elevada");
-        }
-
-        if (vehicle.getWarrantyEndDate() != null) {
-            long daysToWarrantyEnd = ChronoUnit.DAYS.between(LocalDate.now(), vehicle.getWarrantyEndDate());
-            if (daysToWarrantyEnd <= 180) {
-                score += 30;
-                reasons.add("Garantia perto do fim");
-            }
-        }
-
-        String healthStatus = vehicle.getHealthStatus() == null ? "" : vehicle.getHealthStatus().toUpperCase();
-        if (healthStatus.contains("CRIT")) {
-            score += 35;
-            reasons.add("Saúde do veículo crítica");
-        } else if (healthStatus.contains("WARN")) {
-            score += 20;
-            reasons.add("Saúde do veículo em alerta");
-        }
-
         List<ServiceRecord> services = serviceRecordRepository.findByVehicleId(vehicle.getId());
-        if (!services.isEmpty()) {
-            LocalDate lastServiceDate = services.stream()
-                    .map(ServiceRecord::getServiceDate)
-                    .max(LocalDate::compareTo)
-                    .orElse(LocalDate.now());
-            long daysSinceService = ChronoUnit.DAYS.between(lastServiceDate, LocalDate.now());
-            if (daysSinceService > 180) {
-                score += 15;
-                reasons.add("Último serviço realizado há muito tempo");
-            }
+
+        int score = BASE_SCORE;
+        Set<String> reasons = new LinkedHashSet<>();
+        for (ChurnRiskRule rule : riskRules) {
+            RiskContribution contribution = rule.evaluate(vehicle, services);
+            score += contribution.points();
+            contribution.reason().ifPresent(reasons::add);
         }
 
-        if (score > 100) {
-            score = 100;
+        if (score > MAX_SCORE) {
+            score = MAX_SCORE;
         }
 
-        return new VehicleChurnInsight(vehicle.getId(), vehicle.getVin(), score, riskLevel(score), new ArrayList<>(reasons));
-    }
-
-    private String riskLevel(int score) {
-        if (score >= 80) {
-            return "ALTO";
-        }
-        if (score >= 50) {
-            return "MÉDIO";
-        }
-        return "BAIXO";
+        return new VehicleChurnInsight(vehicle.getId(), vehicle.getVin(), score,
+                RiskLevel.fromScore(score).label(), new ArrayList<>(reasons));
     }
 }
 

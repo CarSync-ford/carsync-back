@@ -3,6 +3,8 @@ package br.com.sprint1.challenge.controller;
 import br.com.sprint1.challenge.entity.Customer;
 import br.com.sprint1.challenge.entity.Dealership;
 import br.com.sprint1.challenge.entity.Lead;
+import br.com.sprint1.challenge.entity.LeadStatus;
+import br.com.sprint1.challenge.entity.UrgencyLevel;
 import br.com.sprint1.challenge.entity.Vehicle;
 import br.com.sprint1.challenge.repository.AssistantInteractionRepository;
 import br.com.sprint1.challenge.repository.CustomerRepository;
@@ -101,8 +103,8 @@ class AnalyticsSecurityIntegrationTest {
                 dealership.getId(),
                 "Interesse em revisão preventiva",
                 "Cliente deseja agendar revisão de 30.000 km",
-                "MEDIUM",
-                "OPEN",
+                UrgencyLevel.MEDIA,
+                LeadStatus.OPEN,
                 "PORTAL",
                 LocalDateTime.now(),
                 null
@@ -171,7 +173,7 @@ class AnalyticsSecurityIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].title").value("Interesse em revisão preventiva"))
-                .andExpect(jsonPath("$[0].urgency").value("MEDIUM"))
+                .andExpect(jsonPath("$[0].urgency").value("MÉDIA"))
                 .andExpect(jsonPath("$[0].status").value("OPEN"))
                 .andExpect(jsonPath("$[0].source").value("PORTAL"));
     }

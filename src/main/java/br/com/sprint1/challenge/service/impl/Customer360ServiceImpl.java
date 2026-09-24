@@ -5,6 +5,8 @@ import br.com.sprint1.challenge.dto.Customer360Dtos.Customer360Response;
 import br.com.sprint1.challenge.dto.Customer360Dtos.CustomerVehicleResponse;
 import br.com.sprint1.challenge.dto.LeadDtos;
 import br.com.sprint1.challenge.entity.Customer;
+import br.com.sprint1.challenge.entity.Lead;
+import br.com.sprint1.challenge.entity.LeadStatus;
 import br.com.sprint1.challenge.entity.Vehicle;
 import br.com.sprint1.challenge.exception.ResourceNotFoundException;
 import br.com.sprint1.challenge.repository.CustomerRepository;
@@ -17,6 +19,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Facade: expõe uma única operação ({@code getCustomer360}) que esconde a
+ * orquestração entre Customer/Vehicle/Lead/Dealership repositories e o
+ * {@link ChurnService}, poupando os consumidores (controller) de conhecer
+ * essas 5 dependências.
+ */
 @Service
 public class Customer360ServiceImpl implements Customer360Service {
 
@@ -55,21 +63,7 @@ public class Customer360ServiceImpl implements Customer360Service {
                 .map(dealership -> dealership.getName())
                 .orElse(null);
 
-        List<LeadDtos.LeadResponse> openLeads = leadRepository.findByCustomerId(customerId).stream()
-                .filter(lead -> "OPEN".equalsIgnoreCase(lead.getStatus()))
-                .map(lead -> new LeadDtos.LeadResponse(
-                        lead.getId(),
-                        lead.getCustomerId(),
-                        lead.getVehicleId(),
-                        lead.getDealershipId(),
-                        lead.getTitle(),
-                        lead.getDescription(),
-                        lead.getUrgency(),
-                        lead.getStatus(),
-                        lead.getSource(),
-                        lead.getCreatedAt(),
-                        lead.getConvertedAt()))
-                .toList();
+        List<LeadDtos.LeadResponse> openLeads = openLeadsFor(customerId);
 
         return new Customer360Response(
                 customer.getId(),
@@ -83,6 +77,28 @@ public class Customer360ServiceImpl implements Customer360Service {
                 churn.score(),
                 vehicles,
                 openLeads);
+    }
+
+    private List<LeadDtos.LeadResponse> openLeadsFor(Long customerId) {
+        return leadRepository.findByCustomerId(customerId).stream()
+                .filter(lead -> lead.getStatus() == LeadStatus.OPEN && lead.getDeletedAt() == null)
+                .map(this::toLeadResponse)
+                .toList();
+    }
+
+    private LeadDtos.LeadResponse toLeadResponse(Lead lead) {
+        return new LeadDtos.LeadResponse(
+                lead.getId(),
+                lead.getCustomerId(),
+                lead.getVehicleId(),
+                lead.getDealershipId(),
+                lead.getTitle(),
+                lead.getDescription(),
+                lead.getUrgency().label(),
+                lead.getStatus().name(),
+                lead.getSource(),
+                lead.getCreatedAt(),
+                lead.getConvertedAt());
     }
 
     private CustomerVehicleResponse toVehicleResponse(Vehicle vehicle) {

@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -29,12 +30,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DuplicateCpfException.class)
     public ResponseEntity<ApiErrorResponse> handleDuplicateCpf(DuplicateCpfException ex, HttpServletRequest request) {
-        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI(), List.of());
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI(), List.of());
     }
 
     @ExceptionHandler(DuplicateEmailException.class)
     public ResponseEntity<ApiErrorResponse> handleDuplicateEmail(DuplicateEmailException ex, HttpServletRequest request) {
-        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI(), List.of());
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI(), List.of());
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
@@ -75,6 +76,11 @@ public class GlobalExceptionHandler {
                 .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
                 .toList();
         return build(HttpStatus.BAD_REQUEST, "Violação de restrição de validação.", request.getRequestURI(), details);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiErrorResponse> handleUnreadableBody(HttpMessageNotReadableException ex, HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, "Corpo da requisição inválido ou mal formatado.", request.getRequestURI(), List.of());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)

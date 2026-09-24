@@ -22,6 +22,7 @@ import br.com.sprint1.challenge.exception.UserLockedException;
 import br.com.sprint1.challenge.repository.UserRepository;
 import br.com.sprint1.challenge.service.AuthService;
 import br.com.sprint1.challenge.service.JwtService;
+import br.com.sprint1.challenge.service.TotpService;
 import jakarta.annotation.PostConstruct;
 
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final TotpService totpService;
     private final int bcryptRounds;
     private final int maxFailedAttempts = 5;
     private final int lockoutMinutes = 15;
@@ -39,9 +41,11 @@ public class AuthServiceImpl implements AuthService {
     public AuthServiceImpl(
             UserRepository userRepository,
             JwtService jwtService,
+            TotpService totpService,
             @Value("${spring.bcrypt.salt:10}") int bcryptRounds) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.totpService = totpService;
         this.bcryptRounds = bcryptRounds;
     }
 
@@ -202,7 +206,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new InvalidCredentialsException());
 
         // Generate TOTP secret
-        String secret = generateTotpSecret();
+        String secret = totpService.generateSecret();
         user.setMfaSecret(secret);
         userRepository.save(user);
 
@@ -229,7 +233,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Verify TOTP code
-        boolean valid = verifyTotpCode(user.getMfaSecret(), request.code());
+        boolean valid = totpService.verifyCode(user.getMfaSecret(), request.code());
         if (!valid) {
             throw new InvalidCredentialsException("Invalid MFA code");
         }
@@ -249,94 +253,4 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
     }
 
-    private String generateTotpSecret() {
-        // Base32 encoded secret for TOTP
-        byte[] randomBytes = new byte[20];
-        new java.security.SecureRandom().nextBytes(randomBytes);
-        return base32Encode(randomBytes);
-    }
-
-    private boolean verifyTotpCode(String secret, String code) {
-        try {
-            // Use the TOTP library for verification
-            long timeWindow = System.currentTimeMillis() / 1000 / 30;
-            return verifyTotp(secret, code, timeWindow);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private boolean verifyTotp(String secret, String code, long timeWindow) {
-        try {
-            // HMAC-SHA1 implementation for TOTP (RFC 6238)
-            byte[] key = base32Decode(secret);
-            byte[] data = new byte[8];
-            for (int i = 7; i >= 0; i--) {
-                data[i] = (byte) (timeWindow & 0xFF);
-                timeWindow >>= 8;
-            }
-
-            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA1");
-            mac.init(new javax.crypto.spec.SecretKeySpec(key, "HmacSHA1"));
-            byte[] hash = mac.doFinal(data);
-
-            int offset = hash[hash.length - 1] & 0xF;
-            int truncatedHash = 0;
-            for (int i = 0; i < 4; i++) {
-                truncatedHash <<= 8;
-                truncatedHash |= (hash[offset + i] & 0xFF);
-            }
-
-            truncatedHash &= 0x7FFFFFFF;
-            int totp = truncatedHash % 1000000;
-            String expectedCode = String.format("%06d", totp);
-
-            // Allow 1 time window before/after for clock drift
-            return expectedCode.equals(code)
-                || String.format("%06d", ((truncatedHash + 1) % 1000000)).equals(code)
-                || String.format("%06d", ((truncatedHash - 1 + 1000000) % 1000000)).equals(code);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private String base32Encode(byte[] data) {
-        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-        StringBuilder sb = new StringBuilder();
-        int buffer = 0;
-        int bitsLeft = 0;
-        for (byte b : data) {
-            buffer = (buffer << 8) | (b & 0xFF);
-            bitsLeft += 8;
-            while (bitsLeft >= 5) {
-                sb.append(alphabet.charAt((buffer >> (bitsLeft - 5)) & 0x1F));
-                bitsLeft -= 5;
-            }
-        }
-        if (bitsLeft > 0) {
-            sb.append(alphabet.charAt((buffer << (5 - bitsLeft)) & 0x1F));
-        }
-        return sb.toString();
-    }
-
-    private byte[] base32Decode(String encoded) {
-        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-        encoded = encoded.toUpperCase().replaceAll("[^A-Z2-7]", "");
-        int bits = encoded.length() * 5;
-        byte[] result = new byte[bits / 8];
-        int buffer = 0;
-        int bitsLeft = 0;
-        int index = 0;
-        for (char c : encoded.toCharArray()) {
-            int val = alphabet.indexOf(c);
-            if (val < 0) continue;
-            buffer = (buffer << 5) | val;
-            bitsLeft += 5;
-            if (bitsLeft >= 8) {
-                result[index++] = (byte) ((buffer >> (bitsLeft - 8)) & 0xFF);
-                bitsLeft -= 8;
-            }
-        }
-        return result;
-    }
 }

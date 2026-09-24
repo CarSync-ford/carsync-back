@@ -1,5 +1,6 @@
 package br.com.sprint1.challenge.validation;
 
+import br.com.sprint1.challenge.domain.Email;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
@@ -7,9 +8,6 @@ public class LowercaseEmailValidator implements ConstraintValidator<LowercaseEma
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        if (value == null) {
-            return true;
-        }
-        return value.equals(value.toLowerCase());
+        return Email.isLowercase(value);
     }
 }

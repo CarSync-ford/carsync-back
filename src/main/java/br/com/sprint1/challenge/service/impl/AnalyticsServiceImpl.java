@@ -6,6 +6,7 @@ import br.com.sprint1.challenge.dto.AnalyticsDtos.LeadAnalyticsView;
 import br.com.sprint1.challenge.dto.AnalyticsDtos.ServiceShareItem;
 import br.com.sprint1.challenge.dto.AnalyticsDtos.VehicleAnalyticsView;
 import br.com.sprint1.challenge.entity.Dealership;
+import br.com.sprint1.challenge.entity.LeadStatus;
 import br.com.sprint1.challenge.entity.ServiceRecord;
 import br.com.sprint1.challenge.entity.Vehicle;
 import br.com.sprint1.challenge.repository.CustomerRepository;
@@ -57,8 +58,8 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         long totalLeads = dealershipId == null ? leadRepository.count() : leadRepository.findAll().stream()
                 .filter(lead -> Objects.equals(lead.getDealershipId(), dealershipId))
                 .count();
-        long openLeads = dealershipId == null ? leadRepository.countByStatus("OPEN") : leadRepository.findAll().stream()
-                .filter(lead -> Objects.equals(lead.getDealershipId(), dealershipId) && "OPEN".equalsIgnoreCase(lead.getStatus()))
+        long openLeads = dealershipId == null ? leadRepository.countByStatus(LeadStatus.OPEN) : leadRepository.findAll().stream()
+                .filter(lead -> Objects.equals(lead.getDealershipId(), dealershipId) && lead.getStatus() == LeadStatus.OPEN)
                 .count();
 
         return new AnalyticsOverviewResponse(totalCustomers, totalVehicles, totalLeads, openLeads, getServiceShare(dealershipId, null, null));
@@ -143,8 +144,8 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                         lead.getDealershipId(),
                         lead.getTitle(),
                         lead.getDescription(),
-                        lead.getUrgency(),
-                        lead.getStatus(),
+                        lead.getUrgency().label(),
+                        lead.getStatus().name(),
                         lead.getSource(),
                         lead.getCreatedAt(),
                         lead.getConvertedAt()

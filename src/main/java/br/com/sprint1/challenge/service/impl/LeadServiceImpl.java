@@ -2,9 +2,12 @@ package br.com.sprint1.challenge.service.impl;
 
 import br.com.sprint1.challenge.dto.LeadDtos.LeadConversionResponse;
 import br.com.sprint1.challenge.dto.LeadDtos.LeadResponse;
+import br.com.sprint1.challenge.dto.LeadDtos.LeadUpdateRequest;
 import br.com.sprint1.challenge.dto.LeadDtos.ProactiveLeadRequest;
 import br.com.sprint1.challenge.entity.Customer;
 import br.com.sprint1.challenge.entity.Lead;
+import br.com.sprint1.challenge.entity.LeadStatus;
+import br.com.sprint1.challenge.entity.UrgencyLevel;
 import br.com.sprint1.challenge.entity.Vehicle;
 import br.com.sprint1.challenge.exception.ResourceNotFoundException;
 import br.com.sprint1.challenge.repository.CustomerRepository;
@@ -38,7 +41,7 @@ public class LeadServiceImpl implements LeadService {
 
     @Override
     public List<LeadResponse> listAll() {
-        return leadRepository.findAll().stream().map(this::toResponse).toList();
+        return leadRepository.findByDeletedAtIsNull().stream().map(this::toResponse).toList();
     }
 
     @Override
@@ -70,7 +73,7 @@ public class LeadServiceImpl implements LeadService {
         String description = vehicle == null
                 ? "Recomendação baseada em histórico do cliente e sinais de retenção."
                 : "O veículo " + vehicle.getVin() + " apresenta oportunidade de contato proativo.";
-        String urgency = determineUrgency(vehicle);
+        UrgencyLevel urgency = determineUrgency(vehicle);
 
         Lead lead = new Lead(null,
                 customer.getId(),
@@ -79,7 +82,7 @@ public class LeadServiceImpl implements LeadService {
                 title,
                 description,
                 urgency,
-                "OPEN",
+                LeadStatus.OPEN,
                 request.source() == null || request.source().isBlank() ? "NEXT_BEST_ACTION" : request.source(),
                 LocalDateTime.now(),
                 null);
@@ -89,31 +92,53 @@ public class LeadServiceImpl implements LeadService {
 
     @Transactional
     @Override
+    public LeadResponse update(Long id, LeadUpdateRequest request) {
+        Lead lead = findLead(id);
+        lead.setTitle(request.title());
+        lead.setDescription(request.description());
+        lead.setUrgency(request.urgency());
+        return toResponse(leadRepository.save(lead));
+    }
+
+    @Transactional
+    @Override
     public LeadConversionResponse convert(Long id) {
         Lead lead = findLead(id);
-        lead.setStatus("CONVERTED");
+        lead.setStatus(LeadStatus.CONVERTED);
         lead.setConvertedAt(LocalDateTime.now());
         leadRepository.save(lead);
-        return new LeadConversionResponse(lead.getId(), lead.getStatus(), lead.getConvertedAt());
+        return new LeadConversionResponse(lead.getId(), lead.getStatus().name(), lead.getConvertedAt());
+    }
+
+    @Transactional
+    @Override
+    public void delete(Long id) {
+        Lead lead = findLead(id);
+        lead.setDeletedAt(LocalDateTime.now());
+        leadRepository.save(lead);
     }
 
     private Lead findLead(Long id) {
-        return leadRepository.findById(id)
+        Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lead não encontrado: " + id));
+        if (lead.getDeletedAt() != null) {
+            throw new ResourceNotFoundException("Lead não encontrado: " + id);
+        }
+        return lead;
     }
 
-    private String determineUrgency(Vehicle vehicle) {
+    private UrgencyLevel determineUrgency(Vehicle vehicle) {
         if (vehicle == null) {
-            return "MÉDIA";
+            return UrgencyLevel.MEDIA;
         }
         String health = vehicle.getHealthStatus() == null ? "" : vehicle.getHealthStatus().toUpperCase();
         if (health.contains("CRIT")) {
-            return "ALTA";
+            return UrgencyLevel.ALTA;
         }
         if (health.contains("WARN")) {
-            return "MÉDIA";
+            return UrgencyLevel.MEDIA;
         }
-        return "BAIXA";
+        return UrgencyLevel.BAIXA;
     }
 
     private LeadResponse toResponse(Lead lead) {
@@ -124,8 +149,8 @@ public class LeadServiceImpl implements LeadService {
                 lead.getDealershipId(),
                 lead.getTitle(),
                 lead.getDescription(),
-                lead.getUrgency(),
-                lead.getStatus(),
+                lead.getUrgency().label(),
+                lead.getStatus().name(),
                 lead.getSource(),
                 lead.getCreatedAt(),
                 lead.getConvertedAt());

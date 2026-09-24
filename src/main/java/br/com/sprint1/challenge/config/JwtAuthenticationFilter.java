@@ -36,14 +36,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(7);
             try {
                 var claims = jwtService.parse(token);
-                String userId = claims.getSubject();
-                String role = claims.get("role", String.class);
-                if (role == null || role.isBlank()) {
-                    role = "USER";
+                String type = claims.get("type", String.class);
+                if (!"ACCESS".equals(type)) {
+                    log.warn("SECURITY_VIOLATION JWT Wrong token type used as Bearer IP:{} type:{}",
+                            getClientIp(request), type);
+                } else {
+                    String userId = claims.getSubject();
+                    String role = claims.get("role", String.class);
+                    if (role == null || role.isBlank()) {
+                        role = "USER";
+                    }
+                    var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+                    var auth = new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                    SecurityContextHolder.getContext().setAuthentication(auth);
                 }
-                var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
-                var auth = new UsernamePasswordAuthenticationToken(userId, null, authorities);
-                SecurityContextHolder.getContext().setAuthentication(auth);
             } catch (Exception ex) {
                 log.warn("SECURITY_VIOLATION JWT Invalid IP:{} reason:{}", getClientIp(request), ex.getMessage());
             }

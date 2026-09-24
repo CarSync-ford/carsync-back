@@ -17,6 +17,7 @@ import br.com.sprint1.challenge.exception.TokenExpiredException;
 import br.com.sprint1.challenge.exception.UserLockedException;
 import br.com.sprint1.challenge.repository.UserRepository;
 import br.com.sprint1.challenge.service.impl.AuthServiceImpl;
+import br.com.sprint1.challenge.service.impl.TotpServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,7 +51,7 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        authService = new AuthServiceImpl(userRepository, jwtService, 10);
+        authService = new AuthServiceImpl(userRepository, jwtService, new TotpServiceImpl(), 10);
         // Manually invoke @PostConstruct init()
         var initMethod = AuthServiceImpl.class.getDeclaredMethod("init");
         initMethod.setAccessible(true);

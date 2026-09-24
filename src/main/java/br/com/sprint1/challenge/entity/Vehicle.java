@@ -139,5 +139,25 @@ public class Vehicle {
     public void setHealthStatus(String healthStatus) {
         this.healthStatus = healthStatus;
     }
+
+    public boolean isHighMileage() {
+        return mileage != null && mileage > 40000;
+    }
+
+    public boolean isUnderWarrantyEndingWithin(long days) {
+        if (warrantyEndDate == null) {
+            return false;
+        }
+        long daysToWarrantyEnd = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), warrantyEndDate);
+        return daysToWarrantyEnd <= days;
+    }
+
+    public boolean hasCriticalHealth() {
+        return healthStatus != null && healthStatus.toUpperCase().contains("CRIT");
+    }
+
+    public boolean hasWarningHealth() {
+        return healthStatus != null && healthStatus.toUpperCase().contains("WARN");
+    }
 }
 

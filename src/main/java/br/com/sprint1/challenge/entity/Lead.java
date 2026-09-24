@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,11 +36,13 @@ public class Lead {
     @Column(nullable = false, length = 1000)
     private String description;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String urgency;
+    private UrgencyLevel urgency;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private LeadStatus status;
 
     @Column(nullable = false)
     private String source;
@@ -55,7 +59,7 @@ public class Lead {
     public Lead() {
     }
 
-    public Lead(Long id, Long customerId, Long vehicleId, Long dealershipId, String title, String description, String urgency, String status, String source, LocalDateTime createdAt, LocalDateTime convertedAt) {
+    public Lead(Long id, Long customerId, Long vehicleId, Long dealershipId, String title, String description, UrgencyLevel urgency, LeadStatus status, String source, LocalDateTime createdAt, LocalDateTime convertedAt) {
         this.id = id;
         this.customerId = customerId;
         this.vehicleId = vehicleId;
@@ -117,19 +121,19 @@ public class Lead {
         this.description = description;
     }
 
-    public String getUrgency() {
+    public UrgencyLevel getUrgency() {
         return urgency;
     }
 
-    public void setUrgency(String urgency) {
+    public void setUrgency(UrgencyLevel urgency) {
         this.urgency = urgency;
     }
 
-    public String getStatus() {
+    public LeadStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(LeadStatus status) {
         this.status = status;
     }
 
