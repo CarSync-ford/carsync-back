@@ -62,7 +62,7 @@ jobs:
             semgrep scan \
             --error \
             --config p/ci \
-            --config p/java-spring \
+            --config p/java \
             --config p/secrets \
             --sarif-output=/src/semgrep.sarif \
             /src

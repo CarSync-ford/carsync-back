@@ -18,7 +18,7 @@ Checkpoint: T2.C1
 Estado: BLOQUEADO
 Requisito: R02
 Arquivos e teste/comando: `.github/workflows/deploy.yml`; `docker info --format '{{.ServerVersion}}'`; validação estrutural do YAML.
-Resultado observado e data: job Semgrep configurado com regras `p/ci`, `p/java-spring` e `p/secrets`, SARIF e gate anterior ao deploy. Execução local bloqueada: `permission denied while trying to connect to the docker API at unix:///var/run/docker.sock`; CLI Semgrep ausente; 2026-09-24.
+Resultado observado e data: job Semgrep configurado com regras `p/ci`, `p/java` e `p/secrets`, SARIF e gate anterior ao deploy. Run remoto `36019181642` revelou que `p/java-spring` foi removido do registry (HTTP 404); configuração corrigida para `p/java`. Execução local segue bloqueada por falta de acesso ao Docker; 2026-09-24.
 Evidência: `.github/workflows/deploy.yml`; Semgrep CLI `1.178.0` fixada por tag; wrapper `semgrep-action` depreciado removido; nenhuma execução remota declarada.
 Dependência externa / responsável / ação para desbloquear: ambiente com Semgrep ou Docker acessível / mantenedor do ambiente / executar o container configurado no workflow ou validar pelo GitHub Actions.
 
