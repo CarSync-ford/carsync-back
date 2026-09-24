@@ -1,0 +1,10 @@
+# Generic agent-skill definitions (triplicated across .kiro/.agents/.claude).
+# Tooling config, not project content - excluded so the graph stays about the app.
+.kiro/skills/
+.agents/skills/
+.claude/skills/
+
+# Agent chat transcripts / caches
+.aider.chat.history.md
+.aider.input.history
+.aider.tags.cache.v4/
