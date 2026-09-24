@@ -11,3 +11,13 @@ Arquivos e teste/comando: `docs/security/sec-2026/01-pipeline/REPORT.md`; revis�
 Resultado observado e data: fluxo inicial e fluxo proposto documentados sem declarar scanners ou deploy como executados; 2026-09-24.
 Evidência: `docs/security/sec-2026/01-pipeline/REPORT.md`; base `52565edf5d81beb593c1cb78f8d23e49820cd076`.
 Dependência externa / responsável / ação para desbloquear: nenhuma.
+
+## T2.C1
+
+Checkpoint: T2.C1
+Estado: BLOQUEADO
+Requisito: R02
+Arquivos e teste/comando: `.github/workflows/deploy.yml`; `docker info --format '{{.ServerVersion}}'`; validação estrutural do YAML.
+Resultado observado e data: job Semgrep configurado com regras `p/ci`, `p/java-spring` e `p/secrets`, SARIF e gate anterior ao deploy. Execução local bloqueada: `permission denied while trying to connect to the docker API at unix:///var/run/docker.sock`; CLI Semgrep ausente; 2026-09-24.
+Evidência: `.github/workflows/deploy.yml`; Semgrep action `713efdd345f3035192eaa63f56867b88e63e4e5d`; nenhuma execução remota declarada.
+Dependência externa / responsável / ação para desbloquear: ambiente com Semgrep ou Docker acessível / mantenedor do ambiente / executar `docker run --rm -v "$PWD:/src" semgrep/semgrep semgrep scan --config p/ci --config p/java-spring --config p/secrets --sarif --output /src/semgrep.sarif /src`.

@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
 
 env:
   ACR_LOGIN_SERVER: acrcarsyncdev.azurecr.io
@@ -36,9 +42,36 @@ jobs:
           name: test-reports
           path: target/surefire-reports/*.xml
 
-  deploy:
+  sast:
+    name: SAST (Semgrep)
     runs-on: ubuntu-latest
     needs: test
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@713efdd345f3035192eaa63f56867b88e63e4e5d
+        with:
+          config: >-
+            p/ci
+            p/java-spring
+            p/secrets
+          generateSarif: true
+
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [test, sast]
 
     steps:
       - name: Checkout Source Code
