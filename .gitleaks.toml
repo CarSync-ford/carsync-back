@@ -1,0 +1,8 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Cache gerado pelo Graphify"
+paths = [
+  '''^graphify-out/cache/'''
+]

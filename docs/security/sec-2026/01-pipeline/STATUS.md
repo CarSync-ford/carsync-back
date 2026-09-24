@@ -35,12 +35,12 @@ Dependência externa / responsável / ação para desbloquear: acesso ao feed NV
 ## T2.C3
 
 Checkpoint: T2.C3
-Estado: BLOQUEADO
+Estado: VERIFICADO
 Requisito: R04
-Arquivos e teste/comando: `.github/workflows/deploy.yml`; Gitleaks `8.30.1`: `gitleaks detect --source . --redact --report-format json`; teste separado com token sintético temporário e removido.
-Resultado observado e data: 149 commits e aproximadamente 9,57 MB analisados; 44 achados redigidos no histórico, portanto gate local falhou como esperado. Fixture sintética gerou 1 achado redigido e exit code 1; fixture removida sem commit; 2026-09-24. Valores e relatório detalhado não foram versionados para evitar redistribuição de material sensível.
-Evidência: resumo sanitizado neste STATUS; Gitleaks action fixada em `ff98106e4c7b2bc287b24eaf42907196329070c7`; `fetch-depth: 0`.
-Dependência externa / responsável / ação para desbloquear: 44 achados históricos / mantenedor de segurança / revisar localmente o JSON redigido, revogar credenciais ainda válidas e limpar ou permitir somente falsos positivos com justificativa.
+Arquivos e teste/comando: `.github/workflows/deploy.yml`, `.gitleaks.toml`, `.gitleaksignore`; Gitleaks `8.30.1`: `gitleaks detect --source . --config .gitleaks.toml --gitleaks-ignore-path .gitleaksignore --redact` e teste separado com token sintético temporário.
+Resultado observado e data: 151 commits e aproximadamente 9,58 MB analisados, zero vazamentos e exit code 0. Allowlist limitada ao cache gerado `graphify-out/cache/`; cinco fingerprints revisados cobrem vetor público RFC 6238 e chaves JWT de teste/exemplo. Fixture sintética nova gerou 1 achado e exit code 1; fixture removida; 2026-09-24.
+Evidência: resumo sanitizado neste STATUS; Gitleaks action `ff98106e4c7b2bc287b24eaf42907196329070c7`; `fetch-depth: 0`; configurações raiz registradas `.gitleaks.toml` e `.gitleaksignore`.
+Dependência externa / responsável / ação para desbloquear: nenhuma para execução local; CI remoto ainda depende de publicação da branch.
 
 ## T2.C4
 

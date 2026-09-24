@@ -1,0 +1,5 @@
+c4748fa6988a3a6ba4c7fbeebfaafe698e86b76c:src/test/java/br/com/sprint1/challenge/util/TotpUtilTest.java:generic-api-key:18
+b47b1265afb1607262d3e3314ff877fac246546c:src/test/resources/application.yml:generic-api-key:20
+b1f72d53bb98302faa6ecf5376e4e6898b101f7d:src/test/resources/application.yml:generic-api-key:20
+61bc11bed26f166250ef762f9975fe526145e771:.env.example:generic-api-key:18
+0e97d2e968712c38784e62bc47829958dce9a9b4:src/test/java/br/com/sprint1/challenge/service/JwtServiceTest.java:generic-api-key:12
