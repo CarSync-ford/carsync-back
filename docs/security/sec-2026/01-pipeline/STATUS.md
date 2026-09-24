@@ -27,10 +27,10 @@ Dependência externa / responsável / ação para desbloquear: nenhuma para exec
 Checkpoint: T2.C2
 Estado: BLOQUEADO
 Requisito: R03
-Arquivos e teste/comando: `pom.xml`; `mvn -B clean verify -Dspring.profiles.active=test`; `mvn -B dependency:tree`; `mvn -B org.owasp:dependency-check-maven:check -DnvdApiMaxRetryCount=1 -DnvdApiDelay=6000`.
-Resultado observado e data: SCA remoto com dependências antigas reprovou após 1h58m28s; relatório indicou 12 dependências vulneráveis e 163 vulnerabilidades reportadas. Parent atualizado para Boot 3.5.16, Springdoc para 2.8.17 e PostgreSQL do plugin Flyway alinhado ao BOM. Overrides Commons Lang 3.20.0 e Log4j 2.25.5 corrigem faixas afetadas ainda mantidas pelo BOM. Build local passou com 212 testes, zero falhas/erros/skips, incluindo OpenAPI. Novo SCA local bloqueado por `Invalid API Key, length of 0 too short to provided a masked partial key` e `NoDataException: No documents exist`; `NVD_API_KEY` ausente localmente. Nenhum scan limpo declarado; 2026-09-24.
-Evidência: https://github.com/CarSync-ford/carsync-back/actions/runs/36020010271/job/107702824996 ; resumo de versões e validações em `REPORT.md`; supressões vazias e gate CVSS >= 7 preservados.
-Dependência externa / responsável / ação para desbloquear: GitHub Actions / mantenedor / publicar atualização após autorização e executar SCA com segredo NVD configurado; anexar novo relatório antes de liberar merge.
+Arquivos e teste/comando: `pom.xml`; `src/main/java/br/com/sprint1/challenge/config/SecurityConfig.java`; `mvn -B clean test -Dspring.profiles.active=test`; `mvn -B dependency:tree`.
+Resultado observado e data: SCA remoto reprovou nos runs 36020010271 e 36046716450 (commit c217e15; 8 arquivos vulneráveis, 58 CVEs únicos). Patches Spring 6.x Enterprise-only motivaram migração para Spring Boot 4.1.1 (Framework 7.0.9, Security 7.1.1, Data JPA 4.1.1, Jackson 3.1.5, PostgreSQL JDBC 42.7.13, Flyway 12.4.0, Hibernate 7.4.5.Final, Tomcat 11.0.26 override e Swagger UI WebJar 5.32.15 com DOMPurify 3.4.13 empacotado). Build local passou com 212 testes, zero falhas/erros/skips (38.5s), incluindo OpenAPI, Flyway no H2 e redirecionamento HTTPS. Novo SCA local segue bloqueado por falta de `NVD_API_KEY` no ambiente local; nenhum scan limpo declarado antes de validação no GitHub Actions; 2026-09-24.
+Evidência: runs 36020010271 e 36046716450; matriz de versões e árvore Maven documentadas em `REPORT.md`; supressões vazias e gate CVSS >= 7 preservados.
+Dependência externa / responsável / ação para desbloquear: GitHub Actions / mantenedor / publicar commit de migração Boot 4 após autorização e executar CI no PR #33 com segredo NVD; inspecionar novo relatório de SCA.
 
 ## T2.C3
 
@@ -58,9 +58,9 @@ Checkpoint: T3.C1
 Estado: BLOQUEADO
 Requisito: R01–R06
 Arquivos e teste/comando: `.github/workflows/deploy.yml`, `docs/security/sec-2026/01-pipeline/REPORT.md`; `mvn clean test -Dspring.profiles.active=test`; validação YAML e inspeção da ordem dos gates.
-Resultado observado e data: fluxo integrado documentado; 212 testes passaram, zero falhas. Permissões mínimas configuradas e deploy limitado a `push` em `main`. Run remoto `36020010271` aprovou testes e SAST, mas reprovou SCA; Gitleaks e deploy não executados. PR #33 aberto; 2026-09-24.
+Resultado observado e data: fluxo integrado documentado; 212 testes passaram no Spring Boot 4.1.1, zero falhas. Permissões mínimas configuradas e deploy limitado a `push` em `main`. Run remoto 36046716450 aprovou testes (1m11s) e SAST (33s), mas reprovou SCA com 58 CVEs que demandaram a migração de plataforma. PR #33 aberto; 2026-09-24.
 Evidência: `docs/security/sec-2026/01-pipeline/REPORT.md`; commits dos checkpoints; nenhuma URL de run inventada.
-Dependência externa / responsável / ação para desbloquear: GitHub Actions / mantenedor do repositório / publicar correção das dependências após autorização e repetir CI no PR #33; NVD local/Docker seguem bloqueios descritos em T2.C2 e T2.C4.
+Dependência externa / responsável / ação para desbloquear: GitHub Actions / mantenedor do repositório / publicar migração Boot 4 após autorização e repetir CI no PR #33; NVD local/Docker seguem bloqueios descritos em T2.C2 e T2.C4.
 
 ## T3.C2
 

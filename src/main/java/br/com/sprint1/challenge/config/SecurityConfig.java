@@ -56,7 +56,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable());
 
         if (sslEnabled) {
-            http.requiresChannel(channel -> channel.anyRequest().requiresSecure());
+            http.redirectToHttps(Customizer.withDefaults());
         }
 
         http.addFilterBefore(hmacSignatureFilter, UsernamePasswordAuthenticationFilter.class);
