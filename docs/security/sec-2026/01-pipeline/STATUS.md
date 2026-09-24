@@ -51,3 +51,23 @@ Arquivos e teste/comando: `.github/workflows/deploy.yml`; `docker build -t carsy
 Resultado observado e data: ordem `Build Docker image < Scan deployment image < Push approved Docker image < Deploy to Azure Container Apps` validada. Build local bloqueado por `permission denied while trying to connect to the docker API at unix:///var/run/docker.sock`; sem imagem, digest ou scan local legítimo; 2026-09-24.
 Evidência: Trivy action `ed142fd0673e97e23eac54620cfb913e5ce36c25`, severidades HIGH/CRITICAL, exit code 1, executada sobre a tag `${{ github.sha }}` antes do push.
 Dependência externa / responsável / ação para desbloquear: Docker daemon / mantenedor do ambiente / liberar socket, repetir build, registrar ID/digest e executar Trivy sobre `carsync-api:sec-2026`.
+
+## T3.C1
+
+Checkpoint: T3.C1
+Estado: BLOQUEADO
+Requisito: R01–R06
+Arquivos e teste/comando: `.github/workflows/deploy.yml`, `docs/security/sec-2026/01-pipeline/REPORT.md`; `mvn clean test -Dspring.profiles.active=test`; validação YAML e inspeção da ordem dos gates.
+Resultado observado e data: fluxo integrado documentado; 212 testes passaram, zero falhas. Permissões mínimas configuradas e deploy limitado a `push` em `main`. Evidência remota e deploy real não executados porque a branch ainda não foi publicada; 2026-09-24.
+Evidência: `docs/security/sec-2026/01-pipeline/REPORT.md`; commits dos checkpoints; nenhuma URL de run inventada.
+Dependência externa / responsável / ação para desbloquear: GitHub Actions / mantenedor do repositório / publicar branch, abrir PR e anexar URL do run; NVD/Docker seguem bloqueios descritos em T2.C2 e T2.C4.
+
+## T3.C2
+
+Checkpoint: T3.C2
+Estado: REUTILIZADO
+Requisito: R05
+Arquivos e teste/comando: `git diff 52565edf5d81beb593c1cb78f8d23e49820cd076 -- Dockerfile`.
+Resultado observado e data: nenhum diff no Dockerfile entre a base e o estado final desta frente; re-scan não aplicável antes da consolidação. A verificação T2.C4 permanece bloqueada e deve ser repetida se outra frente alterar o Dockerfile; 2026-09-24.
+Evidência: comparação Git sem saída; base `52565edf5d81beb593c1cb78f8d23e49820cd076`.
+Dependência externa / responsável / ação para desbloquear: consolidador / repetir build e Trivy caso Dockerfile mude durante integração.
