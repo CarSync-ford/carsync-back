@@ -144,7 +144,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                         lead.getDealershipId(),
                         lead.getTitle(),
                         lead.getDescription(),
-                        lead.getUrgency(),
+                        lead.getUrgency().label(),
                         lead.getStatus().name(),
                         lead.getSource(),
                         lead.getCreatedAt(),

@@ -2,6 +2,7 @@ package br.com.sprint1.challenge.dto;
 
 import java.time.LocalDateTime;
 
+import br.com.sprint1.challenge.entity.UrgencyLevel;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -15,7 +16,7 @@ public final class LeadDtos {
 
     public record LeadUpdateRequest(@NotBlank String title,
                                     @NotBlank String description,
-                                    @NotBlank String urgency) {
+                                    @NotNull UrgencyLevel urgency) {
     }
 
     public record LeadResponse(Long id,

@@ -4,6 +4,7 @@ import br.com.sprint1.challenge.entity.Customer;
 import br.com.sprint1.challenge.entity.Dealership;
 import br.com.sprint1.challenge.entity.Lead;
 import br.com.sprint1.challenge.entity.LeadStatus;
+import br.com.sprint1.challenge.entity.UrgencyLevel;
 import br.com.sprint1.challenge.repository.CustomerRepository;
 import br.com.sprint1.challenge.repository.DealershipRepository;
 import br.com.sprint1.challenge.repository.LeadRepository;
@@ -73,7 +74,7 @@ class LeadRestMaturityIntegrationTest {
 
         Lead lead = leadRepository.save(new Lead(
                 null, customer.getId(), null, dealership.getId(),
-                "Título original", "Descrição original", "MEDIUM", LeadStatus.OPEN, "PORTAL",
+                "Título original", "Descrição original", UrgencyLevel.MEDIA, LeadStatus.OPEN, "PORTAL",
                 LocalDateTime.now(), null));
         leadId = lead.getId();
     }
@@ -114,6 +115,22 @@ class LeadRestMaturityIntegrationTest {
                 "title", "",
                 "description", "Descrição atualizada",
                 "urgency", "ALTA"
+        );
+
+        mockMvc.perform(put("/api/v1/leads/" + leadId)
+                        .header("Authorization", "Bearer " + userToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("PUT /api/v1/leads/{id} com urgency fora do enum retorna 400")
+    void update_urgencyInvalida_retorna400() throws Exception {
+        Map<String, String> payload = Map.of(
+                "title", "Título atualizado",
+                "description", "Descrição atualizada",
+                "urgency", "URGENTISSIMO"
         );
 
         mockMvc.perform(put("/api/v1/leads/" + leadId)

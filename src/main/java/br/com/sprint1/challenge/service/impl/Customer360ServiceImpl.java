@@ -94,7 +94,7 @@ public class Customer360ServiceImpl implements Customer360Service {
                 lead.getDealershipId(),
                 lead.getTitle(),
                 lead.getDescription(),
-                lead.getUrgency(),
+                lead.getUrgency().label(),
                 lead.getStatus().name(),
                 lead.getSource(),
                 lead.getCreatedAt(),

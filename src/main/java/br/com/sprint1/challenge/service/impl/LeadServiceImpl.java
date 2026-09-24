@@ -7,6 +7,7 @@ import br.com.sprint1.challenge.dto.LeadDtos.ProactiveLeadRequest;
 import br.com.sprint1.challenge.entity.Customer;
 import br.com.sprint1.challenge.entity.Lead;
 import br.com.sprint1.challenge.entity.LeadStatus;
+import br.com.sprint1.challenge.entity.UrgencyLevel;
 import br.com.sprint1.challenge.entity.Vehicle;
 import br.com.sprint1.challenge.exception.ResourceNotFoundException;
 import br.com.sprint1.challenge.repository.CustomerRepository;
@@ -72,7 +73,7 @@ public class LeadServiceImpl implements LeadService {
         String description = vehicle == null
                 ? "Recomendação baseada em histórico do cliente e sinais de retenção."
                 : "O veículo " + vehicle.getVin() + " apresenta oportunidade de contato proativo.";
-        String urgency = determineUrgency(vehicle);
+        UrgencyLevel urgency = determineUrgency(vehicle);
 
         Lead lead = new Lead(null,
                 customer.getId(),
@@ -126,18 +127,18 @@ public class LeadServiceImpl implements LeadService {
         return lead;
     }
 
-    private String determineUrgency(Vehicle vehicle) {
+    private UrgencyLevel determineUrgency(Vehicle vehicle) {
         if (vehicle == null) {
-            return "MÉDIA";
+            return UrgencyLevel.MEDIA;
         }
         String health = vehicle.getHealthStatus() == null ? "" : vehicle.getHealthStatus().toUpperCase();
         if (health.contains("CRIT")) {
-            return "ALTA";
+            return UrgencyLevel.ALTA;
         }
         if (health.contains("WARN")) {
-            return "MÉDIA";
+            return UrgencyLevel.MEDIA;
         }
-        return "BAIXA";
+        return UrgencyLevel.BAIXA;
     }
 
     private LeadResponse toResponse(Lead lead) {
@@ -148,7 +149,7 @@ public class LeadServiceImpl implements LeadService {
                 lead.getDealershipId(),
                 lead.getTitle(),
                 lead.getDescription(),
-                lead.getUrgency(),
+                lead.getUrgency().label(),
                 lead.getStatus().name(),
                 lead.getSource(),
                 lead.getCreatedAt(),

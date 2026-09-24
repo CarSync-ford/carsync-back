@@ -37,7 +37,7 @@ Services (regras de negocio)
 Repositories (acesso a dados com Spring Data JPA)
 		  |
 		  v
-Banco H2 (schema controlado por Flyway)
+Banco PostgreSQL (H2 em memoria nos testes) - schema controlado por Flyway
 
 Camadas transversais:
   - domain/    -> Value Objects e enums de dominio (Cpf, Email, RiskLevel)
@@ -63,7 +63,7 @@ Separacao de camadas no codigo:
 2. `AuthController` -> `AuthServiceImpl` valida credenciais (BCrypt) e verifica bloqueio de conta (lockout apos 5 tentativas falhas, 15 min).
 3. Login valido: `JwtServiceImpl` gera um access token (JWT, expira em minutos, claim de `role`) e um refresh token (expira em dias, rotacionado a cada uso). Resposta: `{ token, refreshToken }`.
 4. Requisicoes seguintes enviam `Authorization: Bearer <token>` e passam pela cadeia de filtros antes de chegar no controller:
-   `HmacSignatureFilter` (valida assinatura do payload) -> `RateLimitFilter` (limita requisicoes por IP) -> `JwtAuthenticationFilter` (valida assinatura/expiracao do JWT e popula o `SecurityContext`).
+   `HmacSignatureFilter` (valida assinatura do payload) -> `RateLimitFilter` (limita requisicoes por IP) -> `JwtAuthenticationFilter` (valida assinatura/expiracao do JWT, confere que o claim `type` seja `ACCESS` - rejeita refresh/reset token usado como Bearer - e popula o `SecurityContext`).
 5. Autorizacao por papel: endpoints publicos (`/auth/**`, `POST /user`, Swagger, `/health`) nao exigem token; os demais exigem `authenticated()`, e alguns exigem role especifica via `@PreAuthorize` (ex.: `AnalyticsController` exige `ANALYST`).
 6. Quando o access token expira, o cliente chama `POST /api/v1/auth/refresh` com o refresh token; `AuthServiceImpl` valida e rotaciona (emite novo access + refresh token, invalida o anterior).
 7. MFA (opcional): `POST /auth/mfa/enable` gera um secret TOTP (RFC 6238); `POST /auth/mfa/verify` confere o codigo de 6 digitos antes de ativar.
@@ -116,7 +116,9 @@ Base path: `http://localhost:8080`
 - `GET /api/v1/leads`
 - `GET /api/v1/leads/{id}`
 - `POST /api/v1/leads`
+- `PUT /api/v1/leads/{id}` — atualiza título/descrição/urgência
 - `POST /api/v1/leads/{id}/convert`
+- `DELETE /api/v1/leads/{id}` — remove (soft-delete)
 
 ### Stock
 - `GET /api/v1/stock/alerts`
@@ -130,7 +132,7 @@ Base path: `http://localhost:8080`
 ## Tratamento de erros e boas praticas
 
 - Handler global de excecoes: `src/main/java/br/com/sprint1/challenge/exception/GlobalExceptionHandler.java`
-- Respostas padronizadas para 400, 404 e 500
+- Respostas padronizadas (`ApiErrorResponse`: timestamp, status, error, message, path, details) para 400, 401, 403, 404, 409, 413 e 500
 - Validacao de entrada com Bean Validation (`@Valid` nos endpoints)
 - API versionada (`/api/v1`) para evolucao segura
 
@@ -192,7 +194,7 @@ curl -s http://localhost:8080/api/v1/churn/risk-list
 ```
 mvn clean test
 ...
-[INFO] Tests run: 207, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 209, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
 

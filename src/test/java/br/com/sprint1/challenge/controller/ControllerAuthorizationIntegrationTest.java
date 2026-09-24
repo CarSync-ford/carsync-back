@@ -4,6 +4,7 @@ import br.com.sprint1.challenge.entity.Customer;
 import br.com.sprint1.challenge.entity.Dealership;
 import br.com.sprint1.challenge.entity.Lead;
 import br.com.sprint1.challenge.entity.LeadStatus;
+import br.com.sprint1.challenge.entity.UrgencyLevel;
 import br.com.sprint1.challenge.entity.Vehicle;
 import br.com.sprint1.challenge.repository.CustomerRepository;
 import br.com.sprint1.challenge.repository.DealershipRepository;
@@ -80,7 +81,7 @@ class ControllerAuthorizationIntegrationTest {
         leadRepository.save(new Lead(
                 null, customer.getId(), vehicle.getId(), dealership.getId(),
                 "Interesse em revisão preventiva", "Cliente deseja agendar revisão de 30.000 km",
-                "MEDIUM", LeadStatus.OPEN, "PORTAL", LocalDateTime.now(), null));
+                UrgencyLevel.MEDIA, LeadStatus.OPEN, "PORTAL", LocalDateTime.now(), null));
     }
 
     @AfterEach
