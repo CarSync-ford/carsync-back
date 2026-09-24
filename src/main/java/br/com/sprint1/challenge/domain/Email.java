@@ -1,10 +1,15 @@
 package br.com.sprint1.challenge.domain;
 
+import java.util.regex.Pattern;
+
 /**
- * Value Object para e-mail: hoje só garante a regra de minúsculas já aplicada
- * pela validação existente, num tipo imutável em vez de checagem solta em String.
+ * Value Object para e-mail: garante o formato (RFC simplificado) e a regra de
+ * minúsculas, para que uma instância nunca exista em estado inválido —
+ * independente de quem a construiu já ter validado o DTO de origem ou não.
  */
 public final class Email {
+
+    private static final Pattern FORMAT = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
 
     private final String value;
 
@@ -13,6 +18,12 @@ public final class Email {
     }
 
     public static Email of(String rawValue) {
+        if (rawValue == null || rawValue.isBlank()) {
+            throw new IllegalArgumentException("E-mail não pode ser nulo ou vazio");
+        }
+        if (!FORMAT.matcher(rawValue).matches()) {
+            throw new IllegalArgumentException("E-mail com formato inválido: " + rawValue);
+        }
         if (!isLowercase(rawValue)) {
             throw new IllegalArgumentException("E-mail deve estar em minúsculas: " + rawValue);
         }

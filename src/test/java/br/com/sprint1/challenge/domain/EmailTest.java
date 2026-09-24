@@ -38,6 +38,24 @@ class EmailTest {
     }
 
     @Test
+    void of_nulo_lancaIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> Email.of(null));
+    }
+
+    @Test
+    void of_vazioOuEmBranco_lancaIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> Email.of(""));
+        assertThrows(IllegalArgumentException.class, () -> Email.of("   "));
+    }
+
+    @Test
+    void of_semArrobaOuDominio_lancaIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> Email.of("abc"));
+        assertThrows(IllegalArgumentException.class, () -> Email.of("user@semdominio"));
+        assertThrows(IllegalArgumentException.class, () -> Email.of("@example.com"));
+    }
+
+    @Test
     void equals_doisEmailsIguais_saoIguais() {
         assertEquals(Email.of("user@example.com"), Email.of("user@example.com"));
     }
