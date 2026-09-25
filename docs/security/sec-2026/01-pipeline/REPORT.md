@@ -166,3 +166,43 @@ Dependabot e Dependency-Check não duplicam função: Dependabot propõe atualiz
 
 Scanners reduzem classes conhecidas de risco, mas não substituem revisão humana, testes de autorização ou validação em produção. `ignore-unfixed: true` evita gate sem ação corretiva disponível, portanto CVEs sem correção permanecem risco residual. Allowlists do Gitleaks são limitadas ao cache Graphify e a cinco fingerprints históricos revisados; novos achados continuam bloqueados.
 O SCA foi comprovado verde remotamente no run `36074219523`. A execução remota do novo job `container-scan` e a publicação real com digest no registry ainda precisam ser verificadas após autorização de push/merge, sem simulação. A ausência de deploy real permanece explícita.
+
+## Correção de imagem — 2026-09-25
+
+Após reprovação do Trivy no PR #34 (run `36142306403`), a imagem-base e o Application Insights agent foram atualizados:
+
+| Componente | Antes (run 36142306403) | Correção |
+|---|---|---|
+| Imagem-base | `eclipse-temurin:21-jre-alpine` (tag flutuante, Alpine 3.24, libexpat 2.8.4-r0) | `eclipse-temurin:21-jre-alpine-3.24@sha256:1a29e1fe337eb28b5bec30f0ee8ed29f0ff80ab6f75dcf9313efe82911065a52` fixada por digest; `apk add --no-cache --upgrade 'libexpat>=2.8.5-r0'` |
+| Application Insights agent | 3.5.4 | 3.7.10 (release 19/09/2026) |
+| Checksum agent.jar | n/a | `93a70c8f5d364c7e777f6c4d1b235dba91aef8448bd3fa94359f1d7f3e2eb0ec` validado no build |
+| Dependências internas do agent (lockfile 3.7.10) | Jackson 2.17.2, Netty 4.1.112.Final, json-smart 2.5.0 | Jackson core/databind 2.22.2; Netty handler/http 4.2.18.Final; json-smart removido/atualizado |
+
+### Comparação SCA × Trivy (runs 36020010271, 36046716450 vs 36142306403)
+
+- **SCA 36020010271**: 132 IDs únicos (138 CVE, 25 GHSA). Dependências da aplicação.
+- **SCA 36046716450**: 55 IDs únicos (59 CVE, 16 GHSA). Após migração Spring Boot 4.1.1.
+- **Trivy 36142306403**: 24 IDs únicos (1 OS Alpine libexpat, 23 em agent.jar 3.5.4, 0 em app.jar).
+
+**IDs idênticos entre SCA e Trivy:**
+- `CVE-2026-54512` e `CVE-2026-54513` (Jackson databind 2.17.2) aparecem em SCA 36020010271 (app.jar) e Trivy 36142306403 (agent.jar). Mesmo CVE, cópias distintas da biblioteca.
+- SCA 36046716450: 0 sobreposição — app.jar já atualizado para Jackson 2.21.4.
+- Nenhum achado no app.jar no scan Trivy; achados restantes são exclusivos do agent.jar antigo e pacote OS.
+
+**Conclusão:** SCA verde não garante imagem limpa. Agent.jar carrega dependências próprias não gerenciadas pelo pom.xml. Correção via atualização do agente, não supressão de gate.
+
+### Evidência observada em 2026-09-25 (atualizada)
+
+| Verificação | Ambiente | Resultado |
+|---|---|---|
+| GitHub Actions PR #33 | Remoto, commit `c7af363` | [Run 36074219523](https://github.com/CarSync-ford/carsync-back/actions/runs/36074219523): SCA aprovado; testes, SAST, Gitleaks verdes; deploy skipped |
+| GitHub Actions PR #34 | Remoto, commit `21fcb12` | [Run 36142306403](https://github.com/CarSync-ford/carsync-back/actions/runs/36142306403): Trivy reprovou (25 achados); testes, SAST, SCA, Gitleaks verdes; deploy skipped |
+| Dockerfile | Worktree `sec-2026/01-pipeline` | Atualizado: base Alpine 3.24 fixada por digest, libexpat 2.8.5-r0, AI agent 3.7.10 com checksum |
+| Workflow `container-scan` | Workflow `.github/workflows/deploy.yml` | Smoke JVM/agent load, verificação libexpat/agent checksum, relatório com `if: always()` |
+
+### Execução pendente
+
+- Nova execução remota do job `container-scan` com Dockerfile atualizado.
+- Re-scan obrigatório (Dockerfile alterado): T3.C2 ativo.
+- Aprovação do gate Trivy HIGH/CRITICAL e ausência dos achados anteriores em libexpat e agent.jar.
+- Deploy real permanece explícita ausência; não simulado.

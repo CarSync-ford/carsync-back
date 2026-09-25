@@ -168,6 +168,24 @@ jobs:
           EOF
           echo "Container Image ID: $IMAGE_ID"
 
+      - name: Smoke test JVM + agent load
+        run: |
+          docker run --rm --network none \
+            --entrypoint java \
+            "${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" \
+            -javaagent:/opt/agent.jar -version 2>&1 | tee container-scan-report/smoke.log
+          echo "JVM + agent load OK"
+          # Verify libexpat version inside image
+          docker run --rm --network none \
+            --entrypoint sh \
+            "${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" \
+            -c "apk info -v libexpat" 2>&1 | tee -a container-scan-report/smoke.log
+          # Verify agent checksum inside image
+          docker run --rm --network none \
+            --entrypoint sh \
+            "${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" \
+            -c "sha256sum /opt/agent.jar" 2>&1 | tee -a container-scan-report/smoke.log
+
       - name: Scan deployment image
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
