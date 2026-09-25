@@ -197,12 +197,14 @@ Após reprovação do Trivy no PR #34 (run `36142306403`), a imagem-base e o App
 |---|---|---|
 | GitHub Actions PR #33 | Remoto, commit `c7af363` | [Run 36074219523](https://github.com/CarSync-ford/carsync-back/actions/runs/36074219523): SCA aprovado; testes, SAST, Gitleaks verdes; deploy skipped |
 | GitHub Actions PR #34 | Remoto, commit `21fcb12` | [Run 36142306403](https://github.com/CarSync-ford/carsync-back/actions/runs/36142306403): Trivy reprovou (25 achados); testes, SAST, SCA, Gitleaks verdes; deploy skipped |
+| GitHub Actions PR #34 | Remoto, commit `7f735d3` | [Run 36148042299](https://github.com/CarSync-ford/carsync-back/actions/runs/36148042299): **Todos 5 gates VERDES**; testes, SAST, SCA, Gitleaks, Trivy (0 HIGH/CRITICAL); deploy skipped por PR |
 | Dockerfile | Worktree `sec-2026/01-pipeline` | Atualizado: base Alpine 3.24 fixada por digest, libexpat 2.8.5-r0, AI agent 3.7.10 com checksum |
 | Workflow `container-scan` | Workflow `.github/workflows/deploy.yml` | Smoke JVM/agent load, verificação libexpat/agent checksum, relatório com `if: always()` |
 
-### Execução pendente
+### Execução concluída — 2026-09-25
 
-- Nova execução remota do job `container-scan` com Dockerfile atualizado.
-- Re-scan obrigatório (Dockerfile alterado): T3.C2 ativo.
-- Aprovação do gate Trivy HIGH/CRITICAL e ausência dos achados anteriores em libexpat e agent.jar.
+- Nova execução remota do job `container-scan` com Dockerfile atualizado: run 36148042299.
+- Re-scan obrigatório (Dockerfile alterado): T3.C2 VERIFICADO.
+- Gate Trivy HIGH/CRITICAL APROVADO: 0 vulnerabilidades em alpine 3.24.2 e app/app.jar. Achados anteriores em libexpat (CVE-2026-42587) e agent.jar 3.5.4 (23 IDs, incl. CVE-2026-54512, CVE-2026-54513) eliminados.
+- Smoke test JVM + agent load OK; libexpat 2.8.5-r0 confirmado; agent 3.7.10 checksum validado.
 - Deploy real permanece explícita ausência; não simulado.
