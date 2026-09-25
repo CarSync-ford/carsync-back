@@ -48,3 +48,12 @@
 - **Resultado observado e data:** em 2026-09-25 foram capturadas projeções sanitizadas de um login HTTP 200 real, um `SECURITY_VIOLATION Auth Failed` real e uma tentativa MFA HTTP 500. Login 200 é telemetria automática, não evento de auditoria; a alteração crítica não concluiu; nenhuma ação controlada foi executada nesta sessão.
 - **Evidência:** três JSON parseáveis sem mensagem bruta, IP, usuário, token, senha, URL completa ou operation ID.
 - **Dependência externa / responsável / ação para desbloquear:** frente 02 deve publicar `EVENTS.md` e instrumentar/verificar sucesso de login e alteração crítica concluída. Mantenedor deve autorizar ambiente/contas sintéticas; então repetir três ações controladas e capturar eventos explícitos.
+
+## T4.C1 — fluxo de resposta em cinco etapas
+
+- **Estado:** VERIFICADO (procedimento documental)
+- **Requisito:** R18
+- **Arquivos e teste/comando:** `INCIDENT-RESPONSE.md`; verificação das cinco etapas e dos recursos/canais em `evidence/T4-C1-procedure-check.txt`.
+- **Resultado observado e data:** em 2026-09-25 o procedimento cobre detecção, análise, contenção, erradicação e recuperação, cada uma com dono/canal, ação, limites e critério de saída. Usa `ag-security-email` e recursos Azure comprovados; não inventa contato nominal. Ações mutáveis exigem aprovação e não foram executadas.
+- **Evidência:** procedimento e checklist textual sem PII/segredos.
+- **Dependência externa / responsável / ação para desbloquear:** mantenedor deve nomear IC/owners e canal de coordenação antes de uso operacional; owners mobile/IoT/ML permanecem ausentes. Isso limita prontidão, mas não a redação do fluxo.

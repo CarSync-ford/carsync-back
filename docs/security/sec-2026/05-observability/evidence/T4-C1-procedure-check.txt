@@ -1,0 +1,18 @@
+T4.C1 — verificação do procedimento
+Data: 2026-09-25
+
+Etapas exigidas encontradas:
+1. Detecção — dono/canal, ação, cuidado e critério de saída.
+2. Análise — dono/canal, ações, comandos read-only e critério de saída.
+3. Contenção — aprovação, ações por componente, limites, reversibilidade e critério de saída.
+4. Erradicação — owner, fluxo normal de mudança/teste e critério de saída.
+5. Recuperação — owner, validações e critério de saída.
+
+Canais/recursos confrontados com estado real:
+- ag-security-email existe, está habilitado e tem um receiver habilitado; endereço não retido.
+- carsync-api-dev, appi-carsync-dev e law-carsync-dev existem.
+- canal de coordenação, escala e owners nominais não constam do repositório; campos são pré-condição, não nomes inventados.
+- ações mutáveis estão marcadas como dependentes de autorização e não foram executadas.
+- comandos de investigação correspondem aos recursos/CLI usados nesta execução.
+
+Resultado: procedimento documental completo para T4.C1; prontidão operacional continua limitada pelos owners/canal ausentes e pelos bloqueios registrados em STATUS.md.
