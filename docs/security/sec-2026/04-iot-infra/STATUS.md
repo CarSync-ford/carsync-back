@@ -33,3 +33,12 @@
 - **Resultado observado e data:** em 2026-09-25 nenhum teste de CA incorreta, hostname incompatível, listener plaintext ou fallback do cliente foi executado, pois não há componente/ambiente identificado e autorizado. Portanto, não há rejeição TLS real nem ausência de plaintext comprovadas. A não execução evita varredura de endpoint desconhecido e uso indevido de broker/dispositivo.
 - **Evidência:** `evidence/T2-C2-blocked.txt`; critérios reproduzíveis no handoff. Nenhuma credencial foi usada ou transmitida.
 - **Dependência externa / responsável / ação para desbloquear:** responsável nominal do IoT deve fornecer CA sintética não confiável, hostname/ambiente de teste, identidade sintética e autorização. Executar os casos no worktree do repo IoT, anexar códigos de saída/logs sanitizados e demonstrar que o cliente encerra sem downgrade ou envio plaintext.
+
+## Checkpoint T3.C1 — hardening IaC aplicável no Dockerfile
+
+- **Estado:** REUTILIZADO
+- **Requisito:** R13 — demonstração de IaC Security, se aplicável
+- **Arquivos e teste/comando:** inspeção de `Dockerfile`; `mvn -B -DskipTests package`; inspeção de nomes/configuração do JAR; consulta ao run 36148042299 e artefato `container-scan-report`; detalhes em `CONTAINER-HARDENING.md` e `evidence/T3-C1-container.txt`.
+- **Resultado observado e data:** em 2026-09-25, o pacote local foi gerado com sucesso. Build Docker local ficou bloqueado por permissão no socket. Foi reutilizada a correção da frente 01 no commit `7f735d39fa0eecfa187ddfff1aba931c1b602347`: build remoto e job Trivy concluíram com sucesso; usuário final `spring:spring`, cópia restrita ao JAR, base por digest e checksum do agente foram confirmados. Não há secret em ARG/ENV nem arquivo sensível conhecido no JAR. Trivy não escaneou secrets, e o agente não iniciou telemetria sem connection string; esses limites estão explícitos.
+- **Evidência:** `CONTAINER-HARDENING.md`; `evidence/T3-C1-container.txt`; run 36148042299/job 108114377733. Implementação/re-scan pertencem à frente 01.
+- **Dependência externa / responsável / ação para desbloquear:** nenhuma para reutilizar o build/re-scan remoto aprovado. A integração deve incluir o Dockerfile da frente 01; qualquer alteração/conflito posterior deve ser notificado à frente 01 e reescaneado. Inspeção local de imagem permanece bloqueada até acesso não privilegiado ao daemon.

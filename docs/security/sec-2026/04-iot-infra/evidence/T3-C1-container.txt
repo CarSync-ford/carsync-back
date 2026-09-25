@@ -1,0 +1,47 @@
+T3.C1 — BUILD E INSPEÇÃO DE HARDENING
+Data: 2026-09-25
+Base desta frente: 41d2227eb7f4382a9e58a4696dad76485088bb76
+Estado: REUTILIZADO
+
+LOCAL — pacote da aplicação
+Comando: mvn -B -DskipTests package
+Resultado: exit 0; BUILD SUCCESS; JAR Spring Boot produzido.
+Observação: testes foram explicitamente pulados nesta etapa de empacotamento; a validação final roda a suíte.
+
+LOCAL — daemon de container
+Comando: docker version --format ...
+Resultado: client 29.7.2; acesso ao server negado em /var/run/docker.sock.
+Diagnóstico: socket root:docker modo 0660; usuário enzo não pertence ao grupo docker; podman/buildah/nerdctl indisponíveis.
+Resultado: nenhum build/inspect local de imagem alegado; não houve elevação de privilégio.
+
+LOCAL — Dockerfile/JAR
+- Dockerfile SHA-256 da base: 5f1f9c1afc4cf94bf00f35b3e45f5b9605acf29a503d30618c56ec60896d3b97
+- última instrução USER: spring:spring
+- declaração secret-like em ARG/ENV: nenhuma
+- único COPY: target/*.jar -> app.jar
+- nomes sensíveis no JAR (.env, SSH, PEM/KEY/P12/PFX, applicationinsights.json): nenhum
+- configuração empacotada: referências ${...}; valores do ambiente local não copiados
+
+REUTILIZAÇÃO COORDENADA — frente 01
+Implementação: 7f735d39fa0eecfa187ddfff1aba931c1b602347
+Dockerfile blob: db0f46830fc1b9750401c3e1b6bcd3733394f52f
+Run: 36148042299
+Job: 108114377733
+Commit do PR consultado: 7f735d39fa0eecfa187ddfff1aba931c1b602347 (campo JSON headSha)
+GIT_SHA no artefato de checkout PR: 80770908be0fec32935057380a688ce775135372
+Docker: 28.0.4
+Imagem: ID sha256:ae4e4be837ba293cc1c330769f8ccbfa4cf435308a7199ad57be2527c2ae393d
+Resultado Build Docker image: success
+Resultado smoke: Java 21.0.12 executou; agent.jar carregado; inicialização do Application Insights informou ausência de connection string e não comprova telemetria ativa.
+Resultado checksum agent.jar: 93a70c8f5d364c7e777f6c4d1b235dba91aef8448bd3fa94359f1d7f3e2eb0ec
+Resultado Trivy HIGH/CRITICAL ignore-unfixed: 0 vulnerabilidades em alpine 3.24.2 e app/app.jar.
+Secrets no relatório Trivy: '-' (não escaneados).
+
+INSPEÇÃO DE USUÁRIO
+Dockerfile original e corrigido terminam em USER spring:spring. O smoke remoto não forneceu --user, logo usou Config.User; UID/GID numérico não foi capturado e não é afirmado.
+
+COORDENAÇÃO
+Nenhuma mudança no Dockerfile pela frente 04. A frente 01 já executou o re-scan após sua correção. Novo re-scan será necessário se a integração modificar o arquivo validado.
+
+SANITIZAÇÃO
+Referência privada da imagem foi omitida desta evidência; nenhum valor de secret, connection string ou conteúdo de ambiente foi registrado.
