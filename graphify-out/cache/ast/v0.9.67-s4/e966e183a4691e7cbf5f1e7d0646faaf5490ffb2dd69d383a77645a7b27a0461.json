@@ -1,0 +1,1 @@
+{"nodes": [{"id": "$graphify-root$_src_test_resources_db_migration_h2_v6_add_analyst_user_type_sql", "label": "V6__add_analyst_user_type.sql", "file_type": "code", "source_file": "src/test/resources/db/migration/h2/V6__add_analyst_user_type.sql", "source_location": null}], "edges": []}

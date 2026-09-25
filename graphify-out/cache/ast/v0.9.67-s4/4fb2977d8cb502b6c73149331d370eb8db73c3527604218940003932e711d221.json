@@ -1,0 +1,1 @@
+{"nodes": [{"id": "$graphify-root$_src_test_resources_db_migration_h2_v10_increase_refresh_token_column_size_sql", "label": "V10__increase_refresh_token_column_size.sql", "file_type": "code", "source_file": "src/test/resources/db/migration/h2/V10__increase_refresh_token_column_size.sql", "source_location": null}], "edges": []}

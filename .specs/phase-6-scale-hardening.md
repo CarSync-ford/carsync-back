@@ -1,5 +1,7 @@
 # Phase 6 - Escala & Hardening Contínuo (Contínuo)
 
+> HISTÓRICO — substituída como backlog desta entrega por [SEC-2026](sec-2026/README.md). Não executar cumulativamente. Implementação da fase 6 revertida em c362a1c; checkboxes e alegações abaixo não comprovam o estado atual.
+
 **Prioridade:** P3 - Baixa | **Esforço:** Contínuo
 
 Executar quando APIM estiver pronto / necessidade de escala real.
