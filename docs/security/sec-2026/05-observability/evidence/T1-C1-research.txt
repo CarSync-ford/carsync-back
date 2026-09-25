@@ -1,0 +1,30 @@
+T1.C1 — pesquisa e inventário
+Data/hora: 2026-09-25T16:07:31Z
+Base: 41d2227eb7f4382a9e58a4696dad76485088bb76
+Modo cloud: somente leitura
+
+1. Graphify
+Comando: graphify query "Quais fontes reais de observabilidade existem para API, mobile, IoT e ML?..." --budget 5000
+Resultado: grafo de 1.476 nós; localizou SECURITY_VIOLATION, configuração logback, API Spring, exemplo mobile e módulos ML. Consulta refinada apontou RateLimitFilter, JwtAuthenticationFilter, GlobalExceptionHandler, AnalyticsController e DataRetentionService. Os arquivos-fonte foram lidos para confirmação. O arquivo graphify-out/cache/last_query_stamp alterado pela consulta foi restaurado e não integra a entrega.
+
+2. Contrato assíncrono
+Comando: find docs/security/sec-2026 -name EVENTS.md -type f | wc -l
+Resultado: 0. O contrato EVENTS da frente 02 não está presente no BASE_SHA.
+
+3. Azure real (nomes/IDs sensíveis minimizados)
+Comandos: az containerapp show; az resource list; az monitor app-insights component show; az monitor log-analytics workspace list/query.
+Resultado:
+- carsync-api-dev: provisioning Succeeded, running Running;
+- appi-carsync-dev: Succeeded, workspace law-carsync-dev;
+- workspace law-carsync-dev: Succeeded, retenção 30 dias;
+- AppTraces, 30 dias: 23.713 registros, de 2026-08-26T16:17:45.189Z a 2026-09-24T18:39:48.627Z;
+- famílias literais: SECURITY_VIOLATION=24; ANALYTICS_ACCESS=0; DATA_RETENTION=0;
+- AppMetrics Name == data_retention.removed: 0 linhas.
+Nenhuma connection string, subscription ID, endereço de e-mail, IP, usuário ou mensagem bruta foi retida nesta evidência.
+
+4. Componentes externos
+- Mobile: docs/security/sec-2026/03-frontends/FRONTEND-HANDOFF.md confirma que test/.../fordretain-app é exemplo não oficial; inspeção não encontrou SDK/evento operacional.
+- IoT: handoff lido no worktree sec-2026/04-iot-infra, SHA 400466ba9f2ae11c624c5feefb0d13a1cf5fd291; nenhum cliente/broker/owner nominal identificado.
+- ML: test/.../01_ia_ml/src/classificador.py apenas imprime classification_report e grava modelos; telemetria/owner não identificados.
+
+Conclusão: inventário e plano concluídos; lacunas externas permanecem explícitas e limiares propostos não são apresentados como ativos.
