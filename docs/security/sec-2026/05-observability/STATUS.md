@@ -21,3 +21,12 @@
 - **Resultado observado e data:** em 2026-09-25 as consultas executaram na tabela real e retornaram 24 `SECURITY_VIOLATION` em 30 dias: 5 `Auth Failed`, 16 `JWT Invalid`, 2 `Rate Limit Exceeded` e 1 `Invalid Token`. `ANALYTICS_ACCESS` e `DATA_RETENTION` tiveram zero ocorrências. Rótulos derivados não são apresentados como campos emitidos.
 - **Evidência:** JSON parseável e sanitizado; `Message`, IP, usuário, IDs de assinatura e endereço do destinatário não foram retidos.
 - **Dependência externa / responsável / ação para desbloquear:** frente 02 deve publicar `docs/security/sec-2026/02-api/EVENTS.md`. Depois da integração, a frente 05 compara nomes/campos/redaction e repete as consultas na versão implantada.
+
+## T2.C2 — regras de alerta e comprovação do estado ativo
+
+- **Estado:** VERIFICADO (configuração documentada; eficácia não verificada)
+- **Requisito:** R16
+- **Arquivos e teste/comando:** `ALERTS.md`; `az monitor scheduled-query show/list`, `az monitor action-group show/list`, `az monitor metrics alert list`, KQL do limiar e API AlertsManagement; resultado em `evidence/T2-C2-alert-verification.json`.
+- **Resultado observado e data:** em 2026-09-25 a regra `alert-sec-violations` e o action group `ag-security-email` estavam habilitados. A condição combina KQL já agregada/filtrada com `Count > 5`, não representando corretamente o objetivo de 5 eventos/minuto. Um bin histórico teve 6 eventos, mas nenhuma instância da regra foi retornada em 30 dias; nenhum disparo/notificação é alegado. Não há regra comprovada para os demais sinais.
+- **Evidência:** `ALERTS.md` e JSON sanitizado; regra ativa, regra corrigida proposta e alerta disparado estão explicitamente separados.
+- **Dependência externa / responsável / ação para desbloquear:** responsável Azure nomeado pelo mantenedor deve autorizar correção/teste sintético e comprovar instância/entrega. Owners mobile, IoT e ML devem fornecer fontes antes de criar regras.

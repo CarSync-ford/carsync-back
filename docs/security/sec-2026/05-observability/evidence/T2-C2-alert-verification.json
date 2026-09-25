@@ -1,0 +1,44 @@
+{
+  "checkpoint": "T2.C2",
+  "checked_at": "2026-09-25T16:07:31Z",
+  "mode": "azure-read-only",
+  "rule": {
+    "name": "alert-sec-violations",
+    "enabled": true,
+    "severity": 2,
+    "evaluation_frequency": "PT1M",
+    "window_size": "PT1M",
+    "source_table": "AppTraces",
+    "literal_filter": "SECURITY_VIOLATION",
+    "query_bin_threshold": ">= 5 per 1m",
+    "outer_aggregation": "Count",
+    "outer_operator": "GreaterThan",
+    "outer_threshold": 5,
+    "semantic_verdict": "ACTIVE_BUT_CONDITION_INCONSISTENT"
+  },
+  "destination": {
+    "action_group": "ag-security-email",
+    "enabled": true,
+    "enabled_email_receivers": 1,
+    "common_alert_schema": true,
+    "receiver_address_retained": false
+  },
+  "signal_check": {
+    "timespan": "P30D",
+    "security_violation_count": 24,
+    "bins_matching_inner_query": [
+      {"time": "2026-09-14T23:28:00Z", "count": 6}
+    ]
+  },
+  "alert_instances": {
+    "query": "AlertsManagement alerts, P30D, rule alert-sec-violations",
+    "count": 0,
+    "fired_claim": false
+  },
+  "other_rules": {
+    "metric_alert_count": 0,
+    "scheduled_query_rules_observed": 1,
+    "mobile_iot_ml_rules_proven": false
+  },
+  "redaction": "Subscription IDs and receiver address omitted."
+}
