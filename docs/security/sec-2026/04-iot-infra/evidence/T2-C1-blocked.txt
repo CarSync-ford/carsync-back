@@ -1,0 +1,26 @@
+T2.C1 — CONEXÃO MQTT/TLS POSITIVA
+Data: 2026-09-25
+Base backend: 41d2227eb7f4382a9e58a4696dad76485088bb76
+Estado: BLOQUEADO; requisito R12 permanece PENDENTE
+
+Pré-condições verificadas:
+[FAIL] repositório/SHA do cliente IoT identificado
+[FAIL] broker e listener TLS identificados
+[FAIL] hostname e origem da confiança identificados
+[FAIL] identidade/tópico sintéticos autorizados
+[FAIL] autorização do responsável para teste
+
+Ação executada:
+- Nenhuma conexão a cloud, broker compartilhado ou dispositivo real.
+- Nenhum broker/cliente fictício adicionado ao backend.
+- Nenhuma validação de certificado desabilitada.
+- Produzido roteiro de desbloqueio em MQTT-TLS-HANDOFF.md.
+
+Resultado:
+Não há conexão MQTT/TLS positiva a reportar. HTTPS/Cloudflare/ACA e o agente Application Insights do backend não foram usados como substitutos de evidência MQTT.
+
+Responsável pelo próximo passo:
+Mantenedor da entrega integrada deve indicar o componente oficial; responsável nominal do IoT deve autorizar e executar/revisar o teste no worktree do repo real.
+
+Dados sensíveis:
+Nenhum endpoint privado, credencial, certificado, chave, tópico operacional ou payload pessoal coletado.
