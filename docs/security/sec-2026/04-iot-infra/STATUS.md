@@ -42,3 +42,12 @@
 - **Resultado observado e data:** em 2026-09-25, o pacote local foi gerado com sucesso. Build Docker local ficou bloqueado por permissão no socket. Foi reutilizada a correção da frente 01 no commit `7f735d39fa0eecfa187ddfff1aba931c1b602347`: build remoto e job Trivy concluíram com sucesso; usuário final `spring:spring`, cópia restrita ao JAR, base por digest e checksum do agente foram confirmados. Não há secret em ARG/ENV nem arquivo sensível conhecido no JAR. Trivy não escaneou secrets, e o agente não iniciou telemetria sem connection string; esses limites estão explícitos.
 - **Evidência:** `CONTAINER-HARDENING.md`; `evidence/T3-C1-container.txt`; run 36148042299/job 108114377733. Implementação/re-scan pertencem à frente 01.
 - **Dependência externa / responsável / ação para desbloquear:** nenhuma para reutilizar o build/re-scan remoto aprovado. A integração deve incluir o Dockerfile da frente 01; qualquer alteração/conflito posterior deve ser notificado à frente 01 e reescaneado. Inspeção local de imagem permanece bloqueada até acesso não privilegiado ao daemon.
+
+## Checkpoint T4.C1 — consolidar evidências e sinais IoT
+
+- **Estado:** VERIFICADO (consolidação documental; R12 continua PENDENTE/BLOQUEADO)
+- **Requisito:** R12–R13; insumos para R16 e R21
+- **Arquivos e teste/comando:** `REPORT.md`, `HANDOFFS.md`, índice de evidências; validação de links/caminhos, `git diff --check` e Gitleaks.
+- **Resultado observado e data:** em 2026-09-25, o relatório consolidou os commits e separou execução local, CI remoto, cloud não executada e IoT/dispositivo não acessados. Falhas/conexões IoT foram encaminhadas à frente 05 como fontes ainda ausentes e schema apenas proposto; telemetria/localização foram encaminhadas à frente 06 como inventário a confirmar, sem afirmar coleta. R12 permanece bloqueado e R13 reutiliza evidência real da frente 01.
+- **Evidência:** `REPORT.md`, `HANDOFFS.md`, `evidence/T4-C1-consolidation.txt` e arquivos indexados no relatório.
+- **Dependência externa / responsável / ação para desbloquear:** mantenedor da entrega integrada e owner IoT devem fornecer componente/ambiente/autorização para transformar T1/T2 em verificados. Frentes 05/06 devem consumir os handoffs sem tratar propostas como implantação.

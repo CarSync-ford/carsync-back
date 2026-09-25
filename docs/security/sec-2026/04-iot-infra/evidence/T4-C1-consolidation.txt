@@ -1,0 +1,32 @@
+T4.C1 — CONSOLIDAÇÃO E HANDOFFS
+Data: 2026-09-25
+Base: 41d2227eb7f4382a9e58a4696dad76485088bb76
+
+Validação de arquivos obrigatórios:
+document-check: PASS (10 arquivos requeridos; 5 checkpoints únicos no STATUS)
+
+Estados consolidados:
+- T1.C1 BLOQUEADO
+- T2.C1 BLOQUEADO; R12 PENDENTE
+- T2.C2 BLOQUEADO; R12 PENDENTE
+- T3.C1 REUTILIZADO
+- T4.C1 VERIFICADO quanto à consolidação documental
+
+Commits anteriores registrados:
+- 1f0f62b docs(sec-iot): identify mqtt tls evidence owner
+- 0088e07 fix(sec-iot): enforce mqtt tls validation
+- a926bea test(sec-iot): verify mqtt tls rejection
+- 9147176 docs(sec-infra): evidence existing container hardening
+
+Verificações:
+- git diff --check: PASS
+- Gitleaks sobre docs/security/sec-2026/04-iot-infra: PASS, nenhum leak
+- REPORT distingue local, GitHub Actions, cloud IoT não executada, dispositivo não acessado e Azure/Cloudflare não testados.
+- HANDOFFS encaminha fontes de falha/conexão à frente 05 como ausentes/propostas, não implantadas.
+- HANDOFFS encaminha telemetria/localização à frente 06 como categorias a confirmar, sem afirmar coleta.
+
+Sanitização:
+Nenhuma senha, token, chave, connection string, endpoint IoT privado, tópico operacional, payload pessoal ou localização foi anexado. O artefato remoto foi resumido; a referência privada da imagem foi omitida.
+
+Limite:
+Esta validação prova completude/coerência documental de T4.C1, não transforma os testes MQTT bloqueados em execução nem encerra R12.
