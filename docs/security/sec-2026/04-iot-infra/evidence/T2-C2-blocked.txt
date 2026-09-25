@@ -1,0 +1,30 @@
+T2.C2 — REJEIÇÃO TLS INVÁLIDA E AUSÊNCIA DE FALLBACK
+Data: 2026-09-25
+Base backend: 41d2227eb7f4382a9e58a4696dad76485088bb76
+Estado: BLOQUEADO; requisito R12 permanece PENDENTE
+
+Pré-condições verificadas:
+[FAIL] T2.C1 positivo no cliente MQTT real
+[FAIL] CA de teste e hostname controlado disponíveis
+[FAIL] runner/instrumentação do cliente para contar tentativas
+[FAIL] listener plaintext conhecido e autorizado para teste
+[FAIL] identidade sintética e autorização para captura
+
+Casos NÃO executados:
+- CA não confiável/expirada;
+- hostname/SAN incompatível;
+- falha TLS seguida de observação de retries;
+- tentativa ao listener plaintext;
+- inspeção autorizada para ausência de MQTT CONNECT/credenciais em claro.
+
+Motivo:
+O backend não contém cliente/broker MQTT e o componente IoT oficial não foi indicado. Testar endpoints, certificados, dispositivos ou brokers desconhecidos sem autorização excederia o escopo. Criar fixture desconectada do projeto não comprovaria R12.
+
+Controles preservados:
+- nenhuma validação de certificado/hostname foi desabilitada;
+- nenhuma credencial foi criada, usada, registrada ou transmitida;
+- nenhum fallback MQTT plaintext foi adicionado;
+- nenhum endpoint foi sondado.
+
+Próximo passo:
+Preencher o handoff, executar primeiro T2.C1 no ambiente autorizado e então rodar a matriz T2.C2 no mesmo cliente/caminho, registrando códigos de saída e resultados sanitizados.

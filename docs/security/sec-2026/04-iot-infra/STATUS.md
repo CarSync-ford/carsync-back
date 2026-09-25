@@ -24,3 +24,12 @@
 - **Resultado observado e data:** em 2026-09-25 não foi possível configurar nem demonstrar uma conexão MQTT/TLS positiva, pois T1.C1 não identificou repo/cliente/broker, endpoint, CA, identidade sintética ou ambiente autorizado. Nenhuma configuração deste backend foi alterada e nenhuma infraestrutura fictícia foi criada.
 - **Evidência:** `evidence/T2-C1-blocked.txt`; roteiro e critérios em `MQTT-TLS-HANDOFF.md`.
 - **Dependência externa / responsável / ação para desbloquear:** mantenedor da entrega integrada deve fornecer os itens de T1.C1 e autorização. O responsável nominal do IoT deverá criar/autorizar o worktree no repo real, confirmar listener TLS e CA de teste e executar o caso positivo com verificação de cadeia e hostname habilitada.
+
+## Checkpoint T2.C2 — rejeição de TLS inválida e ausência de fallback inseguro
+
+- **Estado:** BLOQUEADO (R12 permanece PENDENTE)
+- **Requisito:** R12 — Segurança MQTT/TLS para IoT
+- **Arquivos e teste/comando:** matriz negativa e comandos sem credenciais em `MQTT-TLS-HANDOFF.md`; registro em `evidence/T2-C2-blocked.txt`.
+- **Resultado observado e data:** em 2026-09-25 nenhum teste de CA incorreta, hostname incompatível, listener plaintext ou fallback do cliente foi executado, pois não há componente/ambiente identificado e autorizado. Portanto, não há rejeição TLS real nem ausência de plaintext comprovadas. A não execução evita varredura de endpoint desconhecido e uso indevido de broker/dispositivo.
+- **Evidência:** `evidence/T2-C2-blocked.txt`; critérios reproduzíveis no handoff. Nenhuma credencial foi usada ou transmitida.
+- **Dependência externa / responsável / ação para desbloquear:** responsável nominal do IoT deve fornecer CA sintética não confiável, hostname/ambiente de teste, identidade sintética e autorização. Executar os casos no worktree do repo IoT, anexar códigos de saída/logs sanitizados e demonstrar que o cliente encerra sem downgrade ou envio plaintext.
