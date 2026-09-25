@@ -30,3 +30,12 @@
 - **Resultado observado e data:** em 2026-09-25 a regra `alert-sec-violations` e o action group `ag-security-email` estavam habilitados. A condição combina KQL já agregada/filtrada com `Count > 5`, não representando corretamente o objetivo de 5 eventos/minuto. Um bin histórico teve 6 eventos, mas nenhuma instância da regra foi retornada em 30 dias; nenhum disparo/notificação é alegado. Não há regra comprovada para os demais sinais.
 - **Evidência:** `ALERTS.md` e JSON sanitizado; regra ativa, regra corrigida proposta e alerta disparado estão explicitamente separados.
 - **Dependência externa / responsável / ação para desbloquear:** responsável Azure nomeado pelo mantenedor deve autorizar correção/teste sintético e comprovar instância/entrega. Owners mobile, IoT e ML devem fornecer fontes antes de criar regras.
+
+## T3.C1 — evidência de dashboard de segurança
+
+- **Estado:** BLOQUEADO
+- **Requisito:** R17
+- **Arquivos e teste/comando:** `DASHBOARD.md`; listagem Azure de `Microsoft.Portal/dashboards` e `microsoft.insights/workbooks`; inventário em `evidence/T3-C1-dashboard-inventory.json`.
+- **Resultado observado e data:** em 2026-09-25 foram encontrados zero dashboards e zero workbooks no resource group. Application Insights/workspace e dados reais existem, mas não há painel implantado nem captura real. Nenhum mockup foi usado como substituto.
+- **Evidência:** inventário JSON sanitizado; `capture.path` e `sha256` nulos registram explicitamente a ausência exigida.
+- **Dependência externa / responsável / ação para desbloquear:** responsável Azure nomeado pelo mantenedor deve obter autorização, salvar o painel equivalente, abrir a ferramenta, capturar tela real sanitizada com intervalo/fonte visíveis e registrar hash/data. Esta execução não recebeu autorização para criar recurso cloud.

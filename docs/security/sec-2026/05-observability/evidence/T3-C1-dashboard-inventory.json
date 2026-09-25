@@ -1,0 +1,27 @@
+{
+  "checkpoint": "T3.C1",
+  "checked_at": "2026-09-25T16:07:31Z",
+  "mode": "azure-read-only",
+  "resource_group": "carsync-dev",
+  "existing_tool": {
+    "application_insights": "appi-carsync-dev",
+    "workspace": "law-carsync-dev",
+    "portal_dashboard_count": 0,
+    "workbook_count": 0
+  },
+  "data_window": {
+    "timespan": "P30D",
+    "timezone": "UTC",
+    "app_traces_security_violation_count": 24,
+    "app_requests_login_http_200_count": 25
+  },
+  "capture": {
+    "path": null,
+    "sha256": null,
+    "real_dashboard_capture_produced": false,
+    "mockup_substituted": false,
+    "blocker": "No deployed dashboard/workbook was found and cloud creation was not authorized."
+  },
+  "status": "BLOCKED",
+  "redaction": "No subscription ID, user, IP, email, token or receiver address retained."
+}
