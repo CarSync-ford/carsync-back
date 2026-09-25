@@ -39,3 +39,12 @@
 - **Resultado observado e data:** em 2026-09-25 foram encontrados zero dashboards e zero workbooks no resource group. Application Insights/workspace e dados reais existem, mas não há painel implantado nem captura real. Nenhum mockup foi usado como substituto.
 - **Evidência:** inventário JSON sanitizado; `capture.path` e `sha256` nulos registram explicitamente a ausência exigida.
 - **Dependência externa / responsável / ação para desbloquear:** responsável Azure nomeado pelo mantenedor deve obter autorização, salvar o painel equivalente, abrir a ferramenta, capturar tela real sanitizada com intervalo/fonte visíveis e registrar hash/data. Esta execução não recebeu autorização para criar recurso cloud.
+
+## T3.C2 — login, falha e alteração crítica estruturados
+
+- **Estado:** BLOQUEADO (amostras reais parciais; aceite completo ausente)
+- **Requisito:** R15
+- **Arquivos e teste/comando:** `AUDIT-EVIDENCE.md`, `queries/audit-samples.kql`, `captures/audit/*.json`; consulta a `AppRequests`/`AppTraces` e parse com `python3 -m json.tool`; validação em `evidence/T3-C2-audit-validation.json`.
+- **Resultado observado e data:** em 2026-09-25 foram capturadas projeções sanitizadas de um login HTTP 200 real, um `SECURITY_VIOLATION Auth Failed` real e uma tentativa MFA HTTP 500. Login 200 é telemetria automática, não evento de auditoria; a alteração crítica não concluiu; nenhuma ação controlada foi executada nesta sessão.
+- **Evidência:** três JSON parseáveis sem mensagem bruta, IP, usuário, token, senha, URL completa ou operation ID.
+- **Dependência externa / responsável / ação para desbloquear:** frente 02 deve publicar `EVENTS.md` e instrumentar/verificar sucesso de login e alteração crítica concluída. Mantenedor deve autorizar ambiente/contas sintéticas; então repetir três ações controladas e capturar eventos explícitos.

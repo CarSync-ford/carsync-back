@@ -1,0 +1,16 @@
+{
+  "checkpoint": "T3.C2",
+  "validated_at": "2026-09-25T16:07:31Z",
+  "query": "queries/audit-samples.kql",
+  "timespan": "P30D",
+  "samples": [
+    {"path": "captures/audit/login-success.json", "json_parseable": true, "real_azure_row": true, "explicit_application_event": false},
+    {"path": "captures/audit/auth-failure.json", "json_parseable": true, "real_azure_row": true, "explicit_application_event": true},
+    {"path": "captures/audit/critical-change-attempt.json", "json_parseable": true, "real_azure_row": true, "change_completed": false, "explicit_application_event": false}
+  ],
+  "controlled_actions_executed_this_session": 0,
+  "secrets_or_pii_retained": false,
+  "events_contract_present": false,
+  "acceptance_complete": false,
+  "status": "BLOCKED"
+}
