@@ -57,3 +57,24 @@
 - **Resultado observado e data:** em 2026-09-25 o procedimento cobre detecção, análise, contenção, erradicação e recuperação, cada uma com dono/canal, ação, limites e critério de saída. Usa `ag-security-email` e recursos Azure comprovados; não inventa contato nominal. Ações mutáveis exigem aprovação e não foram executadas.
 - **Evidência:** procedimento e checklist textual sem PII/segredos.
 - **Dependência externa / responsável / ação para desbloquear:** mantenedor deve nomear IC/owners e canal de coordenação antes de uso operacional; owners mobile/IoT/ML permanecem ausentes. Isso limita prontidão, mas não a redação do fluxo.
+
+## T4.C2 — revisão de mesa e consolidação
+
+- **Estado:** VERIFICADO (revisão documental; não incidente/teste produtivo)
+- **Requisito:** R18; consolidação R15–R17
+- **Arquivos e teste/comando:** `TABLETOP.md`, `REPORT.md`, `evidence/T4-C2-tabletop.json`; KQL somente leitura do bin histórico sanitizado; validação de links/JSON/histórico no fechamento.
+- **Resultado observado e data:** em 2026-09-25 o cenário de mesa percorreu as cinco etapas sem gerar tráfego ou alterar produção. A detecção automática falharia pela condição inconsistente; análise manual é possível; contenção/erradicação/recuperação são coerentes, mas não executadas. O exercício não é incidente e não teve participantes humanos operacionais.
+- **Evidência:** `TABLETOP.md` e JSON parseável; consolidação/SHAs anteriores em `REPORT.md`.
+- **Dependência externa / responsável / ação para desbloquear:** R15–R17 permanecem bloqueados conforme relatório. Mantenedor/owners devem publicar contrato, corrigir/testar alerta, produzir painel/captura e integrar sinais externos. T4.C2 não converte essas lacunas em verificadas.
+
+## Resumo de encerramento desta execução
+
+| Checkpoint | Estado |
+|---|---|
+| T1.C1 | VERIFICADO — inventário/plano |
+| T2.C1 | BLOQUEADO — `EVENTS.md` ausente, apesar de KQL executada |
+| T2.C2 | VERIFICADO — configuração auditada; eficácia não verificada |
+| T3.C1 | BLOQUEADO — sem dashboard/print real |
+| T3.C2 | BLOQUEADO — amostras parciais, sem alteração concluída/contrato |
+| T4.C1 | VERIFICADO — procedimento documental |
+| T4.C2 | VERIFICADO — revisão de mesa documental |
