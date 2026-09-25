@@ -1,0 +1,1 @@
+{"nodes": [{"id": "litellm_config_model_list", "label": "LiteLLM model list mapping Claude names to Ollama qwen3-coder", "file_type": "document", "source_file": "litellm_config.yaml", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [], "hyperedges": []}

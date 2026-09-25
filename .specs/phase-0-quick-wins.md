@@ -1,5 +1,7 @@
 # Phase 0 - Quick Wins (1-2 dias)
 
+> HISTÓRICO — substituída como backlog desta entrega por [SEC-2026](sec-2026/README.md). Não executar cumulativamente. Checkboxes e alegações abaixo não comprovam o estado atual.
+
 **Prioridade:** Imediato | **Esforço:** ~0.5 semana
 
 Já implementados no código, apenas validar/ativar em produção.

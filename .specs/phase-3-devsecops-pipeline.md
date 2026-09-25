@@ -1,5 +1,7 @@
 # Phase 3 - Pipeline DevSecOps (Semanas 3-5)
 
+> HISTÓRICO — substituída como backlog desta entrega por [SEC-2026](sec-2026/README.md). Não executar cumulativamente. Checkboxes e alegações abaixo não comprovam o estado atual.
+
 **Prioridade:** P1 - Alta | **Esforço:** ~2-3 semanas
 
 Independente, pode iniciar cedo (paralelo com outras fases).

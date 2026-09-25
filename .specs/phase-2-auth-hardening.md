@@ -1,5 +1,7 @@
 # Phase 2 - Auth Hardening (Semanas 2-3)
 
+> HISTÓRICO — substituída como backlog desta entrega por [SEC-2026](sec-2026/README.md). Não executar cumulativamente. Checkboxes e alegações abaixo não comprovam o estado atual.
+
 **Prioridade:** P1 - Alta | **Esforço:** ~2 semanas
 
 Dependência: Migrações V8, V9 (pós V7).
