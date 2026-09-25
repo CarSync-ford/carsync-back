@@ -1,0 +1,27 @@
+// Detalhe sanitizado: Message é usada apenas para classificar e não é projetada,
+// pois hoje pode conter IP/usuário. Não existem campos AUTH_FAILED,
+// RATE_LIMIT_EXCEEDED ou IP_s comprovados.
+let lookback = 24h;
+AppTraces
+| where TimeGenerated >= ago(lookback)
+| where Message contains "SECURITY_VIOLATION"
+    or Message contains "ANALYTICS_ACCESS"
+    or Message contains "DATA_RETENTION"
+| extend EventFamily = case(
+    Message contains "SECURITY_VIOLATION", "SECURITY_VIOLATION",
+    Message contains "ANALYTICS_ACCESS", "ANALYTICS_ACCESS",
+    Message contains "DATA_RETENTION", "DATA_RETENTION",
+    "UNCLASSIFIED")
+| extend EventSubtype = case(
+    Message contains "Auth Failed", "Auth Failed",
+    Message contains "Account Locked", "Account Locked",
+    Message contains "Rate Limit Exceeded", "Rate Limit Exceeded",
+    Message contains "JWT Wrong token type used as Bearer", "JWT Wrong token type used as Bearer",
+    Message contains "JWT Invalid", "JWT Invalid",
+    Message contains "Invalid Token", "Invalid Token",
+    Message contains "Token Expired", "Token Expired",
+    Message contains "purge completed", "purge completed",
+    Message contains "anonymization completed", "anonymization completed",
+    EventFamily)
+| project TimeGenerated, SeverityLevel, EventFamily, EventSubtype, AppRoleName, OperationId
+| order by TimeGenerated desc

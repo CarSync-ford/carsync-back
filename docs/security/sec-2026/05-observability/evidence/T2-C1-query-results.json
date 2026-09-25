@@ -1,0 +1,24 @@
+{
+  "checkpoint": "T2.C1",
+  "generated_at": "2026-09-25T16:07:31Z",
+  "mode": "azure-read-only",
+  "resource_group": "carsync-dev",
+  "application_insights": "appi-carsync-dev",
+  "workspace": "law-carsync-dev",
+  "table": "AppTraces",
+  "timespan": "P30D",
+  "raw_message_retained": false,
+  "results": [
+    {"event_family": "SECURITY_VIOLATION", "event_subtype": "Auth Failed", "count": 5, "first": "2026-09-14T21:34:45.067Z", "last": "2026-09-21T01:25:33.461Z"},
+    {"event_family": "SECURITY_VIOLATION", "event_subtype": "JWT Invalid", "count": 16, "first": "2026-09-06T22:45:00.280Z", "last": "2026-09-21T01:16:23.808Z"},
+    {"event_family": "SECURITY_VIOLATION", "event_subtype": "Rate Limit Exceeded", "count": 2, "first": "2026-09-14T20:01:18.964Z", "last": "2026-09-14T23:28:30.293Z"},
+    {"event_family": "SECURITY_VIOLATION", "event_subtype": "Invalid Token", "count": 1, "first": "2026-09-21T01:25:22.733Z", "last": "2026-09-21T01:25:22.733Z"}
+  ],
+  "zero_occurrence_literals": ["ANALYTICS_ACCESS", "DATA_RETENTION"],
+  "contract_dependency": {
+    "path": "docs/security/sec-2026/02-api/EVENTS.md",
+    "present_in_base": false,
+    "status": "BLOCKED"
+  },
+  "redaction": "No Message, IP, user, email, token, subscription ID or receiver address retained."
+}
