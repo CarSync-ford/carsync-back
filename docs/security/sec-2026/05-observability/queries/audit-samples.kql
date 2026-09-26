@@ -1,0 +1,22 @@
+// Projeções sanitizadas de ações reais. Não projeta Message, Url, usuário ou IP.
+let LoginSuccess = AppRequests
+| extend Path=tostring(parse_url(Url).Path)
+| where TimeGenerated >= ago(30d) and Path == "/api/v1/auth" and ResultCode == "200" and Success == true
+| top 1 by TimeGenerated desc
+| project TimeGenerated, SampleKind="LOGIN_SUCCESS_HTTP", EventName="POST /api/v1/auth", Outcome="HTTP 200", SourceTable="AppRequests";
+let AuthFailure = AppTraces
+| where TimeGenerated >= ago(30d) and Message contains "SECURITY_VIOLATION Auth Failed"
+| top 1 by TimeGenerated desc
+| project TimeGenerated, SampleKind="AUTH_FAILURE_EVENT", EventName="SECURITY_VIOLATION / Auth Failed", Outcome="rejected", SourceTable="AppTraces";
+let CriticalAttempt = AppRequests
+| extend Path=tostring(parse_url(Url).Path)
+| extend CriticalAction=case(
+    Path == "/api/v1/auth/change-password", "PASSWORD_CHANGE",
+    Path == "/api/v1/auth/reset-password", "PASSWORD_RESET",
+    Path startswith "/api/v1/auth/mfa/", "MFA_CHANGE",
+    "")
+| where TimeGenerated >= ago(30d) and isnotempty(CriticalAction)
+| top 1 by TimeGenerated desc
+| project TimeGenerated, SampleKind="CRITICAL_CHANGE_ATTEMPT", EventName=CriticalAction, Outcome=strcat("HTTP ", ResultCode), SourceTable="AppRequests";
+union LoginSuccess, AuthFailure, CriticalAttempt
+| order by TimeGenerated asc

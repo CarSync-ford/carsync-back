@@ -1,0 +1,29 @@
+{
+  "checkpoint": "T4.C2",
+  "exercise_type": "tabletop_document_review",
+  "is_real_incident": false,
+  "performed_at": "2026-09-25T16:07:31Z",
+  "facilitator": "Kiro agent",
+  "human_operational_participants": 0,
+  "production_changes": 0,
+  "alerts_triggered_by_exercise": 0,
+  "credentials_used": 0,
+  "scenario_input": {
+    "source": "sanitized historical distribution reused as fictional input",
+    "window_start": "2026-09-14T23:28:00Z",
+    "window_end": "2026-09-14T23:29:00Z",
+    "events": [
+      {"subtype": "JWT Invalid", "count": 5},
+      {"subtype": "Rate Limit Exceeded", "count": 1}
+    ]
+  },
+  "stage_review": [
+    {"stage": "detection", "procedure_reviewed": true, "operational_result": "automatic detection would fail with current condition; manual query works"},
+    {"stage": "analysis", "procedure_reviewed": true, "operational_result": "sources and read-only commands available; owner not assigned"},
+    {"stage": "containment", "procedure_reviewed": true, "operational_result": "decision path exists; no action authorized or executed"},
+    {"stage": "eradication", "procedure_reviewed": true, "operational_result": "normal change/pipeline path identified; not executed"},
+    {"stage": "recovery", "procedure_reviewed": true, "operational_result": "health and monitoring criteria identified; not executed"}
+  ],
+  "findings": ["alert condition inconsistent", "EVENTS contract absent", "dashboard capture absent", "operational owners/channel absent", "mobile IoT ML signals absent"],
+  "status": "VERIFIED_DOCUMENT_REVIEW_WITH_OPERATIONAL_GAPS"
+}

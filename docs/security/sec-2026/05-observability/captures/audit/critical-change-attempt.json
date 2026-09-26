@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "evidence_kind": "sanitized_azure_projection",
+  "source_table": "AppRequests",
+  "occurred_at": "2026-09-21T01:27:03.171Z",
+  "action_category": "MFA_CHANGE",
+  "outcome": "HTTP_SERVER_ERROR",
+  "result_code": 500,
+  "success": false,
+  "critical_change_completed": false,
+  "application_audit_event": false,
+  "controlled_action_this_session": false,
+  "pii_or_secret_retained": false
+}

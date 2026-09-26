@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "evidence_kind": "sanitized_azure_projection",
+  "source_table": "AppTraces",
+  "occurred_at": "2026-09-21T01:25:33.461Z",
+  "event_family": "SECURITY_VIOLATION",
+  "event_subtype": "Auth Failed",
+  "severity_level": 2,
+  "outcome": "REJECTED",
+  "application_audit_event": true,
+  "controlled_action_this_session": false,
+  "raw_message_retained": false,
+  "pii_or_secret_retained": false
+}
