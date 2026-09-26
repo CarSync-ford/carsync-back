@@ -1,0 +1,31 @@
+T1.C1 — PESQUISA DE COMPONENTE MQTT/TLS
+Data: 2026-09-25
+Ambiente: Linux; worktree sec-2026/04-iot-infra
+Base: 41d2227eb7f4382a9e58a4696dad76485088bb76
+
+1) graphify query "Qual é o componente IoT efetivo deste projeto, em qual repositório está o cliente ou dispositivo MQTT, qual broker hostname protocolo porta TLS usa e quem é o responsável documentado? Distinguir requisitos de implementação real." --budget 5000
+Resultado sanitizado: grafo versionado com 1.476 nós; 105 nós retornados sobre Cloudflare/API/mobile/ML, sem cliente MQTT, broker, endpoint, porta, CA ou responsável IoT. O resultado foi usado somente para localizar fontes e exigiu confirmação textual.
+
+2) Busca textual versionada
+Padrão: mqtt|iot|broker|mosquitto|8883|1883|paho|azure-iot|device|telemetria|tls
+Resultado sanitizado: ocorrências MQTT/IoT em SEC-REQUIREMENTS.md, specs e auditoria; nenhuma implementação/configuração/dependência MQTT. Referências TLS restantes pertencem ao HTTPS da API e não comprovam R12.
+
+3) git remote -v
+git@github.com:CarSync-ford/carsync-back.git
+
+4) git submodule status
+Resultado: nenhum submódulo IoT utilizável; a única mensagem refere-se a metadado de worktree interno sem mapeamento em .gitmodules.
+
+5) git log --all --grep='mqtt|iot|broker|telemetr' e busca de paths em todo o histórico
+Resultado: nenhum commit de implementação MQTT/IoT; paths históricos encontrados somente para `.specs/phase-8-local-crypto-iot.md` e `.specs/sec-2026/04-iot-infra.md`.
+
+6) Arquivos de ownership
+Resultado: nenhum CODEOWNERS, OWNERS ou MAINTAINERS; README lista a equipe acadêmica, mas não atribui o componente IoT.
+
+7) Candidatos locais verificados sem alteração
+- Enzoreal100/mobile-dev-iot @ 3106f5ca5a2d5d23b6cbe92717458ede2b6c0b82: sem MQTT/CarSync/Ford no HEAD.
+- GustavoPasquiniLucas/Ford @ 6b452b8b92729ba2359ce67556474df1adc05d6d: sem MQTT/IoT no HEAD.
+Resultado: nenhum vínculo objetivo com o IoT desta entrega; candidatos descartados.
+
+CONCLUSÃO
+BLOQUEADO. Repo/SHA do componente IoT, broker, cliente, protocolo/porta, origem da confiança e responsável nominal não estão disponíveis. Nenhum segredo, certificado, hostname privado, credencial ou dado pessoal foi coletado.
