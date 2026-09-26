@@ -1,5 +1,7 @@
 # Phase 1 - LGPD Crítico (Semanas 1-2)
 
+> HISTÓRICO — substituída como backlog desta entrega por [SEC-2026](sec-2026/README.md). Não executar cumulativamente. Checkboxes e alegações abaixo não comprovam o estado atual.
+
 **Prioridade:** P0 - Bloqueante | **Esforço:** ~2 semanas
 
 Bloqueia compliance LGPD. Dois pilares independentes: Anonymization Pipeline (SEC-001) e Data Retention (SEC-002).

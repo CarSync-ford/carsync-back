@@ -1,0 +1,1226 @@
+{
+  ".claude/settings.local.json": {
+    "mtime": 1788812110.6008093,
+    "seen": 1790205599.6304884,
+    "ast_hash": "adace89e893c15504311f3738d017990",
+    "semantic_hash": "adace89e893c15504311f3738d017990"
+  },
+  "pom.xml": {
+    "mtime": 1779555122.4356008,
+    "seen": 1790205599.6304944,
+    "ast_hash": "c55610cea5a4fec189a62b8cae96805d",
+    "semantic_hash": "c55610cea5a4fec189a62b8cae96805d"
+  },
+  "scripts/sdd-flow.sh": {
+    "mtime": 1778534089.8695176,
+    "seen": 1790205599.6304977,
+    "ast_hash": "fc35cc1932109740cb638b45ae0e33e3",
+    "semantic_hash": "fc35cc1932109740cb638b45ae0e33e3"
+  },
+  "skills-lock.json": {
+    "mtime": 1789565820.957594,
+    "seen": 1790205599.6305006,
+    "ast_hash": "3124ef04bdc09ab3034ebfc236f35867",
+    "semantic_hash": "3124ef04bdc09ab3034ebfc236f35867"
+  },
+  "src/main/java/br/com/sprint1/challenge/ArquiteturaOrientadaaServicosSprint1Application.java": {
+    "mtime": 1778875478.3783393,
+    "seen": 1790205599.6305034,
+    "ast_hash": "dcee1e73354b470b195f0a540532390c",
+    "semantic_hash": "dcee1e73354b470b195f0a540532390c"
+  },
+  "src/main/java/br/com/sprint1/challenge/config/CachedBodyHttpServletRequest.java": {
+    "mtime": 1779553608.6335897,
+    "seen": 1790205599.6305063,
+    "ast_hash": "77ba7c97bfd032496cd691b1992ba064",
+    "semantic_hash": "77ba7c97bfd032496cd691b1992ba064"
+  },
+  "src/main/java/br/com/sprint1/challenge/config/DataRetentionProperties.java": {
+    "mtime": 1789565820.9576845,
+    "seen": 1790205599.630509,
+    "ast_hash": "8d5f579156bc63ffd437d01c760558d7",
+    "semantic_hash": "8d5f579156bc63ffd437d01c760558d7"
+  },
+  "src/main/java/br/com/sprint1/challenge/config/HmacSignatureFilter.java": {
+    "mtime": 1789565820.957767,
+    "seen": 1790205599.6305115,
+    "ast_hash": "d9be18f9fab8ad11bbe763a25cbb8279",
+    "semantic_hash": "d9be18f9fab8ad11bbe763a25cbb8279"
+  },
+  "src/main/java/br/com/sprint1/challenge/config/JwtAuthenticationFilter.java": {
+    "mtime": 1779553608.6337552,
+    "seen": 1790205599.6305141,
+    "ast_hash": "570aba885a10db7e6951c49e315b3c02",
+    "semantic_hash": "570aba885a10db7e6951c49e315b3c02"
+  },
+  "src/main/java/br/com/sprint1/challenge/config/JwtProperties.java": {
+    "mtime": 1789565820.9578452,
+    "seen": 1790205599.6305165,
+    "ast_hash": "98e0e75d77c603e8cb4fa15b02cbf211",
+    "semantic_hash": "98e0e75d77c603e8cb4fa15b02cbf211"
+  },
+  "src/main/java/br/com/sprint1/challenge/config/OpenApiConfig.java": {
+    "mtime": 1776626078.7700703,
+    "seen": 1790205599.6305194,
+    "ast_hash": "32bc2326bfb2fdf5dcb37c64c3d5a4a2",
+    "semantic_hash": "32bc2326bfb2fdf5dcb37c64c3d5a4a2"
+  },
+  "src/main/java/br/com/sprint1/challenge/config/RateLimitFilter.java": {
+    "mtime": 1789565820.95792,
+    "seen": 1790205599.6305215,
+    "ast_hash": "65de913d1300d20983af4f61ca7af886",
+    "semantic_hash": "65de913d1300d20983af4f61ca7af886"
+  },
+  "src/main/java/br/com/sprint1/challenge/config/SchedulingConfig.java": {
+    "mtime": 1789565820.9579732,
+    "seen": 1790205599.6305244,
+    "ast_hash": "d11e9630e0828f620828cfece4cc32f8",
+    "semantic_hash": "d11e9630e0828f620828cfece4cc32f8"
+  },
+  "src/main/java/br/com/sprint1/challenge/config/SecurityConfig.java": {
+    "mtime": 1789565820.958052,
+    "seen": 1790205599.630527,
+    "ast_hash": "6ff4a3bb738d5bfd7267dc0bf5ed574e",
+    "semantic_hash": "6ff4a3bb738d5bfd7267dc0bf5ed574e"
+  },
+  "src/main/java/br/com/sprint1/challenge/controller/AnalyticsController.java": {
+    "mtime": 1789565820.9581373,
+    "seen": 1790205599.6305292,
+    "ast_hash": "65006eef099f899ba636a17f58d6bb52",
+    "semantic_hash": "65006eef099f899ba636a17f58d6bb52"
+  },
+  "src/main/java/br/com/sprint1/challenge/controller/AssistantController.java": {
+    "mtime": 1776626078.7701812,
+    "seen": 1790205599.630532,
+    "ast_hash": "47d7dee4b539cccfa94e2c009a460cb3",
+    "semantic_hash": "47d7dee4b539cccfa94e2c009a460cb3"
+  },
+  "src/main/java/br/com/sprint1/challenge/controller/AuthController.java": {
+    "mtime": 1789565820.9582264,
+    "seen": 1790205599.6305344,
+    "ast_hash": "c3a52de1e0ab041025d3db02da32d6c2",
+    "semantic_hash": "c3a52de1e0ab041025d3db02da32d6c2"
+  },
+  "src/main/java/br/com/sprint1/challenge/controller/ChurnController.java": {
+    "mtime": 1776626078.7701812,
+    "seen": 1790205599.6305368,
+    "ast_hash": "6560c444d927092990dcfc1f644241d0",
+    "semantic_hash": "6560c444d927092990dcfc1f644241d0"
+  },
+  "src/main/java/br/com/sprint1/challenge/controller/Customer360Controller.java": {
+    "mtime": 1776626078.7701812,
+    "seen": 1790205599.6305392,
+    "ast_hash": "830ab6cf742d75b83ae2de25f34586e6",
+    "semantic_hash": "830ab6cf742d75b83ae2de25f34586e6"
+  },
+  "src/main/java/br/com/sprint1/challenge/controller/HealthController.java": {
+    "mtime": 1778960778.1583726,
+    "seen": 1790205599.6305416,
+    "ast_hash": "13f826ffc36bde9a8ae71bb074c9a1e0",
+    "semantic_hash": "13f826ffc36bde9a8ae71bb074c9a1e0"
+  },
+  "src/main/java/br/com/sprint1/challenge/controller/LeadController.java": {
+    "mtime": 1776626078.7701812,
+    "seen": 1790205599.6305442,
+    "ast_hash": "1c4a14c9a84dc909ac68ac4e86968e34",
+    "semantic_hash": "1c4a14c9a84dc909ac68ac4e86968e34"
+  },
+  "src/main/java/br/com/sprint1/challenge/controller/StockController.java": {
+    "mtime": 1776626078.7701812,
+    "seen": 1790205599.630547,
+    "ast_hash": "c2937fe78eccedf53e9bda107efa14fe",
+    "semantic_hash": "c2937fe78eccedf53e9bda107efa14fe"
+  },
+  "src/main/java/br/com/sprint1/challenge/controller/UserController.java": {
+    "mtime": 1779318544.0524251,
+    "seen": 1790205599.6305497,
+    "ast_hash": "f886e6d2749ef6f5285e3326389563ea",
+    "semantic_hash": "f886e6d2749ef6f5285e3326389563ea"
+  },
+  "src/main/java/br/com/sprint1/challenge/dto/AnalyticsDtos.java": {
+    "mtime": 1789565820.9583101,
+    "seen": 1790205599.630552,
+    "ast_hash": "a34f90c9032ee668c7b8bf21e1cdc5e8",
+    "semantic_hash": "a34f90c9032ee668c7b8bf21e1cdc5e8"
+  },
+  "src/main/java/br/com/sprint1/challenge/dto/AssistantDtos.java": {
+    "mtime": 1776626078.7703602,
+    "seen": 1790205599.6305544,
+    "ast_hash": "c6e7f2fe8d764a189627ee9c79390e5d",
+    "semantic_hash": "c6e7f2fe8d764a189627ee9c79390e5d"
+  },
+  "src/main/java/br/com/sprint1/challenge/dto/AuthDtos.java": {
+    "mtime": 1789565820.9583879,
+    "seen": 1790205599.6305568,
+    "ast_hash": "5c0e57237e5c44efaf388a92169d4858",
+    "semantic_hash": "5c0e57237e5c44efaf388a92169d4858"
+  },
+  "src/main/java/br/com/sprint1/challenge/dto/ChurnDtos.java": {
+    "mtime": 1776626078.7703602,
+    "seen": 1790205599.6305597,
+    "ast_hash": "f3d88726986227dd9f8c5077e89573b6",
+    "semantic_hash": "f3d88726986227dd9f8c5077e89573b6"
+  },
+  "src/main/java/br/com/sprint1/challenge/dto/Customer360Dtos.java": {
+    "mtime": 1776626078.7703602,
+    "seen": 1790205599.630562,
+    "ast_hash": "af263dce47d87778eebaaa67f63703bd",
+    "semantic_hash": "af263dce47d87778eebaaa67f63703bd"
+  },
+  "src/main/java/br/com/sprint1/challenge/dto/LeadDtos.java": {
+    "mtime": 1776626078.7703602,
+    "seen": 1790205599.6305645,
+    "ast_hash": "6e61a6cc547ae1cfbd7a371aabb599d2",
+    "semantic_hash": "6e61a6cc547ae1cfbd7a371aabb599d2"
+  },
+  "src/main/java/br/com/sprint1/challenge/dto/StockDtos.java": {
+    "mtime": 1776626078.7703602,
+    "seen": 1790205599.6305673,
+    "ast_hash": "9727955c0833e29ba08373012c18952b",
+    "semantic_hash": "9727955c0833e29ba08373012c18952b"
+  },
+  "src/main/java/br/com/sprint1/challenge/dto/UserDtos.java": {
+    "mtime": 1779145197.4649572,
+    "seen": 1790205599.6305697,
+    "ast_hash": "b4586196a2ff3ddfe2a82f5199d9597d",
+    "semantic_hash": "b4586196a2ff3ddfe2a82f5199d9597d"
+  },
+  "src/main/java/br/com/sprint1/challenge/entity/AssistantInteraction.java": {
+    "mtime": 1776626078.7703602,
+    "seen": 1790205599.630572,
+    "ast_hash": "0f8f4e990d5b924be18d7680c1219a2a",
+    "semantic_hash": "0f8f4e990d5b924be18d7680c1219a2a"
+  },
+  "src/main/java/br/com/sprint1/challenge/entity/Customer.java": {
+    "mtime": 1789565820.958469,
+    "seen": 1790205599.6305747,
+    "ast_hash": "f66b0a9c7c5fafbe25c891a196b82c88",
+    "semantic_hash": "f66b0a9c7c5fafbe25c891a196b82c88"
+  },
+  "src/main/java/br/com/sprint1/challenge/entity/Dealership.java": {
+    "mtime": 1776626078.7705579,
+    "seen": 1790205599.630577,
+    "ast_hash": "e9a586ddcfc2095d4a6c47f3595188e0",
+    "semantic_hash": "e9a586ddcfc2095d4a6c47f3595188e0"
+  },
+  "src/main/java/br/com/sprint1/challenge/entity/Lead.java": {
+    "mtime": 1789565820.9585574,
+    "seen": 1790205599.63058,
+    "ast_hash": "87810b589c1b7cc4d11fe17c785d5c2f",
+    "semantic_hash": "87810b589c1b7cc4d11fe17c785d5c2f"
+  },
+  "src/main/java/br/com/sprint1/challenge/entity/ServiceRecord.java": {
+    "mtime": 1776626078.7705579,
+    "seen": 1790205599.6305811,
+    "ast_hash": "35a0ddab724f14997d39574f6e49a4f1",
+    "semantic_hash": "35a0ddab724f14997d39574f6e49a4f1"
+  },
+  "src/main/java/br/com/sprint1/challenge/entity/StockItem.java": {
+    "mtime": 1776626078.7705579,
+    "seen": 1790205599.630584,
+    "ast_hash": "e1f9d4b6a7f4d6ed401829cf999c6acc",
+    "semantic_hash": "e1f9d4b6a7f4d6ed401829cf999c6acc"
+  },
+  "src/main/java/br/com/sprint1/challenge/entity/User.java": {
+    "mtime": 1789952950.2104247,
+    "seen": 1790205599.6305869,
+    "ast_hash": "59cbf3141ab936ade0df4e39f1d43810",
+    "semantic_hash": "59cbf3141ab936ade0df4e39f1d43810"
+  },
+  "src/main/java/br/com/sprint1/challenge/entity/UserType.java": {
+    "mtime": 1779318544.052757,
+    "seen": 1790205599.6305892,
+    "ast_hash": "d07936cd68a469e2afecc68fb8148240",
+    "semantic_hash": "d07936cd68a469e2afecc68fb8148240"
+  },
+  "src/main/java/br/com/sprint1/challenge/entity/Vehicle.java": {
+    "mtime": 1776626078.7705579,
+    "seen": 1790205599.6305916,
+    "ast_hash": "a0b5af6165c36f8f64ff1b9c2ce55c4b",
+    "semantic_hash": "a0b5af6165c36f8f64ff1b9c2ce55c4b"
+  },
+  "src/main/java/br/com/sprint1/challenge/exception/ApiErrorResponse.java": {
+    "mtime": 1776626078.7705579,
+    "seen": 1790205599.630594,
+    "ast_hash": "56e88db77217c3c422df9be82a66165a",
+    "semantic_hash": "56e88db77217c3c422df9be82a66165a"
+  },
+  "src/main/java/br/com/sprint1/challenge/exception/DuplicateCpfException.java": {
+    "mtime": 1779141803.5133464,
+    "seen": 1790205599.6305962,
+    "ast_hash": "8066f54f7e3cc331a371f57a5f79ce82",
+    "semantic_hash": "8066f54f7e3cc331a371f57a5f79ce82"
+  },
+  "src/main/java/br/com/sprint1/challenge/exception/DuplicateEmailException.java": {
+    "mtime": 1779141803.5134192,
+    "seen": 1790205599.630599,
+    "ast_hash": "555fdf2f24a9c953105a06d7b1f0ea68",
+    "semantic_hash": "555fdf2f24a9c953105a06d7b1f0ea68"
+  },
+  "src/main/java/br/com/sprint1/challenge/exception/GlobalExceptionHandler.java": {
+    "mtime": 1789565820.9587247,
+    "seen": 1790205599.6306021,
+    "ast_hash": "58f50d56e66ef934d614caf89088d59c",
+    "semantic_hash": "58f50d56e66ef934d614caf89088d59c"
+  },
+  "src/main/java/br/com/sprint1/challenge/exception/InvalidCredentialsException.java": {
+    "mtime": 1789565820.9588182,
+    "seen": 1790205599.630605,
+    "ast_hash": "a0e82573cc5a2eadb8a9d6adb7b87ec5",
+    "semantic_hash": "a0e82573cc5a2eadb8a9d6adb7b87ec5"
+  },
+  "src/main/java/br/com/sprint1/challenge/exception/InvalidTokenException.java": {
+    "mtime": 1789565820.958895,
+    "seen": 1790205599.6306076,
+    "ast_hash": "a9a45b4862818ff241c366dcce2f61d4",
+    "semantic_hash": "a9a45b4862818ff241c366dcce2f61d4"
+  },
+  "src/main/java/br/com/sprint1/challenge/exception/ResourceNotFoundException.java": {
+    "mtime": 1776626078.7707744,
+    "seen": 1790205599.63061,
+    "ast_hash": "b2b48bb5fa0e8f68c63c2ab73319a6d9",
+    "semantic_hash": "b2b48bb5fa0e8f68c63c2ab73319a6d9"
+  },
+  "src/main/java/br/com/sprint1/challenge/exception/TokenExpiredException.java": {
+    "mtime": 1789565820.9589503,
+    "seen": 1790205599.6306121,
+    "ast_hash": "28943764a1d4dbb8ffe22a4b28b7bb50",
+    "semantic_hash": "28943764a1d4dbb8ffe22a4b28b7bb50"
+  },
+  "src/main/java/br/com/sprint1/challenge/exception/UserLockedException.java": {
+    "mtime": 1789565820.9590087,
+    "seen": 1790205599.6306148,
+    "ast_hash": "4344e91411282b3d73da6a13c40aeaac",
+    "semantic_hash": "4344e91411282b3d73da6a13c40aeaac"
+  },
+  "src/main/java/br/com/sprint1/challenge/repository/AssistantInteractionRepository.java": {
+    "mtime": 1776626078.7707744,
+    "seen": 1790205599.6306171,
+    "ast_hash": "6f3af3dc2b8fc25f1a9c7ea76a68600d",
+    "semantic_hash": "6f3af3dc2b8fc25f1a9c7ea76a68600d"
+  },
+  "src/main/java/br/com/sprint1/challenge/repository/CustomerRepository.java": {
+    "mtime": 1789565820.9590878,
+    "seen": 1790205599.63062,
+    "ast_hash": "f3810cb44cf19dc8f470af5f308be4d3",
+    "semantic_hash": "f3810cb44cf19dc8f470af5f308be4d3"
+  },
+  "src/main/java/br/com/sprint1/challenge/repository/DealershipRepository.java": {
+    "mtime": 1776626078.7708802,
+    "seen": 1790205599.6306221,
+    "ast_hash": "6e26359bdc0af2da2b199089f4aff978",
+    "semantic_hash": "6e26359bdc0af2da2b199089f4aff978"
+  },
+  "src/main/java/br/com/sprint1/challenge/repository/LeadRepository.java": {
+    "mtime": 1789565820.9591565,
+    "seen": 1790205599.6306245,
+    "ast_hash": "bc92a389a76c6a3184a6f7b0417eece9",
+    "semantic_hash": "bc92a389a76c6a3184a6f7b0417eece9"
+  },
+  "src/main/java/br/com/sprint1/challenge/repository/ServiceRecordRepository.java": {
+    "mtime": 1776626078.7708802,
+    "seen": 1790205599.6306272,
+    "ast_hash": "614a7e41f8adff3d5d0bdc7851aa0026",
+    "semantic_hash": "614a7e41f8adff3d5d0bdc7851aa0026"
+  },
+  "src/main/java/br/com/sprint1/challenge/repository/StockItemRepository.java": {
+    "mtime": 1776626078.7708802,
+    "seen": 1790205599.6306298,
+    "ast_hash": "3b24419ba48fd65ed73daa5858fa5a62",
+    "semantic_hash": "3b24419ba48fd65ed73daa5858fa5a62"
+  },
+  "src/main/java/br/com/sprint1/challenge/repository/UserRepository.java": {
+    "mtime": 1789565820.959229,
+    "seen": 1790205599.6306322,
+    "ast_hash": "0300175fbe32f8ad7cccb10cfb086707",
+    "semantic_hash": "0300175fbe32f8ad7cccb10cfb086707"
+  },
+  "src/main/java/br/com/sprint1/challenge/repository/UserTypeRepository.java": {
+    "mtime": 1778875478.378763,
+    "seen": 1790205599.6306345,
+    "ast_hash": "dff2658333d1c4f66c3c3fe1886eec73",
+    "semantic_hash": "dff2658333d1c4f66c3c3fe1886eec73"
+  },
+  "src/main/java/br/com/sprint1/challenge/repository/VehicleRepository.java": {
+    "mtime": 1776626078.7708802,
+    "seen": 1790205599.6306376,
+    "ast_hash": "084c401f55e93d68db6e004cf7baca29",
+    "semantic_hash": "084c401f55e93d68db6e004cf7baca29"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/AnalyticsService.java": {
+    "mtime": 1789565820.9593062,
+    "seen": 1790205599.6306398,
+    "ast_hash": "86906fe2e0bd4e513d181f514a75b8b8",
+    "semantic_hash": "86906fe2e0bd4e513d181f514a75b8b8"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/AssistantService.java": {
+    "mtime": 1776626078.7710538,
+    "seen": 1790205599.6306424,
+    "ast_hash": "dbab6790d02c3fa847fe2d45536b0a12",
+    "semantic_hash": "dbab6790d02c3fa847fe2d45536b0a12"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/AuthService.java": {
+    "mtime": 1789565820.959381,
+    "seen": 1790205599.6306448,
+    "ast_hash": "5450a7dba94a67ccefa70be24eb96e2a",
+    "semantic_hash": "5450a7dba94a67ccefa70be24eb96e2a"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/ChurnService.java": {
+    "mtime": 1776626078.7710538,
+    "seen": 1790205599.6306477,
+    "ast_hash": "5283428b034f0e8531b8911a72ca51e3",
+    "semantic_hash": "5283428b034f0e8531b8911a72ca51e3"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/Customer360Service.java": {
+    "mtime": 1776626078.7710538,
+    "seen": 1790205599.6306498,
+    "ast_hash": "62a87ef744e6746590d2ba51e7c5a3f6",
+    "semantic_hash": "62a87ef744e6746590d2ba51e7c5a3f6"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/DataRetentionService.java": {
+    "mtime": 1789565820.9594502,
+    "seen": 1790205599.6306522,
+    "ast_hash": "bbc10c9912a3a39444faee7947ccc03e",
+    "semantic_hash": "bbc10c9912a3a39444faee7947ccc03e"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/JwtService.java": {
+    "mtime": 1789565820.9595413,
+    "seen": 1790205599.6306546,
+    "ast_hash": "93500e92b793c2d2222d4d2b02ac8e5e",
+    "semantic_hash": "93500e92b793c2d2222d4d2b02ac8e5e"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/LeadService.java": {
+    "mtime": 1776626078.7710538,
+    "seen": 1790205599.6306574,
+    "ast_hash": "e794f404e149c7d7d6b0466555e1df4c",
+    "semantic_hash": "e794f404e149c7d7d6b0466555e1df4c"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/StockService.java": {
+    "mtime": 1776626078.7710538,
+    "seen": 1790205599.6306598,
+    "ast_hash": "1b9646e770748dcb62a24bff424748f9",
+    "semantic_hash": "1b9646e770748dcb62a24bff424748f9"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/UserService.java": {
+    "mtime": 1779141803.5136905,
+    "seen": 1790205599.6306622,
+    "ast_hash": "874ecfb1216eeb4fbdaf3c8b48a83ddc",
+    "semantic_hash": "874ecfb1216eeb4fbdaf3c8b48a83ddc"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/impl/AnalyticsServiceImpl.java": {
+    "mtime": 1789565820.959638,
+    "seen": 1790205599.6306646,
+    "ast_hash": "0eca1025567dd9632e1fd9f047984dc9",
+    "semantic_hash": "0eca1025567dd9632e1fd9f047984dc9"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/impl/AssistantServiceImpl.java": {
+    "mtime": 1776626078.7713442,
+    "seen": 1790205599.630667,
+    "ast_hash": "72f94aee272e3d0e8331ceecd22cd95e",
+    "semantic_hash": "72f94aee272e3d0e8331ceecd22cd95e"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/impl/AuthServiceImpl.java": {
+    "mtime": 1789565820.959743,
+    "seen": 1790205599.6306696,
+    "ast_hash": "05b6ef8b35d27cfe8ffb7dc85011bef7",
+    "semantic_hash": "05b6ef8b35d27cfe8ffb7dc85011bef7"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/impl/ChurnServiceImpl.java": {
+    "mtime": 1776626078.7713442,
+    "seen": 1790205599.6306725,
+    "ast_hash": "28749517cfaa6c3a4ef8e6e40790bebe",
+    "semantic_hash": "28749517cfaa6c3a4ef8e6e40790bebe"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/impl/Customer360ServiceImpl.java": {
+    "mtime": 1776626078.7713442,
+    "seen": 1790205599.6306748,
+    "ast_hash": "f0729d8ce8b5489d91d2886ae2eb21f4",
+    "semantic_hash": "f0729d8ce8b5489d91d2886ae2eb21f4"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/impl/JwtServiceImpl.java": {
+    "mtime": 1789565820.9598258,
+    "seen": 1790205599.6306772,
+    "ast_hash": "1ec775e3270d7542a4fe332fa209e2cc",
+    "semantic_hash": "1ec775e3270d7542a4fe332fa209e2cc"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/impl/LeadServiceImpl.java": {
+    "mtime": 1776626078.7713442,
+    "seen": 1790205599.6306784,
+    "ast_hash": "1fa349a4aa2e1822fed4f8d1779d0282",
+    "semantic_hash": "1fa349a4aa2e1822fed4f8d1779d0282"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/impl/StockServiceImpl.java": {
+    "mtime": 1776626078.7713442,
+    "seen": 1790205599.6306813,
+    "ast_hash": "766abf1eeabe701dd2bae05018569a15",
+    "semantic_hash": "766abf1eeabe701dd2bae05018569a15"
+  },
+  "src/main/java/br/com/sprint1/challenge/service/impl/UserServiceImpl.java": {
+    "mtime": 1779141803.513787,
+    "seen": 1790205599.6306837,
+    "ast_hash": "44fa1692970e66cfad6ab667e5764445",
+    "semantic_hash": "44fa1692970e66cfad6ab667e5764445"
+  },
+  "src/main/java/br/com/sprint1/challenge/util/DataMasker.java": {
+    "mtime": 1789565820.9598258,
+    "seen": 1790205599.630686,
+    "ast_hash": "a78b2f3cfca8f38274130f2e987eb658",
+    "semantic_hash": "a78b2f3cfca8f38274130f2e987eb658"
+  },
+  "src/main/java/br/com/sprint1/challenge/validation/CpfValidator.java": {
+    "mtime": 1778875478.378763,
+    "seen": 1790205599.6306887,
+    "ast_hash": "2cd9b369a1fb88f6471ad6f17af31ed4",
+    "semantic_hash": "2cd9b369a1fb88f6471ad6f17af31ed4"
+  },
+  "src/main/java/br/com/sprint1/challenge/validation/LowercaseEmail.java": {
+    "mtime": 1779145197.4651608,
+    "seen": 1790205599.6306913,
+    "ast_hash": "396b9bf2892884f6a918b01192a455ae",
+    "semantic_hash": "396b9bf2892884f6a918b01192a455ae"
+  },
+  "src/main/java/br/com/sprint1/challenge/validation/LowercaseEmailValidator.java": {
+    "mtime": 1779145197.465233,
+    "seen": 1790205599.6306937,
+    "ast_hash": "8ab22a00c8c574aecf585bacb0d1616b",
+    "semantic_hash": "8ab22a00c8c574aecf585bacb0d1616b"
+  },
+  "src/main/java/br/com/sprint1/challenge/validation/PasswordValidator.java": {
+    "mtime": 1778875478.3794997,
+    "seen": 1790205599.6306965,
+    "ast_hash": "086361a727751cf940a77c34527ad7d9",
+    "semantic_hash": "086361a727751cf940a77c34527ad7d9"
+  },
+  "src/main/java/br/com/sprint1/challenge/validation/StrongPassword.java": {
+    "mtime": 1778875478.3794997,
+    "seen": 1790205599.6307025,
+    "ast_hash": "d8611bde9b888402bc038e630c637a92",
+    "semantic_hash": "d8611bde9b888402bc038e630c637a92"
+  },
+  "src/main/java/br/com/sprint1/challenge/validation/ValidCpf.java": {
+    "mtime": 1778875478.3794997,
+    "seen": 1790205599.6307056,
+    "ast_hash": "01d615017ac0dc69422ebd0009b34d4d",
+    "semantic_hash": "01d615017ac0dc69422ebd0009b34d4d"
+  },
+  "src/main/resources/db/migration/V10__increase_refresh_token_column_size.sql": {
+    "mtime": 1789952939.1883032,
+    "seen": 1790205599.630708,
+    "ast_hash": "8375ecac2af68c1b3188fd482ef26b8d",
+    "semantic_hash": "8375ecac2af68c1b3188fd482ef26b8d"
+  },
+  "src/main/resources/db/migration/V1__create_schema.sql": {
+    "mtime": 1776626078.7716227,
+    "seen": 1790205599.6307104,
+    "ast_hash": "108fdc1c51cf33882bc24d0c206266aa",
+    "semantic_hash": "108fdc1c51cf33882bc24d0c206266aa"
+  },
+  "src/main/resources/db/migration/V2__create_user_tables.sql": {
+    "mtime": 1779116911.6799688,
+    "seen": 1790205599.630714,
+    "ast_hash": "e1e58bd5352eac6c1dae6cdfc7f721de",
+    "semantic_hash": "e1e58bd5352eac6c1dae6cdfc7f721de"
+  },
+  "src/main/resources/db/migration/V3__add_unique_email.sql": {
+    "mtime": 1779141803.513859,
+    "seen": 1790205599.630716,
+    "ast_hash": "6c532cc85f6a7c0d201cef8200e82fe7",
+    "semantic_hash": "6c532cc85f6a7c0d201cef8200e82fe7"
+  },
+  "src/main/resources/db/migration/V4__add_envers_audit_tables.sql": {
+    "mtime": 1779320871.3600636,
+    "seen": 1790205599.6307185,
+    "ast_hash": "204afb33aa97f2e4831d162dc9b7b269",
+    "semantic_hash": "204afb33aa97f2e4831d162dc9b7b269"
+  },
+  "src/main/resources/db/migration/V5__add_revinfo_sequence.sql": {
+    "mtime": 1779320871.3601332,
+    "seen": 1790205599.6307213,
+    "ast_hash": "f9a155cce0e341514f2e760fdacb1639",
+    "semantic_hash": "f9a155cce0e341514f2e760fdacb1639"
+  },
+  "src/main/resources/db/migration/V6__add_analyst_user_type.sql": {
+    "mtime": 1789565820.9600968,
+    "seen": 1790205599.6307235,
+    "ast_hash": "17ef86350cda51a7b538558a6555d4d0",
+    "semantic_hash": "17ef86350cda51a7b538558a6555d4d0"
+  },
+  "src/main/resources/db/migration/V7__add_deleted_at_columns.sql": {
+    "mtime": 1789565820.960149,
+    "seen": 1790205599.630726,
+    "ast_hash": "15e944d27fe05a7cd2102c64bf8da175",
+    "semantic_hash": "15e944d27fe05a7cd2102c64bf8da175"
+  },
+  "src/main/resources/db/migration/V8__add_account_lockout_columns.sql": {
+    "mtime": 1789565820.9601986,
+    "seen": 1790205599.630729,
+    "ast_hash": "58a0d02f6d2233e2db7d93bdbc536e62",
+    "semantic_hash": "58a0d02f6d2233e2db7d93bdbc536e62"
+  },
+  "src/main/resources/db/migration/V9__add_refresh_token_expiry.sql": {
+    "mtime": 1789565820.9602475,
+    "seen": 1790205599.6307313,
+    "ast_hash": "5b253e254a97bee0fa2d52e766c7a5c7",
+    "semantic_hash": "5b253e254a97bee0fa2d52e766c7a5c7"
+  },
+  "src/test/java/br/com/sprint1/challenge/ArquiteturaOrientadaaServicosSprint1ApplicationTests.java": {
+    "mtime": 1789565820.9603462,
+    "seen": 1790205599.6307337,
+    "ast_hash": "13a831d71f545269825d8eb22a068cbf",
+    "semantic_hash": "13a831d71f545269825d8eb22a068cbf"
+  },
+  "src/test/java/br/com/sprint1/challenge/config/ActuatorProbesTest.java": {
+    "mtime": 1779555122.4362335,
+    "seen": 1790205599.630736,
+    "ast_hash": "89d4eecffada834ed06dad7d43ff97e6",
+    "semantic_hash": "89d4eecffada834ed06dad7d43ff97e6"
+  },
+  "src/test/java/br/com/sprint1/challenge/config/BucketRateLimitTest.java": {
+    "mtime": 1778974261.31865,
+    "seen": 1790205599.6307385,
+    "ast_hash": "cb8202e5b93d5fa89d2b8d58a4df45ce",
+    "semantic_hash": "cb8202e5b93d5fa89d2b8d58a4df45ce"
+  },
+  "src/test/java/br/com/sprint1/challenge/config/HmacSignatureFilterTest.java": {
+    "mtime": 1789565820.9604352,
+    "seen": 1790205599.630741,
+    "ast_hash": "5bca1e3ca3a2048e38963fa2e8af75e1",
+    "semantic_hash": "5bca1e3ca3a2048e38963fa2e8af75e1"
+  },
+  "src/test/java/br/com/sprint1/challenge/config/HttpsSecurityTest.java": {
+    "mtime": 1778961563.8204873,
+    "seen": 1790205599.6307433,
+    "ast_hash": "0d374d4c42f10a0517f6e131598a49e2",
+    "semantic_hash": "0d374d4c42f10a0517f6e131598a49e2"
+  },
+  "src/test/java/br/com/sprint1/challenge/config/JwtAuthenticationFilterTest.java": {
+    "mtime": 1779141803.513958,
+    "seen": 1790205599.6307461,
+    "ast_hash": "be1f05e410f062d458948da3f02862f5",
+    "semantic_hash": "be1f05e410f062d458948da3f02862f5"
+  },
+  "src/test/java/br/com/sprint1/challenge/config/RateLimitFilterTest.java": {
+    "mtime": 1789565820.9605243,
+    "seen": 1790205599.6307485,
+    "ast_hash": "a259aec4844ec52fcc00232757915791",
+    "semantic_hash": "a259aec4844ec52fcc00232757915791"
+  },
+  "src/test/java/br/com/sprint1/challenge/config/SecurityConfigCorsIntegrationTest.java": {
+    "mtime": 1789565820.9605901,
+    "seen": 1790205599.630751,
+    "ast_hash": "308283bd35925460894e1d91e304e7ff",
+    "semantic_hash": "308283bd35925460894e1d91e304e7ff"
+  },
+  "src/test/java/br/com/sprint1/challenge/config/SecurityConfigCorsTest.java": {
+    "mtime": 1789565820.9606464,
+    "seen": 1790205599.6307533,
+    "ast_hash": "460e9f5ea15e3ceced77107d56747a01",
+    "semantic_hash": "460e9f5ea15e3ceced77107d56747a01"
+  },
+  "src/test/java/br/com/sprint1/challenge/config/SecurityConfigTest.java": {
+    "mtime": 1789565820.9607203,
+    "seen": 1790205599.6307561,
+    "ast_hash": "88d498e201169f04a5473c0c7714e75b",
+    "semantic_hash": "88d498e201169f04a5473c0c7714e75b"
+  },
+  "src/test/java/br/com/sprint1/challenge/controller/AnalyticsSecurityIntegrationTest.java": {
+    "mtime": 1789565820.9608014,
+    "seen": 1790205599.6307583,
+    "ast_hash": "20d5b638f79b47c315b04c2021d701eb",
+    "semantic_hash": "20d5b638f79b47c315b04c2021d701eb"
+  },
+  "src/test/java/br/com/sprint1/challenge/controller/AuthControllerIntegrationTest.java": {
+    "mtime": 1789952895.474821,
+    "seen": 1790205599.6307607,
+    "ast_hash": "5eefeea788d2d57bf013cfc85a5bf19a",
+    "semantic_hash": "5eefeea788d2d57bf013cfc85a5bf19a"
+  },
+  "src/test/java/br/com/sprint1/challenge/controller/UserControllerTest.java": {
+    "mtime": 1779141803.5140707,
+    "seen": 1790205599.6307633,
+    "ast_hash": "4a4aa092a241b3ab5fec605930d85e88",
+    "semantic_hash": "4a4aa092a241b3ab5fec605930d85e88"
+  },
+  "src/test/java/br/com/sprint1/challenge/exception/PayloadLimitTest.java": {
+    "mtime": 1779555122.4364872,
+    "seen": 1790205599.6307662,
+    "ast_hash": "6740dd23e58813b9367e536c5545c7ea",
+    "semantic_hash": "6740dd23e58813b9367e536c5545c7ea"
+  },
+  "src/test/java/br/com/sprint1/challenge/repository/UserRepositoryTest.java": {
+    "mtime": 1778875478.3794997,
+    "seen": 1790205599.6307685,
+    "ast_hash": "7e4b29de717c0591f9b6059a69c68e42",
+    "semantic_hash": "7e4b29de717c0591f9b6059a69c68e42"
+  },
+  "src/test/java/br/com/sprint1/challenge/service/AuthServiceTest.java": {
+    "mtime": 1789565820.9609165,
+    "seen": 1790205599.630771,
+    "ast_hash": "107a9bf53cdef7d297ae74d3ff905368",
+    "semantic_hash": "107a9bf53cdef7d297ae74d3ff905368"
+  },
+  "src/test/java/br/com/sprint1/challenge/service/DataRetentionServiceIntegrationTest.java": {
+    "mtime": 1789565820.9610128,
+    "seen": 1790205599.6307733,
+    "ast_hash": "d4cfc1f159cf719b39ca7d173263ce5e",
+    "semantic_hash": "d4cfc1f159cf719b39ca7d173263ce5e"
+  },
+  "src/test/java/br/com/sprint1/challenge/service/JwtServiceTest.java": {
+    "mtime": 1778981718.070485,
+    "seen": 1790205599.6307762,
+    "ast_hash": "71ec404f8fad37bb75d00f433b9f7389",
+    "semantic_hash": "71ec404f8fad37bb75d00f433b9f7389"
+  },
+  "src/test/java/br/com/sprint1/challenge/service/UserServiceTest.java": {
+    "mtime": 1779141803.5141754,
+    "seen": 1790205599.6307786,
+    "ast_hash": "970d1f905477cc86307670b0869efabb",
+    "semantic_hash": "970d1f905477cc86307670b0869efabb"
+  },
+  "src/test/java/br/com/sprint1/challenge/service/impl/JwtServiceImplIntegrationTest.java": {
+    "mtime": 1789565820.9610705,
+    "seen": 1790205599.630781,
+    "ast_hash": "83be09612d6573bd44bfccacda4d9ceb",
+    "semantic_hash": "83be09612d6573bd44bfccacda4d9ceb"
+  },
+  "src/test/java/br/com/sprint1/challenge/service/impl/JwtServiceImplValidationTest.java": {
+    "mtime": 1789565820.9611504,
+    "seen": 1790205599.6307876,
+    "ast_hash": "f56604d02363b8389171792c186472bd",
+    "semantic_hash": "f56604d02363b8389171792c186472bd"
+  },
+  "src/test/java/br/com/sprint1/challenge/util/DataMaskerTest.java": {
+    "mtime": 1789565820.9612424,
+    "seen": 1790205599.63079,
+    "ast_hash": "3ac525ab475335bc5668deb03ba147e2",
+    "semantic_hash": "3ac525ab475335bc5668deb03ba147e2"
+  },
+  "src/test/java/br/com/sprint1/challenge/validation/CpfValidatorTest.java": {
+    "mtime": 1778875478.3800771,
+    "seen": 1790205599.6307921,
+    "ast_hash": "8066348a2708c6f9da58de733a31af78",
+    "semantic_hash": "8066348a2708c6f9da58de733a31af78"
+  },
+  "src/test/java/br/com/sprint1/challenge/validation/PasswordValidatorTest.java": {
+    "mtime": 1778875478.380209,
+    "seen": 1790205599.6307948,
+    "ast_hash": "1febffa16c86f1dcbbd9e8cad631632e",
+    "semantic_hash": "1febffa16c86f1dcbbd9e8cad631632e"
+  },
+  "src/test/resources/db/migration/h2/V10__increase_refresh_token_column_size.sql": {
+    "mtime": 1789952945.0393677,
+    "seen": 1790205599.6307971,
+    "ast_hash": "b91af20662692f13b1b39af1adb861b7",
+    "semantic_hash": "b91af20662692f13b1b39af1adb861b7"
+  },
+  "src/test/resources/db/migration/h2/V1__create_schema.sql": {
+    "mtime": 1779320871.3604162,
+    "seen": 1790205599.6307995,
+    "ast_hash": "108fdc1c51cf33882bc24d0c206266aa",
+    "semantic_hash": "108fdc1c51cf33882bc24d0c206266aa"
+  },
+  "src/test/resources/db/migration/h2/V2__create_user_tables.sql": {
+    "mtime": 1779320871.360532,
+    "seen": 1790205599.6308024,
+    "ast_hash": "e1e58bd5352eac6c1dae6cdfc7f721de",
+    "semantic_hash": "e1e58bd5352eac6c1dae6cdfc7f721de"
+  },
+  "src/test/resources/db/migration/h2/V3__add_unique_email.sql": {
+    "mtime": 1779320871.360532,
+    "seen": 1790205599.6308048,
+    "ast_hash": "6c532cc85f6a7c0d201cef8200e82fe7",
+    "semantic_hash": "6c532cc85f6a7c0d201cef8200e82fe7"
+  },
+  "src/test/resources/db/migration/h2/V4__add_envers_audit_tables.sql": {
+    "mtime": 1779320871.360532,
+    "seen": 1790205599.6308076,
+    "ast_hash": "2d9ac71bae82cc33d0382d94aff6f1f0",
+    "semantic_hash": "2d9ac71bae82cc33d0382d94aff6f1f0"
+  },
+  "src/test/resources/db/migration/h2/V6__add_analyst_user_type.sql": {
+    "mtime": 1789565820.9614272,
+    "seen": 1790205599.6308098,
+    "ast_hash": "17ef86350cda51a7b538558a6555d4d0",
+    "semantic_hash": "17ef86350cda51a7b538558a6555d4d0"
+  },
+  "src/test/resources/db/migration/h2/V7__add_deleted_at_columns.sql": {
+    "mtime": 1789565820.9614763,
+    "seen": 1790205599.6308124,
+    "ast_hash": "15e944d27fe05a7cd2102c64bf8da175",
+    "semantic_hash": "15e944d27fe05a7cd2102c64bf8da175"
+  },
+  "src/test/resources/db/migration/h2/V8__add_account_lockout_columns.sql": {
+    "mtime": 1789565820.9615474,
+    "seen": 1790205599.6308153,
+    "ast_hash": "58a0d02f6d2233e2db7d93bdbc536e62",
+    "semantic_hash": "58a0d02f6d2233e2db7d93bdbc536e62"
+  },
+  "src/test/resources/db/migration/h2/V9__add_refresh_token_expiry.sql": {
+    "mtime": 1789565820.9615955,
+    "seen": 1790205599.6308177,
+    "ast_hash": "5b253e254a97bee0fa2d52e766c7a5c7",
+    "semantic_hash": "5b253e254a97bee0fa2d52e766c7a5c7"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/01_ia_ml/src/__init__.py": {
+    "mtime": 1788813654.5711584,
+    "seen": 1790205599.6308198,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/01_ia_ml/src/classificador.py": {
+    "mtime": 1788813654.5714648,
+    "seen": 1790205599.630823,
+    "ast_hash": "136ba9fcc5fdda8730729cba1ca4a503",
+    "semantic_hash": "136ba9fcc5fdda8730729cba1ca4a503"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/01_ia_ml/src/clustering.py": {
+    "mtime": 1788813654.5714648,
+    "seen": 1790205599.6308253,
+    "ast_hash": "a52468c371efe571108812f56e10f29f",
+    "semantic_hash": "a52468c371efe571108812f56e10f29f"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/01_ia_ml/src/preprocessamento.py": {
+    "mtime": 1788813654.5714648,
+    "seen": 1790205599.6308274,
+    "ast_hash": "0b077da2544a9cf8208c0ec6c8723adc",
+    "semantic_hash": "0b077da2544a9cf8208c0ec6c8723adc"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/02_api/auth.py": {
+    "mtime": 1788813654.571504,
+    "seen": 1790205599.63083,
+    "ast_hash": "1ee1d313547ca4c5b1463be1141757ce",
+    "semantic_hash": "1ee1d313547ca4c5b1463be1141757ce"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/02_api/main.py": {
+    "mtime": 1788813654.571797,
+    "seen": 1790205599.6308324,
+    "ast_hash": "e7dc9edcd0026651be46651dd2280fc1",
+    "semantic_hash": "e7dc9edcd0026651be46651dd2280fc1"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/02_api/models.py": {
+    "mtime": 1788813654.571797,
+    "seen": 1790205599.6308353,
+    "ast_hash": "83c200b99479b08be564faef478beced",
+    "semantic_hash": "83c200b99479b08be564faef478beced"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/02_api/routers/__init__.py": {
+    "mtime": 1788813654.571797,
+    "seen": 1790205599.6308377,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/02_api/routers/acoes.py": {
+    "mtime": 1788813654.572064,
+    "seen": 1790205599.63084,
+    "ast_hash": "b65a0b620de0bda106021052db92b33e",
+    "semantic_hash": "b65a0b620de0bda106021052db92b33e"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/02_api/routers/auth.py": {
+    "mtime": 1788813654.572064,
+    "seen": 1790205599.630843,
+    "ast_hash": "a24dc6e6f58ff7306303c76bca0e4fc0",
+    "semantic_hash": "a24dc6e6f58ff7306303c76bca0e4fc0"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/02_api/routers/campanhas.py": {
+    "mtime": 1788813654.572064,
+    "seen": 1790205599.630845,
+    "ast_hash": "61ed39d60fb38b15fc5cc164c469184f",
+    "semantic_hash": "61ed39d60fb38b15fc5cc164c469184f"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/02_api/routers/clientes.py": {
+    "mtime": 1788813654.572064,
+    "seen": 1790205599.6308477,
+    "ast_hash": "8169014e844ed7aa766af7e3bb02b542",
+    "semantic_hash": "8169014e844ed7aa766af7e3bb02b542"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/02_api/routers/concessionarias.py": {
+    "mtime": 1788813654.572064,
+    "seen": 1790205599.63085,
+    "ast_hash": "086029af199495a7767cfe917154d8f1",
+    "semantic_hash": "086029af199495a7767cfe917154d8f1"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/02_api/routers/scores.py": {
+    "mtime": 1788813654.572064,
+    "seen": 1790205599.630853,
+    "ast_hash": "fa7c908e80b4f3675efe1d27fa63f0eb",
+    "semantic_hash": "fa7c908e80b4f3675efe1d27fa63f0eb"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/02_api/tests/__init__.py": {
+    "mtime": 1788813654.572504,
+    "seen": 1790205599.630855,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/02_api/tests/test_api.py": {
+    "mtime": 1788813654.5728118,
+    "seen": 1790205599.6308577,
+    "ast_hash": "aa354f188c18e44db94bfe8354affca2",
+    "semantic_hash": "aa354f188c18e44db94bfe8354affca2"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/app.json": {
+    "mtime": 1788813654.5729973,
+    "seen": 1790205599.63086,
+    "ast_hash": "9f86c210c0835fc6c89b54ae0ddb8eb9",
+    "semantic_hash": "9f86c210c0835fc6c89b54ae0ddb8eb9"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/app/(tabs)/_layout.tsx": {
+    "mtime": 1788813654.5730932,
+    "seen": 1790205599.6308625,
+    "ast_hash": "bdc2819ceec0e3e4b0f12e125aacd3fd",
+    "semantic_hash": "bdc2819ceec0e3e4b0f12e125aacd3fd"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/app/(tabs)/alertas.tsx": {
+    "mtime": 1788813654.5731847,
+    "seen": 1790205599.6308653,
+    "ast_hash": "85993d66a3450e3f4a26e65c962e74be",
+    "semantic_hash": "85993d66a3450e3f4a26e65c962e74be"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/app/(tabs)/clientes.tsx": {
+    "mtime": 1788813654.5731847,
+    "seen": 1790205599.6308677,
+    "ast_hash": "7dd11a97580f9424fbaf42b616cc4a17",
+    "semantic_hash": "7dd11a97580f9424fbaf42b616cc4a17"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/app/(tabs)/dashboard.tsx": {
+    "mtime": 1788813654.5731847,
+    "seen": 1790205599.6308706,
+    "ast_hash": "579e79a3f0ca0aa771a505822f107361",
+    "semantic_hash": "579e79a3f0ca0aa771a505822f107361"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/app/(tabs)/index.tsx": {
+    "mtime": 1788813654.5731847,
+    "seen": 1790205599.6308732,
+    "ast_hash": "f6f086b88a5da32f12f7e8e6dd7ff9b3",
+    "semantic_hash": "f6f086b88a5da32f12f7e8e6dd7ff9b3"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/app/(tabs)/radar.tsx": {
+    "mtime": 1788813654.5731847,
+    "seen": 1790205599.6308756,
+    "ast_hash": "4b4ee7ebe49194370fbcbc8f2fccd2f4",
+    "semantic_hash": "4b4ee7ebe49194370fbcbc8f2fccd2f4"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/app/_layout.tsx": {
+    "mtime": 1788813654.5731847,
+    "seen": 1790205599.6308782,
+    "ast_hash": "d6ff7ce79b61d7bf2223184dbbb52519",
+    "semantic_hash": "d6ff7ce79b61d7bf2223184dbbb52519"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/app/cliente/[id].tsx": {
+    "mtime": 1788813654.573504,
+    "seen": 1790205599.6308806,
+    "ast_hash": "657aca7b53bc37932142339f1060cc3e",
+    "semantic_hash": "657aca7b53bc37932142339f1060cc3e"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/app/login.tsx": {
+    "mtime": 1788813654.573504,
+    "seen": 1790205599.630883,
+    "ast_hash": "ebafd54b916b60c93ee6425e06e67b18",
+    "semantic_hash": "ebafd54b916b60c93ee6425e06e67b18"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/components/ProfileHeader.tsx": {
+    "mtime": 1788813654.573504,
+    "seen": 1790205599.6308854,
+    "ast_hash": "5fae338c1513d06971b43b91c4e20ef8",
+    "semantic_hash": "5fae338c1513d06971b43b91c4e20ef8"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/components/RiskCard.tsx": {
+    "mtime": 1788813654.5739896,
+    "seen": 1790205599.6308877,
+    "ast_hash": "b0c8abb76bc038b3dd7e54389944ead3",
+    "semantic_hash": "b0c8abb76bc038b3dd7e54389944ead3"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/components/ScoreBar.tsx": {
+    "mtime": 1788813654.5739896,
+    "seen": 1790205599.6308906,
+    "ast_hash": "53760e73d9aab9bb87a3a11bd2fe976a",
+    "semantic_hash": "53760e73d9aab9bb87a3a11bd2fe976a"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/constants/dashboardHtml.ts": {
+    "mtime": 1788813654.5739896,
+    "seen": 1790205599.630893,
+    "ast_hash": "b64fc247ca176a6443c08de5d48e5647",
+    "semantic_hash": "b64fc247ca176a6443c08de5d48e5647"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/package.json": {
+    "mtime": 1788813654.575504,
+    "seen": 1790205599.6308954,
+    "ast_hash": "276d29d6bc4f727159ba4f5256e3e1e5",
+    "semantic_hash": "276d29d6bc4f727159ba4f5256e3e1e5"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/services/api.ts": {
+    "mtime": 1788813654.575504,
+    "seen": 1790205599.630898,
+    "ast_hash": "0bf08a6538cf59f0a305eb3392aebce3",
+    "semantic_hash": "0bf08a6538cf59f0a305eb3392aebce3"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/tsconfig.json": {
+    "mtime": 1788813654.575504,
+    "seen": 1790205599.6309006,
+    "ast_hash": "636bb93fd95659ae38e5870f772393a9",
+    "semantic_hash": "636bb93fd95659ae38e5870f772393a9"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/vercel.json": {
+    "mtime": 1788813654.575504,
+    "seen": 1790205599.630903,
+    "ast_hash": "f6a48cce70549b8f4ab506c42149bb75",
+    "semantic_hash": "f6a48cce70549b8f4ab506c42149bb75"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/04_security/middleware/audit_logger.py": {
+    "mtime": 1788813654.5766602,
+    "seen": 1790205599.6309059,
+    "ast_hash": "90934a3f49b8494414dbaead293dd579",
+    "semantic_hash": "90934a3f49b8494414dbaead293dd579"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/04_security/middleware/rate_limiter.py": {
+    "mtime": 1788813654.5767617,
+    "seen": 1790205599.6309083,
+    "ast_hash": "4744118022a1bc1788dd6313a148ab01",
+    "semantic_hash": "4744118022a1bc1788dd6313a148ab01"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/04_security/middleware/validator.py": {
+    "mtime": 1788813654.5767617,
+    "seen": 1790205599.6309104,
+    "ast_hash": "dd49c136c4c37df0265a284575be5b04",
+    "semantic_hash": "dd49c136c4c37df0265a284575be5b04"
+  },
+  ".aider.conf.yml": {
+    "mtime": 1778534093.990173,
+    "seen": 1790205599.6309135,
+    "ast_hash": "df855fd6648a27b2ab35a3cbce07b0f5",
+    "semantic_hash": "df855fd6648a27b2ab35a3cbce07b0f5"
+  },
+  ".github/PullRequestSummarizer.md": {
+    "mtime": 1779141803.512521,
+    "seen": 1790205599.6309159,
+    "ast_hash": "360f01301c57c84a8af0f89dfc5e193a",
+    "semantic_hash": "360f01301c57c84a8af0f89dfc5e193a"
+  },
+  ".github/workflows/deploy.yml": {
+    "mtime": 1778978348.0659444,
+    "seen": 1790205599.630918,
+    "ast_hash": "0952a074fe64b1545e25d1d1bc280727",
+    "semantic_hash": "0952a074fe64b1545e25d1d1bc280727"
+  },
+  ".kiro/steering/graphify.md": {
+    "mtime": 1790205085.2576852,
+    "seen": 1790205599.6309204,
+    "ast_hash": "35d9fdc12ba2c629adaaa0d71f51bd22",
+    "semantic_hash": "35d9fdc12ba2c629adaaa0d71f51bd22"
+  },
+  ".specs/phase-0-quick-wins.md": {
+    "mtime": 1790043387.8521574,
+    "seen": 1790205599.6309233,
+    "ast_hash": "8a767eee481dadcdfb28b36b64d038e4",
+    "semantic_hash": "8a767eee481dadcdfb28b36b64d038e4"
+  },
+  ".specs/phase-1-lgpd-critical.md": {
+    "mtime": 1790043391.1338573,
+    "seen": 1790205599.630926,
+    "ast_hash": "8bafee08298d258054a3f882bacf456f",
+    "semantic_hash": "8bafee08298d258054a3f882bacf456f"
+  },
+  ".specs/phase-2-auth-hardening.md": {
+    "mtime": 1790043393.5087886,
+    "seen": 1790205599.630928,
+    "ast_hash": "08fa8ced5877d5f63f212c7211bc96f7",
+    "semantic_hash": "08fa8ced5877d5f63f212c7211bc96f7"
+  },
+  ".specs/phase-3-devsecops-pipeline.md": {
+    "mtime": 1790043398.5344486,
+    "seen": 1790205599.6309319,
+    "ast_hash": "8e94e38c521012d3867adbb23787b92a",
+    "semantic_hash": "8e94e38c521012d3867adbb23787b92a"
+  },
+  ".specs/phase-4-observability-response.md": {
+    "mtime": 1790043400.2751627,
+    "seen": 1790205599.6309342,
+    "ast_hash": "9b4fdd1522f58fe7162c9d6e9920cf01",
+    "semantic_hash": "9b4fdd1522f58fe7162c9d6e9920cf01"
+  },
+  ".specs/phase-5-compliance-formal.md": {
+    "mtime": 1790043402.171943,
+    "seen": 1790205599.6309366,
+    "ast_hash": "385c8deaee95b143fdbb0071fe9ec52f",
+    "semantic_hash": "385c8deaee95b143fdbb0071fe9ec52f"
+  },
+  ".specs/phase-6-scale-hardening.md": {
+    "mtime": 1790043403.845925,
+    "seen": 1790205599.6309395,
+    "ast_hash": "783d1c1dd3de976bd0f7527a3d89ef3f",
+    "semantic_hash": "783d1c1dd3de976bd0f7527a3d89ef3f"
+  },
+  "AZURE_SEC_CHANGES.md": {
+    "mtime": 1789565820.9564872,
+    "seen": 1790205599.6309416,
+    "ast_hash": "ac7eb3938073c0cb4eaeda07373cc3cd",
+    "semantic_hash": "ac7eb3938073c0cb4eaeda07373cc3cd"
+  },
+  "CLAUDE.md": {
+    "mtime": 1778627011.5743394,
+    "seen": 1790205599.6309445,
+    "ast_hash": "b7cf45350fc8b320802c0c95f6170e5c",
+    "semantic_hash": "b7cf45350fc8b320802c0c95f6170e5c"
+  },
+  "CONVENTIONS.md": {
+    "mtime": 1778275851.5474148,
+    "seen": 1790205599.6309469,
+    "ast_hash": "002baedc148d281caf55b1a04aeaf792",
+    "semantic_hash": "002baedc148d281caf55b1a04aeaf792"
+  },
+  "IMPLEMENTATION_PLAN_P1_HARDEN_DEFAULTS.md": {
+    "mtime": 1789565820.9565907,
+    "seen": 1790205599.6309493,
+    "ast_hash": "858bea6e134bf76a63f16ba730dda4b4",
+    "semantic_hash": "858bea6e134bf76a63f16ba730dda4b4"
+  },
+  "README.md": {
+    "mtime": 1780940640.390583,
+    "seen": 1790205599.6309521,
+    "ast_hash": "8495c3ec8a843b7f1bf1890e4f20dafa",
+    "semantic_hash": "8495c3ec8a843b7f1bf1890e4f20dafa"
+  },
+  "SEC-REQUIREMENTS.md": {
+    "mtime": 1789565820.9566674,
+    "seen": 1790205599.6309545,
+    "ast_hash": "ed7f50aa46758c97c5d382ddd571d647",
+    "semantic_hash": "ed7f50aa46758c97c5d382ddd571d647"
+  },
+  "SECURITY_CHANGES.md": {
+    "mtime": 1789565820.956846,
+    "seen": 1790205599.630957,
+    "ast_hash": "9687c3d04d97bb6a04737e2e63ff7f65",
+    "semantic_hash": "9687c3d04d97bb6a04737e2e63ff7f65"
+  },
+  "SECURITY_CHECKLIST_IMPLEMENTATION.md": {
+    "mtime": 1790204408.4544141,
+    "seen": 1790205599.63096,
+    "ast_hash": "0efececa0b351598b006f9ba50764ca8",
+    "semantic_hash": "0efececa0b351598b006f9ba50764ca8"
+  },
+  "SECURITY_REVIEW_REPORT.md": {
+    "mtime": 1789565820.9570866,
+    "seen": 1790205599.6309621,
+    "ast_hash": "8c238e3da6648d9a7e143add2027054a",
+    "semantic_hash": "8c238e3da6648d9a7e143add2027054a"
+  },
+  "docker-compose.dev.yml": {
+    "mtime": 1776646815.3944118,
+    "seen": 1790205599.6309645,
+    "ast_hash": "639296f50d1d1c588a6195ead28b49ce",
+    "semantic_hash": "639296f50d1d1c588a6195ead28b49ce"
+  },
+  "features/TEMPLATE.md": {
+    "mtime": 1778534610.0601344,
+    "seen": 1790205599.6309671,
+    "ast_hash": "e9b984275a5a4907bdd262426d42a844",
+    "semantic_hash": "e9b984275a5a4907bdd262426d42a844"
+  },
+  "features/actuator_and_security_refactor.md": {
+    "mtime": 1779555122.435468,
+    "seen": 1790205599.6309698,
+    "ast_hash": "6a0a8c4e53cedb4dd1f3e8c36e25ecde",
+    "semantic_hash": "6a0a8c4e53cedb4dd1f3e8c36e25ecde"
+  },
+  "features/auth_user.md": {
+    "mtime": 1778875478.3781667,
+    "seen": 1790205599.6309724,
+    "ast_hash": "16f65571ed6b2cb8797b9d0debaa770d",
+    "semantic_hash": "16f65571ed6b2cb8797b9d0debaa770d"
+  },
+  "features/get_user.md": {
+    "mtime": 1779141803.512688,
+    "seen": 1790205599.6309748,
+    "ast_hash": "acbd82fe9c73c92421ddfebb20d616f5",
+    "semantic_hash": "acbd82fe9c73c92421ddfebb20d616f5"
+  },
+  "features/hmac_signature.md": {
+    "mtime": 1779553608.6334925,
+    "seen": 1790205599.6309776,
+    "ast_hash": "ac381f760f054484011301952d76efc4",
+    "semantic_hash": "ac381f760f054484011301952d76efc4"
+  },
+  "features/payload_limit.md": {
+    "mtime": 1779145197.4647062,
+    "seen": 1790205599.6309798,
+    "ast_hash": "e0f3ba8992ad79e3714c753aac6e66aa",
+    "semantic_hash": "e0f3ba8992ad79e3714c753aac6e66aa"
+  },
+  "features/post_user.md": {
+    "mtime": 1778875478.378255,
+    "seen": 1790205599.6309822,
+    "ast_hash": "f6a0847b916f21cce0b225dfd379dd15",
+    "semantic_hash": "f6a0847b916f21cce0b225dfd379dd15"
+  },
+  "features/rate_limiting.md": {
+    "mtime": 1778974261.318241,
+    "seen": 1790205599.6309848,
+    "ast_hash": "127d40deff336762cd9a22c125b1b5e8",
+    "semantic_hash": "127d40deff336762cd9a22c125b1b5e8"
+  },
+  "litellm_config.yaml": {
+    "mtime": 1776648508.52932,
+    "seen": 1790205599.6309874,
+    "ast_hash": "2fa2c209ec1ba74d2950a92709c697dd",
+    "semantic_hash": "2fa2c209ec1ba74d2950a92709c697dd"
+  },
+  "src/main/resources/application.yml": {
+    "mtime": 1789565820.960036,
+    "seen": 1790205599.6309898,
+    "ast_hash": "2d9482f3a47ab872211ae88b1a989e13",
+    "semantic_hash": "2d9482f3a47ab872211ae88b1a989e13"
+  },
+  "src/test/resources/application.yml": {
+    "mtime": 1789565820.961366,
+    "seen": 1790205599.6309924,
+    "ast_hash": "e4b5efbd368497bd5bc3bfa5bb920d64",
+    "semantic_hash": "e4b5efbd368497bd5bc3bfa5bb920d64"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/01_ia_ml/requirements.txt": {
+    "mtime": 1788813654.5711584,
+    "seen": 1790205599.6309953,
+    "ast_hash": "3a6438e2d90073c4c0eee111b66b26a3",
+    "semantic_hash": "3a6438e2d90073c4c0eee111b66b26a3"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/02_api/requirements.txt": {
+    "mtime": 1788813654.571797,
+    "seen": 1790205599.6309974,
+    "ast_hash": "7a9ef1f832213f74247a4aed897edceb",
+    "semantic_hash": "7a9ef1f832213f74247a4aed897edceb"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/02_api/static/dashboard.html": {
+    "mtime": 1788813654.572064,
+    "seen": 1790205599.631,
+    "ast_hash": "8e497bbeb18515921d743ad90362095b",
+    "semantic_hash": "8e497bbeb18515921d743ad90362095b"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/03_mobile/fordretain-app/public/dashboard.html": {
+    "mtime": 1788813654.575504,
+    "seen": 1790205599.6310024,
+    "ast_hash": "381be43facff0d27be76c56e6769e977",
+    "semantic_hash": "381be43facff0d27be76c56e6769e977"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain/04_security/security_report.md": {
+    "mtime": 1788813654.5767617,
+    "seen": 1790205599.6310053,
+    "ast_hash": "4ba9f33bba25abd721844fcaaecc6ee6",
+    "semantic_hash": "4ba9f33bba25abd721844fcaaecc6ee6"
+  },
+  "test/ford-test-main/ford-test-main/FORDTESTE/fordretain_dashboard.html": {
+    "mtime": 1788813654.5767617,
+    "seen": 1790205599.6310074,
+    "ast_hash": "381be43facff0d27be76c56e6769e977",
+    "semantic_hash": "381be43facff0d27be76c56e6769e977"
+  },
+  "test/ford-test-main/ford-test-main/README.md": {
+    "mtime": 1788813654.5767617,
+    "seen": 1790205599.63101,
+    "ast_hash": "1a2208e20a58f56e1576e1ff5a2f0838",
+    "semantic_hash": "1a2208e20a58f56e1576e1ff5a2f0838"
+  },
+  "auth_login.png": {
+    "mtime": 1777853805.2058635,
+    "seen": 1790205599.6310127,
+    "ast_hash": "2e555b0b9fa8bf1da77381e1f9c10c93",
+    "semantic_hash": "2e555b0b9fa8bf1da77381e1f9c10c93"
+  }
+}

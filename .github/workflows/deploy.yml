@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
 
 env:
   ACR_LOGIN_SERVER: acrcarsyncdev.azurecr.io
@@ -17,10 +23,10 @@ jobs:
 
     steps:
       - name: Checkout Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -31,21 +37,104 @@ jobs:
 
       - name: Upload Test Reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: test-reports
           path: target/surefire-reports/*.xml
 
-  deploy:
+  sast:
+    name: SAST (Semgrep)
     runs-on: ubuntu-latest
     needs: test
+    permissions:
+      contents: read
+      security-events: write
 
     steps:
       - name: Checkout Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Run Semgrep
+        run: |
+          docker run --rm \
+            -v "$PWD:/src" \
+            semgrep/semgrep:1.178.0 \
+            semgrep scan \
+            --error \
+            --config p/ci \
+            --config p/java \
+            --config p/secrets \
+            --sarif-output=/src/semgrep.sarif \
+            /src
+
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@7999b86c43a865dc79d8923397f35af22de63401 # v4
+        with:
+          sarif_file: semgrep.sarif
+
+  sca:
+    name: SCA (OWASP Dependency-Check)
+    runs-on: ubuntu-latest
+    needs: sast
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Run OWASP Dependency-Check
+        run: mvn org.owasp:dependency-check-maven:check
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+
+      - name: Upload Dependency-Check Report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: dependency-check-report
+          path: target/dependency-check-report.html
+          if-no-files-found: warn
+
+  secret-scan:
+    name: Secret Scan (Gitleaks)
+    runs-on: ubuntu-latest
+    needs: sca
+
+    steps:
+      - name: Checkout Full History
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        run: |
+          docker run --rm \
+            -v "$PWD:/repo" \
+            ghcr.io/gitleaks/gitleaks:v8.30.1 \
+            detect \
+            --source /repo \
+            --config /repo/.gitleaks.toml \
+            --gitleaks-ignore-path /repo/.gitleaksignore \
+            --redact
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [test, sast, sca, secret-scan]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up Java
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -55,23 +144,38 @@ jobs:
         run: mvn clean package -DskipTests
 
       - name: Login to ACR
-        uses: azure/docker-login@v2
+        uses: azure/docker-login@15c4aadf093404726ab2ff205b2cdd33fa6d054c # v2
         with:
           login-server: ${{ env.ACR_LOGIN_SERVER }}
           username: ${{ secrets.REGISTERY_USERNAME }}
           password: ${{ secrets.REGISTERY_PASSWORD }}
 
-      - name: Build and Push Docker image
+      - name: Build Docker image
         run: |
           docker build \
             -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
             -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest \
             .
+          docker image inspect \
+            --format='image-id={{.Id}}' \
+            ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Scan deployment image
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          ignore-unfixed: true
+          format: table
+
+      - name: Push approved Docker image
+        run: |
           docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest
 
       - name: Azure Login
-        uses: azure/login@v2
+        uses: azure/login@935127ca5bb3c4b02c9c2c10060028383878f33f # v3
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 

@@ -1,5 +1,7 @@
 # Phase 4 - Observabilidade & Resposta (Semana 5-6)
 
+> HISTÓRICO — substituída como backlog desta entrega por [SEC-2026](sec-2026/README.md). Não executar cumulativamente. Checkboxes e alegações abaixo não comprovam o estado atual.
+
 **Prioridade:** P2 - Média | **Esforço:** ~1-2 semanas
 
 Dependência: Logs `SECURITY_VIOLATION` já existem no código.

@@ -3,7 +3,7 @@ package br.com.sprint1.challenge.config;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -34,9 +34,9 @@ class HttpsSecurityTest {
     @Test
     @DisplayName("Requisição HTTPS não deve ser redirecionada")
     void httpsRequest_shouldNotRedirect() throws Exception {
-        // .secure(true) simula uma requisição HTTPS no MockMvc
+        // .secure(true).scheme("https") simula uma requisição HTTPS no MockMvc
         // Espera 401 (não autenticado) em vez de 3xx (redirect)
-        mockMvc.perform(get("/api/users").secure(true))
+        mockMvc.perform(get("/api/users").secure(true).with(req -> { req.setScheme("https"); return req; }))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
                 assert status < 300 || status >= 400 :
@@ -58,7 +58,7 @@ class HttpsSecurityTest {
     void httpsRequest_shouldPassChannelSecurity() throws Exception {
         // Mesmo sem autenticação, o channel security não deve barrar.
         // O status esperado é 401/403 (por falta de auth), mas NÃO 3xx.
-        mockMvc.perform(get("/api/users").secure(true))
+        mockMvc.perform(get("/api/users").secure(true).with(req -> { req.setScheme("https"); return req; }))
             .andExpect(result -> {
                 int status = result.getResponse().getStatus();
                 assert status < 300 || status >= 400 :

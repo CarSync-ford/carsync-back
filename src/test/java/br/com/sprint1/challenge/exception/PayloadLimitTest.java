@@ -3,9 +3,10 @@ package br.com.sprint1.challenge.exception;
 import br.com.sprint1.challenge.service.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureTestRestTemplate
 @Import(PayloadLimitTest.TestUploadController.class)
 class PayloadLimitTest {
 
@@ -61,7 +63,7 @@ class PayloadLimitTest {
                 new HttpEntity<>(body, headers),
                 String.class);
 
-        assertEquals(HttpStatus.PAYLOAD_TOO_LARGE, response.getStatusCode());
+        assertEquals(HttpStatus.CONTENT_TOO_LARGE, response.getStatusCode());
         assertTrue(response.getBody().contains("O tamanho do arquivo excede o limite permitido de 1MB."));
         assertTrue(response.getBody().contains("\"status\":413"));
     }
