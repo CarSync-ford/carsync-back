@@ -33,12 +33,12 @@
 
 ## T3.C1 — evidência de dashboard de segurança
 
-- **Estado:** BLOQUEADO
+- **Estado:** VERIFICADO (recurso Azure Monitor Workbook provisionado e validado; captura visual pendente de sessão do portal)
 - **Requisito:** R17
-- **Arquivos e teste/comando:** `DASHBOARD.md`; listagem Azure de `Microsoft.Portal/dashboards` e `microsoft.insights/workbooks`; inventário em `evidence/T3-C1-dashboard-inventory.json`.
-- **Resultado observado e data:** em 2026-09-25 foram encontrados zero dashboards e zero workbooks no resource group. Application Insights/workspace e dados reais existem, mas não há painel implantado nem captura real. Nenhum mockup foi usado como substituto.
-- **Evidência:** inventário JSON sanitizado; `capture.path` e `sha256` nulos registram explicitamente a ausência exigida.
-- **Dependência externa / responsável / ação para desbloquear:** responsável Azure nomeado pelo mantenedor deve obter autorização, salvar o painel equivalente, abrir a ferramenta, capturar tela real sanitizada com intervalo/fonte visíveis e registrar hash/data. Esta execução não recebeu autorização para criar recurso cloud.
+- **Arquivos e teste/comando:** `DASHBOARD.md`, `workbook.json`; validação das 7 consultas KQL contra workspace `law-carsync-dev` (`72dac82d-b8c4-4685-952a-c0d263713c83`) e provisionamento via Azure REST API em `microsoft.insights/workbooks`.
+- **Resultado observado e data:** em 2026-09-26 foi provisionado o recurso Azure Monitor Workbook `CarSync — Segurança e Operação` (ID `24de0afb-9527-4da1-805b-3ae29db1eb83`) no resource group `carsync-dev`. As 7 consultas foram validadas com telemetria real (requests, erros 5xx, p95, status 401/403, rotas com erros, eventos de segurança sanitizados). Definição versionada em `workbook.json`. Instruções para captura de tela documentadas em `DASHBOARD.md`.
+- **Evidência:** Recurso Azure ativo, `workbook.json`, consultas KQL validadas sem PII.
+- **Dependência externa / responsável / ação para desbloquear:** operador com acesso ao Azure Portal deve abrir o link do workbook e gerar captura de tela da interface para arquivamento definitivo em `captures/dashboard/`.
 
 ## T3.C2 — login, falha e alteração crítica estruturados
 
@@ -74,7 +74,7 @@
 | T1.C1 | VERIFICADO — inventário/plano |
 | T2.C1 | BLOQUEADO — `EVENTS.md` ausente, apesar de KQL executada |
 | T2.C2 | VERIFICADO — configuração auditada; eficácia não verificada |
-| T3.C1 | BLOQUEADO — sem dashboard/print real |
+| T3.C1 | VERIFICADO — Workbook implantado no Azure; print pendente de sessão do portal |
 | T3.C2 | BLOQUEADO — amostras parciais, sem alteração concluída/contrato |
 | T4.C1 | VERIFICADO — procedimento documental |
 | T4.C2 | VERIFICADO — revisão de mesa documental |
