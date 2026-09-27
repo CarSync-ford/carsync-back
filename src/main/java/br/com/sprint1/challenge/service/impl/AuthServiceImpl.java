@@ -1,9 +1,16 @@
 package br.com.sprint1.challenge.service.impl;
 
 import org.mindrot.jbcrypt.BCrypt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 
 import br.com.sprint1.challenge.dto.AuthDtos.AuthRequest;
 import br.com.sprint1.challenge.dto.AuthDtos.AuthResponse;
@@ -29,6 +36,8 @@ import java.time.LocalDateTime;
 
 @Service
 public class AuthServiceImpl implements AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -90,6 +99,8 @@ public class AuthServiceImpl implements AuthService {
         LocalDateTime refreshTokenExpiry = LocalDateTime.now().plusDays(30);
         userRepository.updateRefreshToken(user.getId(), refreshToken, refreshTokenExpiry);
 
+        logAfterCommit("SECURITY_AUDIT action:LOGIN status:SUCCESS");
+
         return new AuthResponse(token, refreshToken);
     }
 
@@ -107,7 +118,14 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public RefreshTokenResponse refreshToken(RefreshTokenRequest request) {
         // Parse the refresh token to get userId
-        var claims = jwtService.parse(request.refreshToken());
+        Claims claims;
+        try {
+            claims = jwtService.parse(request.refreshToken());
+        } catch (ExpiredJwtException e) {
+            throw new TokenExpiredException("Refresh token expired");
+        } catch (JwtException e) {
+            throw new InvalidTokenException("Invalid refresh token");
+        }
         String tokenType = claims.get("type", String.class);
         if (!"REFRESH".equals(tokenType)) {
             throw new InvalidTokenException("Invalid token type");
@@ -161,7 +179,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
-        var claims = jwtService.parsePasswordResetToken(request.token());
+        Claims claims;
+        try {
+            claims = jwtService.parsePasswordResetToken(request.token());
+        } catch (ExpiredJwtException e) {
+            throw new TokenExpiredException("Reset token expired");
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new InvalidTokenException("Invalid reset token");
+        }
         String userId = claims.getSubject();
 
         User user = userRepository.findById(userId)
@@ -178,6 +203,7 @@ public class AuthServiceImpl implements AuthService {
         // Revoke refresh token
         userRepository.revokeRefreshToken(userId);
 
+        logAfterCommit("SECURITY_AUDIT action:PASSWORD_RESET status:SUCCESS");
         // TODO: Mark token as used in password_reset_tokens table
     }
 
@@ -197,6 +223,8 @@ public class AuthServiceImpl implements AuthService {
 
         // Revoke refresh token on password change
         userRepository.revokeRefreshToken(userId);
+
+        logAfterCommit("SECURITY_AUDIT action:PASSWORD_CHANGE status:SUCCESS");
     }
 
     @Override
@@ -219,6 +247,8 @@ public class AuthServiceImpl implements AuthService {
             "CarDealership"
         );
 
+        logAfterCommit("SECURITY_AUDIT action:MFA_ENABLE status:SUCCESS");
+
         return new MfaEnableResponse(secret, qrCodeUri);
     }
 
@@ -240,6 +270,8 @@ public class AuthServiceImpl implements AuthService {
 
         user.setMfaEnabled(true);
         userRepository.save(user);
+
+        logAfterCommit("SECURITY_AUDIT action:MFA_VERIFY status:SUCCESS");
     }
 
     @Override
@@ -251,6 +283,21 @@ public class AuthServiceImpl implements AuthService {
         user.setMfaEnabled(false);
         user.setMfaSecret(null);
         userRepository.save(user);
+
+        logAfterCommit("SECURITY_AUDIT action:MFA_DISABLE status:SUCCESS");
+    }
+
+    private void logAfterCommit(String message) {
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    log.info(message);
+                }
+            });
+        } else {
+            log.info(message);
+        }
     }
 
 }

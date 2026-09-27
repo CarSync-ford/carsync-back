@@ -62,6 +62,7 @@ class ArquiteturaOrientadaaServicosSprint1ApplicationTests {
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertNotNull(response.getBody());
         Assertions.assertTrue(response.getBody().contains("\"openapi\""));
+        Assertions.assertTrue(response.getBody().contains("bearerAuth"));
     }
 
     @Test

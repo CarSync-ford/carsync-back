@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -42,13 +43,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             getClientIp(request), type);
                 } else {
                     String userId = claims.getSubject();
-                    String role = claims.get("role", String.class);
-                    if (role == null || role.isBlank()) {
-                        role = "USER";
+                    if (userId == null || userId.isBlank()) {
+                        log.warn("SECURITY_VIOLATION JWT Missing subject IP:{}", getClientIp(request));
+                    } else {
+                        String role = claims.get("role", String.class);
+                        if (role == null || role.isBlank()) {
+                            role = "USER";
+                        }
+                        var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+                        var userDetails = User.withUsername(userId)
+                                .password("")
+                                .authorities(authorities)
+                                .build();
+                        var auth = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+                        SecurityContextHolder.getContext().setAuthentication(auth);
                     }
-                    var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
-                    var auth = new UsernamePasswordAuthenticationToken(userId, null, authorities);
-                    SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             } catch (Exception ex) {
                 log.warn("SECURITY_VIOLATION JWT Invalid IP:{} reason:{}", getClientIp(request), ex.getMessage());

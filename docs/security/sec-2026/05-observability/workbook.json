@@ -1,0 +1,228 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "name": "intro",
+      "content": {
+        "json": "# Segurança e Operação\nFonte: appi-carsync-dev / law-carsync-dev. Horários UTC. Contagens estimadas usam ItemCount; latência usa registros observados e pode ser afetada por sampling. Ausência de dados não comprova saúde.\n\nMobile, IoT e ML: fontes não conectadas neste painel. Alertas existentes não são alterados nem representados como resolvidos. Dados HTTP de login/MFA não comprovam alteração concluída no domínio."
+      }
+    },
+    {
+      "type": 9,
+      "name": "parameters",
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "c1775d8d-8ff3-4a43-aaac-f958ff01a0bf",
+            "version": "KqlParameterItem/1.0",
+            "name": "TimeRange",
+            "label": "Período",
+            "type": 4,
+            "isRequired": true,
+            "value": {
+              "durationMs": 86400000
+            },
+            "typeSettings": {
+              "selectableValues": [
+                {
+                  "durationMs": 86400000
+                },
+                {
+                  "durationMs": 604800000
+                },
+                {
+                  "durationMs": 2592000000
+                }
+              ],
+              "allowCustom": true
+            }
+          }
+        ],
+        "style": "pills"
+      }
+    },
+    {
+      "type": 3,
+      "name": "query-0",
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "AppRequests | where TimeGenerated {TimeRange} | where _ResourceId =~ '/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/microsoft.insights/components/appi-carsync-dev' | extend Weight=coalesce(ItemCount, 1) | summarize Requisicoes=sum(Weight) by bin(TimeGenerated, 1h) | order by TimeGenerated asc",
+        "size": 0,
+        "title": "Volume de requisições estimado",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/Microsoft.OperationalInsights/workspaces/law-carsync-dev"
+        ],
+        "timeContextFromParameter": "TimeRange",
+        "visualization": "timechart",
+        "noDataMessage": "Sem registros no período e escopo selecionados; isso não comprova ausência de incidentes."
+      }
+    },
+    {
+      "type": 3,
+      "name": "table-0",
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "AppRequests | where TimeGenerated {TimeRange} | where _ResourceId =~ '/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/microsoft.insights/components/appi-carsync-dev' | extend Weight=coalesce(ItemCount, 1) | summarize Requisicoes=sum(Weight) by bin(TimeGenerated, 1h) | order by TimeGenerated asc",
+        "size": 0,
+        "title": "Volume de requisições estimado — tabela acessível",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/Microsoft.OperationalInsights/workspaces/law-carsync-dev"
+        ],
+        "timeContextFromParameter": "TimeRange",
+        "visualization": "table"
+      }
+    },
+    {
+      "type": 3,
+      "name": "query-1",
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "AppRequests | where TimeGenerated {TimeRange} | where _ResourceId =~ '/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/microsoft.insights/components/appi-carsync-dev' | extend Weight=coalesce(ItemCount, 1) | summarize Erros5xx=sumif(Weight, toint(ResultCode) between (500 .. 599)) by bin(TimeGenerated, 1h) | order by TimeGenerated asc",
+        "size": 0,
+        "title": "Erros HTTP 5xx estimados",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/Microsoft.OperationalInsights/workspaces/law-carsync-dev"
+        ],
+        "timeContextFromParameter": "TimeRange",
+        "visualization": "timechart",
+        "noDataMessage": "Sem registros no período e escopo selecionados; isso não comprova ausência de incidentes."
+      }
+    },
+    {
+      "type": 3,
+      "name": "table-1",
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "AppRequests | where TimeGenerated {TimeRange} | where _ResourceId =~ '/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/microsoft.insights/components/appi-carsync-dev' | extend Weight=coalesce(ItemCount, 1) | summarize Erros5xx=sumif(Weight, toint(ResultCode) between (500 .. 599)) by bin(TimeGenerated, 1h) | order by TimeGenerated asc",
+        "size": 0,
+        "title": "Erros HTTP 5xx estimados — tabela acessível",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/Microsoft.OperationalInsights/workspaces/law-carsync-dev"
+        ],
+        "timeContextFromParameter": "TimeRange",
+        "visualization": "table"
+      }
+    },
+    {
+      "type": 3,
+      "name": "query-2",
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "AppRequests | where TimeGenerated {TimeRange} | where _ResourceId =~ '/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/microsoft.insights/components/appi-carsync-dev' | extend Weight=coalesce(ItemCount, 1) | summarize P95_ms=percentile(DurationMs, 95) by bin(TimeGenerated, 1h) | order by TimeGenerated asc",
+        "size": 0,
+        "title": "Latência p95 observada (ms)",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/Microsoft.OperationalInsights/workspaces/law-carsync-dev"
+        ],
+        "timeContextFromParameter": "TimeRange",
+        "visualization": "timechart",
+        "noDataMessage": "Sem registros no período e escopo selecionados; isso não comprova ausência de incidentes."
+      }
+    },
+    {
+      "type": 3,
+      "name": "table-2",
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "AppRequests | where TimeGenerated {TimeRange} | where _ResourceId =~ '/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/microsoft.insights/components/appi-carsync-dev' | extend Weight=coalesce(ItemCount, 1) | summarize P95_ms=percentile(DurationMs, 95) by bin(TimeGenerated, 1h) | order by TimeGenerated asc",
+        "size": 0,
+        "title": "Latência p95 observada (ms) — tabela acessível",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/Microsoft.OperationalInsights/workspaces/law-carsync-dev"
+        ],
+        "timeContextFromParameter": "TimeRange",
+        "visualization": "table"
+      }
+    },
+    {
+      "type": 3,
+      "name": "query-3",
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "AppRequests | where TimeGenerated {TimeRange} | where _ResourceId =~ '/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/microsoft.insights/components/appi-carsync-dev' | extend Weight=coalesce(ItemCount, 1) | where ResultCode in (\"401\", \"403\", \"429\") | summarize Estimativa=sum(Weight), Registros=count() by ResultCode | order by Estimativa desc",
+        "size": 0,
+        "title": "Respostas 401, 403 e 429 — não equivalem automaticamente a ataques",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/Microsoft.OperationalInsights/workspaces/law-carsync-dev"
+        ],
+        "timeContextFromParameter": "TimeRange",
+        "visualization": "table",
+        "noDataMessage": "Sem registros no período e escopo selecionados; isso não comprova ausência de incidentes."
+      }
+    },
+    {
+      "type": 3,
+      "name": "query-4",
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "AppRequests | where TimeGenerated {TimeRange} | where _ResourceId =~ '/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/microsoft.insights/components/appi-carsync-dev' | extend Weight=coalesce(ItemCount, 1) | extend Path=tostring(parse_url(Url).Path)\n| extend Rota=case(\n Path matches regex @\"^/api/v1/leads/-?[0-9]+/convert$\", \"/api/v1/leads/{id}/convert\",\n Path matches regex @\"^/api/v1/leads/-?[0-9]+$\", \"/api/v1/leads/{id}\",\n Path matches regex @\"^/api/v1/customers/-?[0-9]+/360$\", \"/api/v1/customers/{id}/360\",\n Path matches regex @\"^/api/v1/churn/customers/-?[0-9]+/recalculate$\", \"/api/v1/churn/customers/{id}/recalculate\",\n Path matches regex @\"^/api/v1/churn/customers/-?[0-9]+$\", \"/api/v1/churn/customers/{id}\",\n Path matches regex @\"^/api/v1/vehicle-assistant/interactions/-?[0-9]+$\", \"/api/v1/vehicle-assistant/interactions/{id}\",\n Path in (\"/api/v1/auth\", \"/api/v1/auth/refresh\", \"/api/v1/auth/forgot-password\", \"/api/v1/auth/reset-password\", \"/api/v1/auth/change-password\", \"/api/v1/auth/mfa/enable\", \"/api/v1/auth/mfa/verify\", \"/api/v1/auth/mfa/disable\", \"/api/v1/user\", \"/api/v1/user/me\", \"/api/v1/leads\", \"/api/v1/churn/risk-list\", \"/api/v1/stock/alerts\", \"/api/v1/analytics/overview\", \"/api/v1/analytics/service-share\", \"/api/v1/analytics/customers\", \"/api/v1/analytics/leads\", \"/api/v1/analytics/vehicles\", \"/api/v1/vehicle-assistant/interactions\", \"/api/v1/health\"), Path,\n \"Outras rotas (ocultadas)\") | where toint(ResultCode) between (400 .. 599) | summarize Estimativa=sum(Weight), Registros=count() by Rota, ResultCode | top 20 by Estimativa desc",
+        "size": 0,
+        "title": "Rotas com erros HTTP (4xx e 5xx)",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/Microsoft.OperationalInsights/workspaces/law-carsync-dev"
+        ],
+        "timeContextFromParameter": "TimeRange",
+        "visualization": "table",
+        "noDataMessage": "Sem registros no período e escopo selecionados; isso não comprova ausência de incidentes."
+      }
+    },
+    {
+      "type": 3,
+      "name": "query-5",
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "AppRequests | where TimeGenerated {TimeRange} | where _ResourceId =~ '/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/microsoft.insights/components/appi-carsync-dev' | extend Weight=coalesce(ItemCount, 1) | extend Path=tostring(parse_url(Url).Path)\n| extend Acao=case(Path == \"/api/v1/auth\", \"LOGIN_HTTP\", Path == \"/api/v1/auth/change-password\", \"PASSWORD_CHANGE_HTTP\", Path == \"/api/v1/auth/reset-password\", \"PASSWORD_RESET_HTTP\", Path in (\"/api/v1/auth/mfa/enable\", \"/api/v1/auth/mfa/verify\", \"/api/v1/auth/mfa/disable\"), \"MFA_HTTP\", \"\")\n| where isnotempty(Acao)\n| summarize Estimativa=sum(Weight), Registros=count(), UltimoUTC=max(TimeGenerated) by Acao, ResultCode\n| order by UltimoUTC desc",
+        "size": 0,
+        "title": "Login e ações sensíveis — evidência HTTP, não auditoria conclusiva",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/Microsoft.OperationalInsights/workspaces/law-carsync-dev"
+        ],
+        "timeContextFromParameter": "TimeRange",
+        "visualization": "table",
+        "noDataMessage": "Sem registros no período e escopo selecionados; isso não comprova ausência de incidentes."
+      }
+    },
+    {
+      "type": 3,
+      "name": "query-6",
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "AppTraces | where TimeGenerated {TimeRange} | where _ResourceId =~ '/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/microsoft.insights/components/appi-carsync-dev'\n| where Message contains \"SECURITY_VIOLATION\" or Message contains \"ANALYTICS_ACCESS\" or Message contains \"DATA_RETENTION\"\n| extend Familia=case(Message contains \"SECURITY_VIOLATION\", \"SECURITY_VIOLATION\", Message contains \"ANALYTICS_ACCESS\", \"ANALYTICS_ACCESS\", \"DATA_RETENTION\")\n| extend Tipo=case(Message contains \"Auth Failed\", \"Auth Failed\", Message contains \"Account Locked\", \"Account Locked\", Message contains \"Rate Limit Exceeded\", \"Rate Limit Exceeded\", Message contains \"JWT Wrong token type\", \"JWT Wrong token type\", Message contains \"JWT Invalid\", \"JWT Invalid\", Message contains \"Invalid Token\", \"Invalid Token\", Message contains \"Token Expired\", \"Token Expired\", Message contains \"purge completed\", \"purge completed\", Message contains \"anonymization completed\", \"anonymization completed\", Familia)\n| project HorarioUTC=TimeGenerated, Familia, Tipo, SeverityLevel\n| top 100 by HorarioUTC desc",
+        "size": 0,
+        "title": "Eventos sanitizados — últimos 100 registros observados",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/Microsoft.OperationalInsights/workspaces/law-carsync-dev"
+        ],
+        "timeContextFromParameter": "TimeRange",
+        "visualization": "table",
+        "noDataMessage": "Sem registros no período e escopo selecionados; isso não comprova ausência de incidentes."
+      }
+    }
+  ],
+  "fallbackResourceIds": [
+    "/subscriptions/7fd8132e-7c9a-4b4d-a191-04b21ecc968c/resourceGroups/carsync-dev/providers/Microsoft.OperationalInsights/workspaces/law-carsync-dev"
+  ],
+  "isLocked": false
+}
